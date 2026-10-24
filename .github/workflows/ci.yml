@@ -48,6 +48,9 @@ jobs:
       - name: Unit and simulation tests
         run: ~/godot/godot --headless --path . -s res://tests/run_tests.gd
 
+      - name: End-to-end menu and dive flow
+        run: ~/godot/godot --headless --path . res://tests/flow_test.tscn
+
       - name: Export Windows build
         run: |
           mkdir -p build/windows

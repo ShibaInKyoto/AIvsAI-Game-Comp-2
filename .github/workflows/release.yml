@@ -39,6 +39,7 @@ jobs:
           ~/godot/godot --headless --import || true
           ~/godot/godot --headless --path . -s res://tools/check_scripts.gd
           ~/godot/godot --headless --path . -s res://tests/run_tests.gd
+          ~/godot/godot --headless --path . res://tests/flow_test.tscn
 
       - name: Export Windows build
         run: |
