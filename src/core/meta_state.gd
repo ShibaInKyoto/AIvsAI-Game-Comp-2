@@ -23,6 +23,12 @@ var pressure_selected := 0
 var tutorial_done := false
 var total_salvage := 0
 var total_kills := 0
+var stalkers_killed := 0
+var best_pressure_win := -1
+## Ids of achieved [Milestones].
+var milestones: Array[String] = []
+## Milestone id whose paint is applied to the hull ("" = the frame's own colors).
+var paint := ""
 
 
 func upgrade_level(id: StringName) -> int:
@@ -88,6 +94,10 @@ func to_dict() -> Dictionary:
 		"tutorial_done": tutorial_done,
 		"total_salvage": total_salvage,
 		"total_kills": total_kills,
+		"stalkers_killed": stalkers_killed,
+		"best_pressure_win": best_pressure_win,
+		"milestones": milestones,
+		"paint": paint,
 	}
 
 
@@ -120,4 +130,11 @@ static func from_dict(d: Dictionary) -> MetaState:
 	m.tutorial_done = bool(d.get("tutorial_done", false))
 	m.total_salvage = int(d.get("total_salvage", 0))
 	m.total_kills = int(d.get("total_kills", 0))
+	m.stalkers_killed = int(d.get("stalkers_killed", 0))
+	m.best_pressure_win = int(d.get("best_pressure_win", -1))
+	for id in d.get("milestones", []):
+		m.milestones.append(String(id))
+	m.paint = String(d.get("paint", ""))
+	if not m.milestones.has(m.paint):
+		m.paint = ""
 	return m

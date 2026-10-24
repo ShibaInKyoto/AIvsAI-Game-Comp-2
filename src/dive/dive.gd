@@ -32,6 +32,7 @@ func _ready() -> void:
 	_pause_menu.surface_requested.connect(_on_abandon)
 	Settings.changed.connect(_on_settings_changed)
 	Events.hitstop.connect(func(d: float) -> void: _freeze = maxf(_freeze, d))
+	Events.creature_scanned.connect(func(_id: StringName, _first: bool) -> void: Game.check_milestones())
 	if Autopilot.requested():
 		autopilot = Autopilot.new()
 		add_child(autopilot)
@@ -89,6 +90,7 @@ func load_zone(zone: int) -> void:
 
 	Audio.play_music(biome.music)
 	Audio.play_ambience(&"ambience")
+	Game.check_milestones()
 	var depth := BiomeLibrary.zone_depth_range(zone)
 	if BiomeLibrary.is_final_zone(zone):
 		Events.banner.emit("THE HADAL FLOOR", "%d m  -  the signal is close" % int(depth.x))

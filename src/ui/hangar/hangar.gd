@@ -2,7 +2,7 @@ extends Node3D
 ## The hangar: spend salvage on upgrades, research on new frames, browse the
 ## codex and recovered logs, pick a pressure level and start a dive.
 
-enum Tab { UPGRADES, FRAMES, CODEX, LOGS }
+enum Tab { UPGRADES, FRAMES, CODEX, LOGS, MILESTONES }
 
 var _backdrop: MenuBackdrop
 var _content: VBoxContainer
@@ -59,10 +59,11 @@ func _ready() -> void:
 	var tabs := HBoxContainer.new()
 	tabs.add_theme_constant_override(&"separation", 8)
 	left.add_child(tabs)
-	for t: Array in [[Tab.UPGRADES, "Upgrades"], [Tab.FRAMES, "Submarines"], [Tab.CODEX, "Codex"], [Tab.LOGS,
-			"Signal logs"]]:
+	var tab_names := [[Tab.UPGRADES, "Upgrades"], [Tab.FRAMES, "Submarines"], [Tab.CODEX, "Codex"],
+		[Tab.LOGS, "Signal logs"], [Tab.MILESTONES, "Milestones"]]
+	for t: Array in tab_names:
 		var tab_id: Tab = t[0]
-		var b := UiUtil.button(t[1], func() -> void: _show_tab(tab_id), 230)
+		var b := UiUtil.button(t[1], func() -> void: _show_tab(tab_id), 196)
 		b.toggle_mode = true
 		tabs.add_child(b)
 		_tab_buttons.append(b)
@@ -129,6 +130,8 @@ func _show_tab(tab: Tab) -> void:
 			_build_codex()
 		Tab.LOGS:
 			_build_logs()
+		Tab.MILESTONES:
+			_build_milestones()
 	_refresh_header()
 
 
@@ -273,3 +276,49 @@ func _build_logs() -> void:
 		else:
 			info.add_child(UiUtil.label("[ encrypted ]", &"HeaderLabel", 24, UiTheme.TEXT_DIM))
 			info.add_child(UiUtil.label("Recover this log from a black-box beacon in the trench.", &"DimLabel"))
+
+
+func _build_milestones() -> void:
+	var meta := Game.meta
+	var head := HBoxContainer.new()
+	_content.add_child(head)
+	head.add_child(UiUtil.label("%d / %d milestones  -  each unlocks a hull paint" % [meta.milestones.size(),
+		Milestones.all().size()], &"MonoLabel"))
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	head.add_child(spacer)
+	var default_paint := UiUtil.button("Factory paint", func() -> void: _set_paint(""), 220)
+	default_paint.disabled = meta.paint == ""
+	head.add_child(default_paint)
+	for m in Milestones.all():
+		var row := _row_panel()
+		var achieved := meta.milestones.has(m.id)
+		var swatch := ColorRect.new()
+		swatch.color = m.paint if achieved else Color(0.15, 0.2, 0.22)
+		swatch.custom_minimum_size = Vector2(14, 64)
+		row.add_child(swatch)
+		var info := VBoxContainer.new()
+		info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(info)
+		info.add_child(UiUtil.label(m.name, &"HeaderLabel", 24, UiTheme.ACCENT if achieved else UiTheme.TEXT_DIM))
+		info.add_child(UiUtil.label("%s   Reward: %s paint" % [m.description, m.paint_name], &"DimLabel"))
+		var id := m.id
+		var b: Button
+		if not achieved:
+			b = UiUtil.button("Locked", func() -> void: pass, 200)
+			b.disabled = true
+		elif meta.paint == id:
+			b = UiUtil.button("Applied", func() -> void: pass, 200)
+			b.disabled = true
+		else:
+			b = UiUtil.button("Apply paint", func() -> void: _set_paint(id), 200)
+		b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		row.add_child(b)
+
+
+func _set_paint(id: String) -> void:
+	Game.meta.paint = id
+	Game.save_game()
+	Audio.play_ui(&"module_install", -4.0)
+	_backdrop.refresh_sub()
+	_show_tab(Tab.MILESTONES)

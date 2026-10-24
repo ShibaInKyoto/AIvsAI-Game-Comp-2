@@ -64,8 +64,7 @@ func setup(p_level: Level, p_run: RunState, start: Vector2) -> void:
 
 	model = SubmarineModel.new()
 	add_child(model)
-	var frame := Catalog.frame(run.frame_id)
-	model.build(run.frame_id, frame.hull_color if frame else Color(1.0, 0.6, 0.1))
+	model.build(run.frame_id, Game.hull_color(run.frame_id))
 
 	lamp = SpotLight3D.new()
 	lamp.light_color = Color(1.0, 0.95, 0.82)

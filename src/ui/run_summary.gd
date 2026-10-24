@@ -52,6 +52,9 @@ func show_result(run: RunState, outcome: RunState.Outcome) -> void:
 	for r: Array in rows:
 		grid.add_child(UiUtil.label(r[0], &"DimLabel", 22))
 		grid.add_child(UiUtil.label(r[1], &"MonoLabel", 24))
+	for m in Game.last_milestones:
+		column.add_child(UiUtil.label("Milestone: %s  -  %s paint unlocked in the hangar" % [m.name, m.paint_name],
+				&"", 22, UiTheme.WARN))
 	if outcome == RunState.Outcome.IMPLODED:
 		column.add_child(UiUtil.label("Insurance recovered %d%% of your salvage." % int(run.stats.insurance * 100),
 				&"DimLabel"))

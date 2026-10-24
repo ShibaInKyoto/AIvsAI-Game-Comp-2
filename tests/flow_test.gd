@@ -57,7 +57,7 @@ func _run() -> void:
 	print("FLOW: summary shown, salvage banked total ", Game.meta.salvage)
 	Router.go_to(Router.HANGAR, 0.05)
 	var hangar: Node = await _wait_scene("hangar")
-	for tab in 4:
+	for tab in 5:
 		hangar.call("_show_tab", tab)
 		await get_tree().process_frame
 	var before := Game.meta.salvage

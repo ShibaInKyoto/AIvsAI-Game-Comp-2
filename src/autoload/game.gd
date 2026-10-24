@@ -9,10 +9,35 @@ var meta := MetaState.new()
 var run: RunState
 ## Salvage banked by the last victorious dive (shown by the ending).
 var last_victory_banked := 0
+## Milestones unlocked when the last run ended (shown by the summary).
+var last_milestones: Array[Milestones.Milestone] = []
 
 
 func _ready() -> void:
 	load_game()
+	Events.creature_killed.connect(func(id: StringName, _p: Vector2) -> void:
+		if id == &"stalker":
+			meta.stalkers_killed += 1)
+
+
+## Hull color for a frame, honoring the chosen milestone paint.
+func hull_color(frame_id: StringName) -> Color:
+	var m := Milestones.find(meta.paint)
+	if m:
+		return m.paint
+	var f := Catalog.frame(frame_id)
+	return f.hull_color if f else Color(1.0, 0.6, 0.1)
+
+
+## Awards newly met milestones and announces them. Returns them.
+func check_milestones() -> Array[Milestones.Milestone]:
+	var fresh := Milestones.check(meta, run)
+	for m in fresh:
+		Events.toast.emit("Milestone: %s  -  %s paint unlocked" % [m.name, m.paint_name], UiTheme.WARN)
+		Audio.play(&"purchase", -2.0)
+	if not fresh.is_empty():
+		save_game()
+	return fresh
 
 
 func load_game() -> void:
@@ -80,6 +105,7 @@ func end_run(outcome: RunState.Outcome) -> int:
 	elif outcome == RunState.Outcome.VICTORY:
 		kept = int(run.salvage * Pressure.depth_bonus(run.zone + 2))
 		meta.wins += 1
+		meta.best_pressure_win = maxi(meta.best_pressure_win, run.pressure)
 		meta.pressure_unlocked = maxi(meta.pressure_unlocked, mini(run.pressure + 1, Pressure.MAX_LEVEL))
 	# Expedition pay: every zone reached is worth something, even in defeat.
 	kept += expedition_pay(run)
@@ -89,5 +115,6 @@ func end_run(outcome: RunState.Outcome) -> int:
 	meta.total_kills += run.kills
 	meta.deepest_zone = maxi(meta.deepest_zone, run.zone)
 	meta.deepest_depth = maxi(meta.deepest_depth, run.deepest_depth)
+	last_milestones = Milestones.check(meta, run)
 	save_game()
 	return kept
