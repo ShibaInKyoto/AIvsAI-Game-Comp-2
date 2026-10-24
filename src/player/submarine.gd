@@ -343,10 +343,9 @@ func _update_visuals(delta: float, move: Vector2) -> void:
 	bubbles.amount_ratio = 1.0 if boosting else 0.5
 
 	lamp.visible = lamp_on
-	var lamp_origin := Vector3(pos.x + aim.x * 1.1, pos.y + aim.y * 1.1 - 0.3, 0.0)
-	lamp.global_position = lamp_origin
-	var target := lamp_origin + Vector3(aim.x, aim.y, 0.0)
-	lamp.look_at(target, Vector3.BACK)
+	# The lamp is a child of the (unrotated) submarine root, so local == world orientation.
+	var lamp_offset := Vector3(aim.x * 1.1, aim.y * 1.1 - 0.3, 0.0)
+	lamp.transform = Transform3D(Basis.looking_at(Vector3(aim.x, aim.y, 0.0), Vector3.BACK), lamp_offset)
 	model.set_cockpit_glow(0.9 if run.battery > 0.0 else 0.15)
 	position = Vector3(pos.x, pos.y, 0)
 

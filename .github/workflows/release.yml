@@ -1,0 +1,73 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g. v1.0.0)"
+        required: true
+        default: "v1.0.0"
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+env:
+  GODOT_VERSION: 4.5.1
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Godot and export templates
+        run: |
+          mkdir -p ~/godot ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+          cd ~/godot
+          wget -q https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+          unzip -q Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+          mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 godot
+          wget -q https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
+          unzip -q -j Godot_v${GODOT_VERSION}-stable_export_templates.tpz \
+            templates/windows_release_x86_64.exe templates/windows_debug_x86_64.exe templates/version.txt \
+            -d ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/
+
+      - name: Import and test
+        run: |
+          ~/godot/godot --headless --import || true
+          ~/godot/godot --headless --path . -s res://tools/check_scripts.gd
+          ~/godot/godot --headless --path . -s res://tests/run_tests.gd
+
+      - name: Export Windows build
+        run: |
+          mkdir -p build/FATHOM
+          ~/godot/godot --headless --export-release "Windows Desktop" build/FATHOM/FATHOM.exe
+          cp README.md build/FATHOM/README.md
+          cp -r assets/fonts/OFL-*.txt build/FATHOM/ || true
+          cd build && zip -r FATHOM-windows-x64.zip FATHOM
+
+      - name: Resolve tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ github.event.inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: FATHOM ${{ steps.tag.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          files: build/FATHOM-windows-x64.zip
+          body: |
+            FATHOM - a submarine descent roguelite for Windows 10/11.
+
+            1. Download FATHOM-windows-x64.zip and extract it.
+            2. Run FATHOM.exe (if SmartScreen warns, choose More info > Run anyway).
+
+            See README.md for controls.

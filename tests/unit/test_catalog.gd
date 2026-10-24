@@ -1,0 +1,59 @@
+extends TestCase
+## Data integrity of frames, upgrades and modules.
+
+
+func test_ids_are_unique() -> void:
+	var seen := {}
+	for m in Catalog.modules():
+		check(not seen.has(m.id), "duplicate module %s" % m.id)
+		seen[m.id] = true
+	seen.clear()
+	for u in Catalog.upgrades():
+		check(not seen.has(u.id), "duplicate upgrade %s" % u.id)
+		seen[u.id] = true
+
+
+func test_upgrade_costs_increase() -> void:
+	for u in Catalog.upgrades():
+		for i in range(1, u.costs.size()):
+			check(u.costs[i] > u.costs[i - 1], "%s costs must increase" % u.id)
+
+
+func test_every_module_applies() -> void:
+	for m in Catalog.modules():
+		var mods: Array[StringName] = [m.id]
+		var stats := SubStats.build(&"lantern", {}, mods)
+		check(stats.max_hull > 0.0, "%s leaves a positive hull" % m.id)
+
+
+func test_draft_is_distinct_and_respects_tools() -> void:
+	var rng := RandomNumberGenerator.new()
+	var stats := SubStats.build(&"lantern", {}, [])
+	for i in 50:
+		rng.seed = i
+		var picks := Catalog.draft(rng, [], stats, 3)
+		check_eq(picks.size(), 3)
+		var ids := picks.map(func(m: Catalog.ModuleDef) -> StringName: return m.id)
+		for m in picks:
+			check(ids.count(m.id) == 1, "draft has duplicates")
+			check(m.requires_tool == &"" or stats.has_tool(m.requires_tool), "%s needs a missing tool" % m.id)
+
+
+func test_draft_respects_stack_limits() -> void:
+	var rng := RandomNumberGenerator.new()
+	var stats := SubStats.build(&"lantern", {}, [])
+	var owned: Array[StringName] = [&"compass"]
+	for i in 30:
+		rng.seed = i
+		for m in Catalog.draft(rng, owned, stats, 3):
+			check(m.id != &"compass", "maxed module offered again")
+
+
+func test_frames_have_distinct_stats() -> void:
+	var lantern := SubStats.build(&"lantern", {}, [])
+	var mako := SubStats.build(&"mako", {}, [])
+	var sphere := SubStats.build(&"bathysphere", {}, [])
+	check(mako.max_speed > lantern.max_speed)
+	check(sphere.max_hull > lantern.max_hull)
+	check(mako.has_tool(&"torpedo"))
+	check(sphere.has_tool(&"shock"))

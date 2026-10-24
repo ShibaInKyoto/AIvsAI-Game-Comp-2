@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  GODOT_VERSION: 4.5.1
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Godot
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/godot
+            ~/.local/share/godot/export_templates
+          key: godot-${{ env.GODOT_VERSION }}-v2
+
+      - name: Install Godot and export templates
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/godot ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+          cd ~/godot
+          wget -q https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+          unzip -q Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+          mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 godot
+          rm Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+          wget -q https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
+          unzip -q -j Godot_v${GODOT_VERSION}-stable_export_templates.tpz \
+            templates/windows_release_x86_64.exe templates/windows_debug_x86_64.exe templates/version.txt \
+            -d ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/
+          rm Godot_v${GODOT_VERSION}-stable_export_templates.tpz
+
+      - name: Import project
+        run: ~/godot/godot --headless --import || true
+
+      - name: Check scripts
+        run: ~/godot/godot --headless --path . -s res://tools/check_scripts.gd
+
+      - name: Unit and simulation tests
+        run: ~/godot/godot --headless --path . -s res://tests/run_tests.gd
+
+      - name: Export Windows build
+        run: |
+          mkdir -p build/windows
+          ~/godot/godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
+          test -s build/windows/FATHOM.exe
+
+      - name: Upload Windows build
+        uses: actions/upload-artifact@v4
+        with:
+          name: FATHOM-windows-x64
+          path: build/windows/
+          retention-days: 14
