@@ -24,6 +24,12 @@ var _stuck_timer := 0.0
 var _last_pos := Vector2.ZERO
 var _zones_cleared := 0
 var _route := PackedVector2Array()
+var _force_exit_at := -1.0
+var _max_draw_calls := 0
+var _max_primitives := 0
+var _max_frame_ms := 0.0
+var _frame_ms_sum := 0.0
+var _frames := 0
 
 
 static func requested() -> bool:
@@ -42,6 +48,7 @@ func _ready() -> void:
 	time_limit = float(arg("time", "60"))
 	shot_interval = float(arg("interval", "4"))
 	show_stops = OS.get_cmdline_user_args().has("--stops")
+	_force_exit_at = float(arg("force-exit", "-1"))
 	ping_interval = float(arg("ping", "9"))
 	var zone := int(arg("zone", "-1"))
 	if zone >= 0 and Game.run:
@@ -140,6 +147,14 @@ func _nearest_threat() -> Creature:
 
 func _process(delta: float) -> void:
 	_elapsed += delta
+	_frames += 1
+	_frame_ms_sum += delta * 1000.0
+	if _elapsed > 2.0:
+		_max_frame_ms = maxf(_max_frame_ms, delta * 1000.0)
+	_max_draw_calls = maxi(_max_draw_calls,
+		RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME))
+	_max_primitives = maxi(_max_primitives,
+		RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME))
 	if shots_dir != "":
 		_shot_timer -= delta
 		if _shot_timer <= 0.0:
@@ -147,6 +162,9 @@ func _process(delta: float) -> void:
 			var img := get_viewport().get_texture().get_image()
 			img.save_png(shots_dir.path_join("shot_%03d.png" % _shots))
 			_shots += 1
+	if _force_exit_at > 0.0 and _elapsed >= _force_exit_at and level:
+		_force_exit_at = -1.0
+		level.exit_reached.emit()
 	if _elapsed >= time_limit:
 		_report_and_quit()
 
@@ -156,4 +174,7 @@ func _report_and_quit() -> void:
 	print("AUTOPILOT: time=%.1f zone=%d zones_cleared=%d hull=%.0f battery=%.0f salvage=%d kills=%d fps=%d" % [
 		_elapsed, run.zone if run else -1, _zones_cleared, run.hull if run else 0.0, run.battery if run else 0.0,
 		run.salvage if run else 0, run.kills if run else 0, Engine.get_frames_per_second()])
+	print("RENDER: max_draw_calls=%d max_primitives=%d avg_frame=%.1fms worst_frame=%.1fms entities=%d" % [
+		_max_draw_calls, _max_primitives, _frame_ms_sum / maxi(_frames, 1), _max_frame_ms,
+		level.entities.size() if level else 0])
 	get_tree().quit()
