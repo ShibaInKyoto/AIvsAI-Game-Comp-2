@@ -15,9 +15,9 @@ var drag := 1.4
 ## Multiplier on all noise the submarine makes.
 var noise_mult := 1.0
 
-var lamp_range := 26.0
-var lamp_angle := 24.0
-var lamp_energy := 10.0
+var lamp_range := 28.0
+var lamp_angle := 26.0
+var lamp_energy := 14.0
 var lamp_drain := 0.55
 
 var sonar_range := 70.0

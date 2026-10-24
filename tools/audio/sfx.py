@@ -233,7 +233,7 @@ def lancer_windup():
         s = seconds(t)
         out[s:s + len(c)] += c
         t += gap
-        gap *= 0.78
+        gap = max(gap * 0.8, 0.018)
     return normalize(out, 0.6)
 
 

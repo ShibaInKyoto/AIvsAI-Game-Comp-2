@@ -290,7 +290,8 @@ def boss() -> np.ndarray:
         ev.append((i * dur, choir(midi_to_hz(root + 18 + (1 if i % 2 else 0)), dur, "o", 1.0) * 0.5))
         for j, n in enumerate(CHOIR_MOTIF):
             ev.append((i * dur + 4.0 + j * beat * 2, choir(midi_to_hz(n + 12), beat * 2.2, "a", 0.08) * 0.45))
-    return normalize(soft_clip(render_loop(length, ev, HALL, 0.4), 1.3), 0.85)
+    # Thumps and drones are dense; leave headroom so the loudness matches the other cues.
+    return normalize(soft_clip(normalize(render_loop(length, ev, HALL, 0.4), 0.9), 1.2), 0.42)
 
 
 def loss() -> np.ndarray:

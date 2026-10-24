@@ -117,7 +117,7 @@ void fragment() {
 	// Desaturate the photo texture and tint it per biome; the back wall uses
 	// the deep tint so the playable layer reads clearly in front of it.
 	float lum = dot(alb, vec3(0.299, 0.587, 0.114));
-	vec3 base = mix(vec3(lum), alb, 0.25) * 1.6;
+	vec3 base = mix(vec3(lum), alb, 0.25) * 2.0;
 	float front = smoothstep(-back_depth * 0.8, 1.0, world_pos.z);
 	vec3 tint = mix(rock_tint_deep, rock_tint, front);
 	vec3 color = base * tint;
@@ -171,7 +171,7 @@ void fragment() {
 			smoothstep(0.94, 1.0, abs(fract(world_pos.y * 0.25) * 2.0 - 1.0))) * step(world_pos.z, -2.0);
 		float edge = smoothstep(1.5, 0.0, abs(sdf_value)) ;
 		float lines = wall * 0.35 + contour * 0.3 + grid * 0.15 + edge * 1.2;
-		emission += sonar_color.rgb * (sonar.x * (0.35 + lines * 1.1) + sonar.y * lines * 0.32);
+		emission += sonar_color.rgb * (sonar.x * (0.35 + lines * 1.1) + sonar.y * lines * 0.22);
 	}
 	EMISSION = emission;
 }

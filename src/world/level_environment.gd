@@ -16,10 +16,13 @@ func setup(biome: BiomeDef, level_size: Vector2) -> void:
 	environment = Environment.new()
 	environment.background_mode = Environment.BG_COLOR
 	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+	# There is no sky; without this the (near black) background would replace
+	# the ambient color entirely.
+	environment.ambient_light_sky_contribution = 0.0
 	environment.reflected_light_source = Environment.REFLECTION_SOURCE_DISABLED
-	environment.tonemap_mode = Environment.TONE_MAPPER_ACES
-	environment.tonemap_exposure = 1.1
-	environment.tonemap_white = 6.0
+	environment.tonemap_mode = Environment.TONE_MAPPER_FILMIC
+	environment.tonemap_exposure = 1.0
+	environment.tonemap_white = 1.6
 
 	environment.glow_enabled = true
 	environment.glow_intensity = 0.9
@@ -38,7 +41,7 @@ func setup(biome: BiomeDef, level_size: Vector2) -> void:
 	environment.fog_depth_begin = 24.0
 	environment.fog_depth_end = 75.0
 	environment.fog_depth_curve = 1.2
-	environment.fog_density = 1.0
+	environment.fog_density = 0.65
 	environment.fog_sky_affect = 0.0
 
 	environment.volumetric_fog_enabled = true

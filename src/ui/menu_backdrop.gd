@@ -42,6 +42,9 @@ func _ready() -> void:
 	add_child(camera)
 	camera.current = true
 	camera.position = Vector3(_anchor.x - 4.0, _anchor.y + 1.0, 20.0)
+	var water := WaterFx.new()
+	level.add_child(water)
+	water.setup(layout.biome, layout.size(), camera, Settings.quality)
 
 
 func _pick_spot(layout: LevelLayout) -> Vector2:

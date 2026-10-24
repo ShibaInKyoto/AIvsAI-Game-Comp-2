@@ -80,7 +80,6 @@ func _collect(sub: Submarine) -> void:
 		&"repair":
 			sub.heal(amount)
 			Audio.play(&"pickup_repair", -4.0)
-			Events.toast.emit("Hull repaired +%d" % amount, UiTheme.GOOD)
 	Events.pickup_collected.emit(kind, amount)
 	Fx.sparkle(level, pos, KINDS[kind].color)
 	despawn()

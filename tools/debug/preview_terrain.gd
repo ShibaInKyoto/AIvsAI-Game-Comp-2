@@ -23,6 +23,21 @@ func _ready() -> void:
 	env.setup(layout.biome, layout.size())
 	if OS.get_environment("NOSHADOW") != "" and env.sun:
 		env.sun.shadow_enabled = false
+	if OS.get_environment("FOGD") != "":
+		(env.fog_volume.material as FogMaterial).density = float(OS.get_environment("FOGD"))
+	if OS.get_environment("GFOG") != "":
+		env.environment.volumetric_fog_density = float(OS.get_environment("GFOG"))
+	if OS.get_environment("SKYC") != "":
+		env.environment.ambient_light_sky_contribution = float(OS.get_environment("SKYC"))
+	if OS.get_environment("NOSSAO") != "":
+		env.environment.ssao_enabled = false
+	if OS.get_environment("NOVFOG") != "":
+		env.environment.volumetric_fog_enabled = false
+	if OS.get_environment("NOFOG") != "":
+		env.environment.fog_enabled = false
+	if OS.get_environment("AMB") != "":
+		layout.biome.ambient_energy = float(OS.get_environment("AMB"))
+		env.update_depth(0.0)
 	var terrain := TerrainRenderer.new()
 	root3d.add_child(terrain)
 	terrain.build(layout)
@@ -44,7 +59,7 @@ func _ready() -> void:
 	_lamp.spot_range = 30.0
 	_lamp.spot_angle = 28.0
 	_lamp.shadow_enabled = true
-	_lamp.light_volumetric_fog_energy = 8.0
+	_lamp.light_volumetric_fog_energy = float(OS.get_environment("VFOGE")) if OS.get_environment("VFOGE") != "" else 8.0
 	_lamp.light_color = Color(1.0, 0.95, 0.85)
 	root3d.add_child(_lamp)
 	_shots.append(layout.start)

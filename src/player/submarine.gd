@@ -36,6 +36,7 @@ var fill_light: OmniLight3D
 var harpoon: Harpoon
 var tools: ToolBelt
 var bubbles: GPUParticles3D
+var engine_audio: AudioStreamPlayer
 
 var _yaw := 0.0
 var _invulnerable := 0.0
@@ -65,7 +66,7 @@ func setup(p_level: Level, p_run: RunState, start: Vector2) -> void:
 	lamp.light_color = Color(1.0, 0.95, 0.82)
 	lamp.shadow_enabled = true
 	lamp.shadow_bias = 0.05
-	lamp.light_volumetric_fog_energy = 2.5
+	lamp.light_volumetric_fog_energy = 5.0
 	lamp.spot_attenuation = 0.6
 	lamp.spot_angle_attenuation = 1.6
 	add_child(lamp)
@@ -82,6 +83,17 @@ func setup(p_level: Level, p_run: RunState, start: Vector2) -> void:
 	bubbles = Fx.bubble_emitter()
 	bubbles.position = Vector3(-2.2, 0, 0)
 	model.add_child(bubbles)
+
+	engine_audio = AudioStreamPlayer.new()
+	engine_audio.bus = &"SFX"
+	var engine_stream := Audio.get_stream(&"engine_loop")
+	if engine_stream is AudioStreamOggVorbis:
+		(engine_stream as AudioStreamOggVorbis).loop = true
+	engine_audio.stream = engine_stream
+	engine_audio.volume_db = -30.0
+	add_child(engine_audio)
+	if engine_stream:
+		engine_audio.play()
 
 	harpoon = Harpoon.new()
 	add_child(harpoon)
@@ -341,6 +353,9 @@ func _update_visuals(delta: float, move: Vector2) -> void:
 	model.animate(delta, move.length() * (1.6 if boosting else 1.0))
 	bubbles.emitting = move.length() > 0.2
 	bubbles.amount_ratio = 1.0 if boosting else 0.5
+	var speed_frac := clampf(vel.length() / (stats.max_speed * stats.boost_mult), 0.0, 1.0)
+	engine_audio.volume_db = lerpf(engine_audio.volume_db, linear_to_db(0.08 + _thrust_amount * 0.35 + (0.2 if boosting else 0.0)), 1.0 - exp(-5.0 * delta))
+	engine_audio.pitch_scale = 0.75 + speed_frac * 0.6
 
 	lamp.visible = lamp_on
 	# The lamp is a child of the (unrotated) submarine root, so local == world orientation.
@@ -395,6 +410,7 @@ func add_battery(amount: float) -> void:
 
 func _die() -> void:
 	alive = false
+	engine_audio.stop()
 	lamp_on = false
 	lamp.visible = false
 	harpoon.release()

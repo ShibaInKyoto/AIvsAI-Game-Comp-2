@@ -25,6 +25,7 @@ var _overlay: HudOverlay
 var _vignette: ColorRect
 var _fps_label: Label
 var _banner_tween: Tween
+var _map: SonarMap
 var _shown_salvage := 0.0
 var _flash := 0.0
 
@@ -103,9 +104,11 @@ func _ready() -> void:
 	_research_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	cur.add_child(_research_label)
 
-	# Message feed (right side).
+	# Sonar chart (right side) and the message feed beside it.
+	_map = SonarMap.new()
+	root.add_child(_map)
 	_feed = VBoxContainer.new()
-	_place(_feed, Control.PRESET_TOP_RIGHT, Vector2(-580, 130), Vector2(540, 300))
+	_place(_feed, Control.PRESET_TOP_RIGHT, Vector2(-760, 130), Vector2(540, 300))
 	_feed.alignment = BoxContainer.ALIGNMENT_BEGIN
 	root.add_child(_feed)
 
@@ -143,6 +146,26 @@ func bind(p_sub: Submarine, p_level: Level, p_camera: Camera3D) -> void:
 	if BiomeLibrary.is_final_zone(level.zone):
 		_zone_label.text = "THE HADAL FLOOR"
 	_shown_salvage = sub.run.salvage
+	_map.bind(level, sub)
+	_layout_map()
+
+
+## Small chart in the corner; Tab shows it large in the middle of the screen.
+func _layout_map() -> void:
+	var aspect := level.size().y / maxf(level.size().x, 1.0)
+	if _map.expanded:
+		var h := 820.0
+		_place(_map, Control.PRESET_CENTER, Vector2(-h / aspect * 0.5, -h * 0.5), Vector2(h / aspect, h))
+	else:
+		var w := 140.0
+		_place(_map, Control.PRESET_TOP_RIGHT, Vector2(-40 - w, 110), Vector2(w, w * aspect))
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if sub and event.is_action_pressed(&"map"):
+		_map.expanded = not _map.expanded
+		_layout_map()
+		Audio.play_ui(&"ui_click", -6.0)
 
 
 func _gauge(parent: Control, title: String, color: Color) -> Array:

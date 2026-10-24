@@ -17,11 +17,11 @@ func _draw() -> void:
 	var sub_screen := cam.unproject_position(Vector3(sub.pos.x, sub.pos.y, 0))
 
 	# Noise radius: how far creatures can hear you right now.
-	if sub.noise_radius > 2.0:
+	if sub.noise_radius > 5.0:
 		var edge := cam.unproject_position(Vector3(sub.pos.x + sub.noise_radius, sub.pos.y, 0))
 		var r := edge.x - sub_screen.x
-		var a := clampf(sub.noise_radius / 30.0, 0.1, 0.45)
-		_dashed_circle(sub_screen, r, Color(1.0, 0.85, 0.5, a), 48)
+		var a := clampf((sub.noise_radius - 5.0) / 60.0, 0.03, 0.16)
+		draw_arc(sub_screen, r, 0.0, TAU, 96, Color(1.0, 0.9, 0.7, a), 2.0, true)
 
 	# Reticle: mouse cursor, or a point along the aim for gamepads.
 	var reticle: Vector2
@@ -86,13 +86,6 @@ func _arrow(at: Vector2, dir: Vector2, color: Color) -> void:
 	var side := dir.orthogonal()
 	var pts := PackedVector2Array([at + dir * 18.0, at - dir * 10.0 + side * 12.0, at - dir * 4.0, at - dir * 10.0 - side * 12.0])
 	draw_colored_polygon(pts, Color(color, 0.85))
-
-
-func _dashed_circle(c: Vector2, r: float, color: Color, segments: int) -> void:
-	for i in segments:
-		if i % 2 == 0:
-			var a0 := TAU * i / segments
-			draw_arc(c, r, a0, a0 + TAU / segments, 4, color, 1.5, true)
 
 
 static func _clip_to_rect(rect: Rect2, from: Vector2, dir: Vector2) -> Vector2:

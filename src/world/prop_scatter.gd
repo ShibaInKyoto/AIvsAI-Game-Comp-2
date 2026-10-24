@@ -19,9 +19,9 @@ const DEFS: Dictionary[StringName, Dictionary] = {
 		"sway": 0.12, "height": 1.4, "rough": 0.6},
 	&"crystal": {"placement": "any", "density": 0.1, "scale": Vector2(0.5, 1.5), "z": Vector2(-3.5, 0.5),
 		"sway": 0.0, "height": 1.0, "rough": 0.15},
-	&"mushroom": {"placement": "floor", "density": 0.14, "scale": Vector2(0.5, 1.3), "z": Vector2(-3.0, 0.0),
+	&"mushroom": {"placement": "floor", "density": 0.16, "scale": Vector2(1.0, 2.4), "z": Vector2(-3.0, 0.0),
 		"sway": 0.03, "height": 1.0, "rough": 0.5},
-	&"spine": {"placement": "any", "density": 0.08, "scale": Vector2(0.7, 1.6), "z": Vector2(-4.0, 0.0),
+	&"spine": {"placement": "floor", "density": 0.025, "scale": Vector2(0.8, 1.5), "z": Vector2(-4.0, -1.0),
 		"sway": 0.0, "height": 3.0, "rough": 0.5},
 	&"tubeworm": {"placement": "floor", "density": 0.2, "scale": Vector2(0.6, 1.4), "z": Vector2(-3.0, 0.0),
 		"sway": 0.06, "height": 1.2, "rough": 0.5},
@@ -360,13 +360,25 @@ static func _mushroom() -> ArrayMesh:
 		return Color(0.75, 0.75, 0.8, smoothstep(0.35, 0.6, v.y)))
 
 
+## Ribs of some enormous dead animal arching out of the rock.
 static func _spine() -> ArrayMesh:
 	var parts := []
-	for i in 4:
-		var seg := _upright(PackedVector2Array([Vector2(0, 0.18 - i * 0.04), Vector2(1, 0.14 - i * 0.035)]), 0.8, 6, 2)
-		parts.append([seg, Transform3D(Basis(Vector3.BACK, -0.18 * i), Vector3(0.12 * i * i * 0.5, 0.75 * i, 0))])
+	var rib := PackedVector2Array([Vector2(0, 0.32), Vector2(0.5, 0.24), Vector2(1, 0.06)])
+	for r in 5:
+		var x := r * 1.1
+		var height := 3.2 - absf(r - 2.0) * 0.45
+		for i in 5:
+			var t := float(i) / 4.0
+			var seg := _upright(PackedVector2Array([Vector2(0, lerpf(0.32, 0.12, t)), Vector2(1, lerpf(0.28, 0.07, t))]), height / 4.5, 6, 1)
+			var bend := Basis(Vector3.BACK, -0.32 * i)
+			var y := 0.0
+			var off := Vector3.ZERO
+			for k in i:
+				off += Basis(Vector3.BACK, -0.32 * k) * Vector3(0, height / 4.5, 0)
+			parts.append([seg, Transform3D(bend, Vector3(x, 0, 0) + off)])
+	parts.append([_upright(rib, 5.0, 6, 3), Transform3D(Basis(Vector3.BACK, -PI * 0.5), Vector3(-0.4, 0.15, 0))])
 	return _paint(MeshKit.merge(parts), func(_v: Vector3) -> Color:
-		return Color(0.85, 0.82, 0.75, 0.0))
+		return Color(0.86, 0.83, 0.76, 0.0))
 
 
 static func _tubeworm() -> ArrayMesh:

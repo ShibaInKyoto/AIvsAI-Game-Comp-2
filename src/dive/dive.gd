@@ -61,11 +61,15 @@ func load_zone(zone: int) -> void:
 	camera.target = sub
 	camera.level_size = layout.size()
 	camera.snap()
+	var water := WaterFx.new()
+	level.add_child(water)
+	water.setup(biome, layout.size(), camera, Settings.quality)
 	hud.bind(sub, level, camera)
 	if autopilot:
 		autopilot.bind(sub, level)
 
 	Audio.play_music(biome.music)
+	Audio.play_ambience(&"ambience")
 	var depth := BiomeLibrary.zone_depth_range(zone)
 	if BiomeLibrary.is_final_zone(zone):
 		Events.banner.emit("THE HADAL FLOOR", "%d m  -  the signal is close" % int(depth.x))

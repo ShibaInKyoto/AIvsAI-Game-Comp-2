@@ -93,6 +93,7 @@ func build(hull_color: Color) -> void:
 		blade.mesh = bm
 		blade.material_override = steel
 		blade.rotation = Vector3(TAU * i / 3.0, 0, 0)
+		blade.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		blade.position = Vector3(0, 0.18, 0).rotated(Vector3.RIGHT, TAU * i / 3.0)
 		propeller.add_child(blade)
 
@@ -146,6 +147,8 @@ func _part(mesh: Mesh, mat: Material, pos: Vector3, rot_deg: Vector3) -> MeshIns
 	mi.material_override = mat
 	mi.position = pos
 	mi.rotation_degrees = rot_deg
+	# The lamp sits inside the hull silhouette; hull shadows would black it out.
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(mi)
 	return mi
 
