@@ -83,6 +83,7 @@ func think() -> void:
 	var sub := level.player
 	if sub and sub.alive and (can_see_player(SIGHT) or player_in_range(6.0)):
 		if state != State.HUNT:
+			alert()
 			state = State.HUNT
 			_timer = 6.0
 			Audio.play_at(&"stalker_roar", pos, 4.0)

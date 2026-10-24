@@ -36,6 +36,7 @@ var _blind := 0.0
 var _marked := 0.0
 var _mark_total := 1.0
 var _flash := 0.0
+var _alert := 0.0
 var _think_timer := 0.0
 var _touch_cooldown := 0.0
 var _phase := 0.0
@@ -74,6 +75,7 @@ func behave(_delta: float) -> void:
 
 func tick(delta: float) -> void:
 	_flash = maxf(_flash - delta * 4.0, 0.0)
+	_alert = maxf(_alert - delta, 0.0)
 	_marked = maxf(_marked - delta, 0.0)
 	_blind = maxf(_blind - delta, 0.0)
 	_touch_cooldown = maxf(_touch_cooldown - delta, 0.0)
@@ -174,6 +176,17 @@ func blind(duration: float) -> void:
 
 func is_stunned() -> bool:
 	return _stun > 0.0
+
+
+## Flags that this creature has just noticed the player (HUD shows a "!").
+func alert() -> void:
+	if _alert <= 0.0:
+		Audio.play_at(&"alert", pos, -6.0)
+	_alert = 1.4
+
+
+func alert_fraction() -> float:
+	return _alert / 1.4
 
 
 func is_marked() -> bool:

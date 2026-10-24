@@ -13,6 +13,7 @@ var autopilot: Autopilot
 
 var _pause_menu: PauseMenu
 var _layout_result: LevelLayout
+var _call_timer := 45.0
 
 
 func _ready() -> void:
@@ -108,10 +109,23 @@ func _physics_process(delta: float) -> void:
 		autopilot.drive(delta)
 	sub.tick(delta)
 	level.tick(delta)
+	_distant_calls(delta)
 	# Pull the camera back while the Choir sings so its whole body is in view.
 	var want_zoom := 1.5 if level.boss and level.boss.active else 1.0
 	camera.zoom = lerpf(camera.zoom, want_zoom, 1.0 - exp(-0.8 * delta))
 	camera.tick(delta)
+
+
+## Every so often something far below sings. More often the deeper you go.
+func _distant_calls(delta: float) -> void:
+	if level.boss or state != State.PLAYING:
+		return
+	_call_timer -= delta
+	if _call_timer <= 0.0:
+		var depth := clampf(Game.run.zone / 10.0, 0.0, 1.0)
+		_call_timer = randf_range(50.0, 90.0) * (1.0 - depth * 0.55)
+		if Game.run.zone >= 2:
+			Audio.play(&"choir_call", lerpf(-22.0, -10.0, depth), randf_range(0.7, 0.85))
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -138,7 +152,7 @@ func _on_exit_reached() -> void:
 		Game.meta.tutorial_done = true
 		Game.save_game()
 	run.zone += 1
-	if autopilot:
+	if autopilot and not autopilot.show_stops:
 		_continue_after_stop()
 		return
 	var stop := DecompressionStop.new()

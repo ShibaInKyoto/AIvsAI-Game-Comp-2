@@ -120,7 +120,7 @@ static func _midnight() -> BiomeDef:
 	b.rock_tint_deep = Color(0.12, 0.14, 0.2)
 	b.sediment_tint = Color(0.35, 0.36, 0.42)
 	b.vein_color = Color(0.1, 0.8, 1.0)
-	b.vein_strength = 0.0
+	b.vein_strength = 0.12
 	b.water_color = Color(0.01, 0.03, 0.08)
 	b.water_color_deep = Color(0.0, 0.01, 0.03)
 	b.fog_density = 0.045
@@ -149,7 +149,7 @@ static func _vents() -> BiomeDef:
 	b.chamber_chance = 0.5
 	b.branch_count = Vector2i(3, 5)
 	b.wall_noise_amp = 2.6
-	b.rock_tint = Color(0.22, 0.2, 0.2)
+	b.rock_tint = Color(0.32, 0.28, 0.27)
 	b.rock_tint_deep = Color(0.1, 0.08, 0.08)
 	b.sediment_tint = Color(0.45, 0.4, 0.3)
 	b.vein_color = Color(1.0, 0.35, 0.05)

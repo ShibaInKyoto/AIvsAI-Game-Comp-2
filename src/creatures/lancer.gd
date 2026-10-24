@@ -73,6 +73,7 @@ func think() -> void:
 
 
 func _begin_windup(at: Vector2) -> void:
+	alert()
 	state = State.WINDUP
 	lock_facing = true
 	_timer = WINDUP_TIME

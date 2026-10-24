@@ -118,6 +118,7 @@ func think() -> void:
 	else:
 		_lit_time = maxf(_lit_time - THINK_INTERVAL, 0.0)
 	if (lure_d < SNAP_RANGE or body_d < SNAP_RANGE * 0.8 or _lit_time > 1.0) and level.field.line_of_sight(pos, sub.pos):
+		alert()
 		state = State.SNAP
 		_timer = 0.4
 		_lit_time = 0.0

@@ -20,6 +20,8 @@ var _shots := 0
 var _stuck_timer := 0.0
 var _last_pos := Vector2.ZERO
 var _zones_cleared := 0
+## With --stops the decompression stop UI is shown (for screenshots).
+var show_stops := false
 
 
 static func requested() -> bool:
@@ -37,6 +39,7 @@ func _ready() -> void:
 	shots_dir = arg("shots", "")
 	time_limit = float(arg("time", "60"))
 	shot_interval = float(arg("interval", "4"))
+	show_stops = OS.get_cmdline_user_args().has("--stops")
 	var zone := int(arg("zone", "-1"))
 	if zone >= 0 and Game.run:
 		Game.run.zone = zone

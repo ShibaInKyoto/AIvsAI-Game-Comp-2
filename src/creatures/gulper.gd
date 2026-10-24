@@ -81,6 +81,7 @@ func think() -> void:
 		return
 	var noticed := sub.noise_radius > 7.0 or sub.vel.length() > 5.5 or sub.illuminates(pos, radius) or d < 3.5
 	if noticed and level.field.line_of_sight(_rest, sub.pos, 0.3):
+		alert()
 		state = State.STRIKE
 		_timer = STRIKE_TIME
 		_strike_from = pos

@@ -75,6 +75,17 @@ func _draw() -> void:
 		var mc := UiTheme.DANGER if danger else UiTheme.ACCENT
 		draw_arc(sp, 10.0 + cr.radius * 4.0, 0.0, TAU, 20, Color(mc, 0.6 * fade), 2.0, true)
 
+	# "!" over creatures that just noticed the submarine.
+	var font := get_theme_default_font()
+	for e in hud.level.entities:
+		var cr := e as Creature
+		if cr == null or not cr.alive or cr.alert_fraction() <= 0.0:
+			continue
+		var top := cam.unproject_position(Vector3(cr.pos.x, cr.pos.y + cr.radius + 1.2, 0))
+		var pop := 1.0 + maxf(cr.alert_fraction() - 0.8, 0.0) * 2.5
+		draw_string_outline(font, top + Vector2(-8, 0), "!", HORIZONTAL_ALIGNMENT_CENTER, 16, int(34 * pop), 6, Color(0, 0, 0, 0.8))
+		draw_string(font, top + Vector2(-8, 0), "!", HORIZONTAL_ALIGNMENT_CENTER, 16, int(34 * pop), Color(UiTheme.DANGER, clampf(cr.alert_fraction() * 2.0, 0.0, 1.0)))
+
 	# Descent compass.
 	var exit := hud.level.layout.exit
 	if hud.level.exit_known or sub.stats.always_compass:

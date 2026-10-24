@@ -458,6 +458,16 @@ def _choir_voice(f0: float, d: float, vowel: str = "o", vib: float = 5.0) -> np.
     return out
 
 
+def alert():
+    d = 0.5
+    out = np.zeros(seconds(d))
+    for i, f in enumerate([740, 988]):
+        b = sine(f, 0.12) * env_exp(0.12, 0.04, 0.002)
+        s = seconds(i * 0.06)
+        out[s:s + len(b)] += b
+    return normalize(trim_silence(wet_dry(out, SMALL_ROOM, 0.3)), 0.45)
+
+
 def choir_wave():
     d = 2.2
     v = mix(_choir_voice(185, d, "o"), _choir_voice(277, d, "u") * 0.6, _choir_voice(370, d, "a") * 0.3)

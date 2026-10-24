@@ -141,15 +141,19 @@ void fragment() {
 
 	vec3 emission = vec3(0.0);
 
-	// Glowing mineral veins (vents, midnight, hadal).
+	// Glowing mineral veins: thin cracks that concentrate near the cave
+	// outline, where heat (or something stranger) seeps out of the rock.
 	if (vein_strength > 0.0) {
-		float v = texture(detail_noise, world_pos.xy * 0.02 + vec2(0.13, 0.4)).r;
+		float v = texture(detail_noise, world_pos.xy * 0.012 + vec2(0.13, 0.4)).r;
+		float v2 = texture(detail_noise, world_pos.xy * 0.031 + vec2(0.61, 0.27)).r;
 		float ridge = 1.0 - abs(v * 2.0 - 1.0);
-		float spots = texture(detail_noise, world_pos.xy * 0.11 + vec2(0.71, 0.2)).r;
-		float vein = smoothstep(0.9, 0.985, ridge) * smoothstep(0.5, 0.8, spots);
-		vein *= smoothstep(-1.0, 1.5, world_pos.z) * (0.4 + 0.6 * (1.0 - abs(n.z)));
+		float ridge2 = 1.0 - abs(v2 * 2.0 - 1.0);
+		float crack = smoothstep(0.972, 0.995, ridge) + smoothstep(0.978, 0.997, ridge2) * 0.35;
+		float halo = smoothstep(0.9, 0.99, ridge) * 0.18;
+		float near_edge = 1.0 - smoothstep(0.0, 3.5, abs(sdf_value + 1.0));
+		float facing_cam = smoothstep(-1.5, 2.0, world_pos.z);
 		float pulse = 0.7 + 0.3 * sin(TIME * 0.6 + world_pos.x * 0.15 + world_pos.y * 0.1);
-		emission += vein_color * vein * vein_strength * pulse * 1.6;
+		emission += vein_color * (crack + halo) * near_edge * facing_cam * vein_strength * pulse * 1.7;
 	}
 
 	// Animated caustics from the surface, mostly on upward faces.

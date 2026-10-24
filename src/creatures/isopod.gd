@@ -65,6 +65,7 @@ func think() -> void:
 		return
 	var sub := level.player
 	if sub and sub.alive and sub.pos.distance_to(pos) < LEAP_RANGE and level.field.line_of_sight(pos, sub.pos):
+		alert()
 		state = State.LEAP
 		_timer = 0.9
 		vel = (sub.pos + sub.vel * 0.3 - pos).normalized() * LEAP_SPEED
