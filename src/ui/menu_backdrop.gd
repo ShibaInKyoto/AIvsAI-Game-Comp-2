@@ -61,13 +61,21 @@ func _pick_spot(layout: LevelLayout) -> Vector2:
 	return layout.start + Vector2(0, -4)
 
 
-## Swaps the sub's paint when the selected frame changes in the hangar.
+## Rebuilds the displayed submarine when the selected frame changes.
 func refresh_sub() -> void:
 	if sub == null:
 		return
-	var frame := Catalog.frame(StringName(Game.meta.selected_frame))
-	if frame and sub.model:
-		sub.model.hull_material.albedo_color = frame.hull_color
+	var pos := sub.pos
+	sub.queue_free()
+	_run.frame_id = StringName(Game.meta.selected_frame)
+	_run.rebuild_stats(Game.meta.upgrades)
+	_run.refill()
+	sub = Submarine.new()
+	level.add_child(sub)
+	sub.setup(level, _run, pos)
+	sub.input_enabled = false
+	sub.external_move = Vector2.ZERO
+	level.player = sub
 
 
 func _process(frame_delta: float) -> void:

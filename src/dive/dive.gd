@@ -23,6 +23,7 @@ func _ready() -> void:
 	add_child(camera)
 	hud = Hud.new()
 	add_child(hud)
+	add_child(PostFx.new())
 	add_child(LogReader.new())
 	_pause_menu = PauseMenu.new()
 	add_child(_pause_menu)

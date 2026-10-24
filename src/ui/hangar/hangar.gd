@@ -18,7 +18,9 @@ func _ready() -> void:
 	_backdrop.view_shift = -10.0
 	add_child(_backdrop)
 	Audio.play_music(&"title")
+	add_child(PostFx.new())
 	var layer := CanvasLayer.new()
+	layer.layer = 5
 	add_child(layer)
 	var ui := Control.new()
 	ui.set_anchors_preset(Control.PRESET_FULL_RECT)

@@ -58,8 +58,8 @@ func build_model() -> void:
 	t_mesh.material_override = tooth_mat
 	model.add_child(t_mesh)
 	var eye := MeshInstance3D.new()
-	eye.mesh = SubmarineModel._sphere(0.1)
-	eye.material_override = SubmarineModel._emissive(Color(1.0, 0.3, 0.1), 6.0)
+	eye.mesh = MeshKit.sphere(0.1)
+	eye.material_override = MeshKit.emissive_material(Color(1.0, 0.3, 0.1), 6.0)
 	eye.position = Vector3(0.55, 0.2, 0.5)
 	_lid.add_child(eye)
 

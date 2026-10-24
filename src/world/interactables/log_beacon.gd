@@ -29,8 +29,8 @@ func setup() -> void:
 	body.rotation.z = 0.3
 	add_child(body)
 	var lamp := MeshInstance3D.new()
-	lamp.mesh = SubmarineModel._sphere(0.12)
-	lamp.material_override = SubmarineModel._emissive(Color(0.4, 1.0, 0.6), 8.0)
+	lamp.mesh = MeshKit.sphere(0.12)
+	lamp.material_override = MeshKit.emissive_material(Color(0.4, 1.0, 0.6), 8.0)
 	lamp.position = Vector3(-0.12, 0.5, 0.0)
 	body.add_child(lamp)
 	_light = OmniLight3D.new()

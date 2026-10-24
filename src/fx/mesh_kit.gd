@@ -66,6 +66,27 @@ static func ball(radius: float, glow := 0.0, belly := 0.0, sides := 12, rings :=
 	return lathe(profile, radius * 2.0, sides, rings, 1.0, 1.0, func(_t: float, _a: float) -> float: return glow)
 
 
+## Low-poly UV sphere (Godot primitive) for small details.
+static func sphere(radius: float, segments := 8, rings := 4) -> SphereMesh:
+	var s := SphereMesh.new()
+	s.radius = radius
+	s.height = radius * 2.0
+	s.radial_segments = segments
+	s.rings = rings
+	return s
+
+
+## Unshaded glowing material for lamps, eyes and indicator lights.
+static func emissive_material(c: Color, energy: float) -> StandardMaterial3D:
+	var m := StandardMaterial3D.new()
+	m.albedo_color = c
+	m.emission_enabled = true
+	m.emission = c
+	m.emission_energy_multiplier = energy
+	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	return m
+
+
 ## Cone along +X (tip at +length).
 static func spike(radius: float, length: float, glow := 0.0, sides := 6) -> ArrayMesh:
 	var mesh := lathe(PackedVector2Array([Vector2(0, radius), Vector2(1, 0.0)]), length, sides, 1, 1.0, 1.0,

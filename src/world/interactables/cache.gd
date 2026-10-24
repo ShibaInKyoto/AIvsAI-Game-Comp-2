@@ -45,8 +45,8 @@ func setup() -> void:
 		band.position = Vector3(x, 0, 0)
 		body.add_child(band)
 	_beacon = MeshInstance3D.new()
-	_beacon.mesh = SubmarineModel._sphere(0.1)
-	_beacon.material_override = SubmarineModel._emissive(Color(1.0, 0.75, 0.2) if not rich else Color(0.4, 1.0, 0.5), 8.0)
+	_beacon.mesh = MeshKit.sphere(0.1)
+	_beacon.material_override = MeshKit.emissive_material(Color(1.0, 0.75, 0.2) if not rich else Color(0.4, 1.0, 0.5), 8.0)
 	_beacon.position = Vector3(0, 0.62, 0.3)
 	body.add_child(_beacon)
 

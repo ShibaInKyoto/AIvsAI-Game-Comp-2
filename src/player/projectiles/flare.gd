@@ -16,8 +16,8 @@ func setup() -> void:
 	active_radius = 200.0
 	level.flares.append(self)
 	_core = MeshInstance3D.new()
-	_core.mesh = SubmarineModel._sphere(0.14)
-	_core.material_override = SubmarineModel._emissive(Color(1.0, 0.35, 0.2), 9.0)
+	_core.mesh = MeshKit.sphere(0.14)
+	_core.material_override = MeshKit.emissive_material(Color(1.0, 0.35, 0.2), 9.0)
 	add_child(_core)
 	light = OmniLight3D.new()
 	light.light_color = Color(1.0, 0.35, 0.22)
