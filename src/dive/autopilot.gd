@@ -22,6 +22,7 @@ var _last_pos := Vector2.ZERO
 var _zones_cleared := 0
 ## With --stops the decompression stop UI is shown (for screenshots).
 var show_stops := false
+var ping_interval := 9.0
 
 
 static func requested() -> bool:
@@ -40,6 +41,7 @@ func _ready() -> void:
 	time_limit = float(arg("time", "60"))
 	shot_interval = float(arg("interval", "4"))
 	show_stops = OS.get_cmdline_user_args().has("--stops")
+	ping_interval = float(arg("ping", "9"))
 	var zone := int(arg("zone", "-1"))
 	if zone >= 0 and Game.run:
 		Game.run.zone = zone
@@ -84,7 +86,7 @@ func drive(delta: float) -> void:
 
 	_ping_timer -= delta
 	if _ping_timer <= 0.0:
-		_ping_timer = 5.0
+		_ping_timer = ping_interval
 		sub.try_ping()
 
 	# Unstick: if we have not moved for a while, skip ahead on the path.

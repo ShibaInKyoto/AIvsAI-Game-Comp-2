@@ -38,6 +38,8 @@ var tools: ToolBelt
 var bubbles: GPUParticles3D
 var engine_audio: AudioStreamPlayer
 var leak: GPUParticles3D
+var beam: MeshInstance3D
+var _beam_mesh: CylinderMesh
 
 var _yaw := 0.0
 var _invulnerable := 0.0
@@ -73,6 +75,22 @@ func setup(p_level: Level, p_run: RunState, start: Vector2) -> void:
 	lamp.spot_attenuation = 0.6
 	lamp.spot_angle_attenuation = 1.6
 	add_child(lamp)
+
+	# Visible cone of scattered light. A child of the lamp so it follows its aim.
+	_beam_mesh = CylinderMesh.new()
+	_beam_mesh.top_radius = 0.15
+	_beam_mesh.radial_segments = 20
+	_beam_mesh.rings = 1
+	_beam_mesh.cap_top = false
+	_beam_mesh.cap_bottom = false
+	beam = MeshInstance3D.new()
+	beam.mesh = _beam_mesh
+	var beam_mat := ShaderMaterial.new()
+	beam_mat.shader = preload("res://src/fx/shaders/lamp_beam.gdshader")
+	beam_mat.set_shader_parameter(&"noise_tex", TerrainRenderer.detail_noise())
+	beam.material_override = beam_mat
+	beam.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	lamp.add_child(beam)
 
 	fill_light = OmniLight3D.new()
 	fill_light.light_color = Color(0.6, 0.85, 1.0)
@@ -121,6 +139,11 @@ func _apply_lamp_stats() -> void:
 	lamp.spot_range = stats.lamp_range
 	lamp.spot_angle = stats.lamp_angle
 	lamp.light_energy = stats.lamp_energy
+	# The cone points down the lamp's -Z axis; the cylinder's narrow top sits at the lamp.
+	var length := stats.lamp_range * 0.75
+	_beam_mesh.height = length
+	_beam_mesh.bottom_radius = tan(deg_to_rad(stats.lamp_angle * 0.8)) * length
+	beam.transform = Transform3D(Basis(Vector3.RIGHT, PI * 0.5), Vector3(0, 0, -length * 0.5))
 
 
 func set_camera(cam: Camera3D) -> void:
@@ -210,7 +233,7 @@ func try_ping() -> bool:
 	run.battery -= stats.sonar_cost
 	sonar_cooldown = stats.sonar_cooldown
 	level.ping(pos, stats.sonar_range, stats.sonar_mark_time)
-	level.emit_noise(pos, stats.sonar_range * 0.75, self)
+	level.emit_noise(pos, stats.sonar_range * 0.5, self)
 	Audio.play(&"sonar_ping", -2.0)
 	if stats.sonar_stun:
 		for e in level.targets_in_radius(pos, 14.0):

@@ -101,9 +101,13 @@ func _generate(biome: BiomeDef, zone_seed: int, zone: int) -> LevelLayout:
 	return _layout_result
 
 
-func _physics_process(delta: float) -> void:
+## The simulation runs per rendered frame (not at a fixed physics rate) so
+## motion stays smooth on high refresh rate displays. Everything integrates
+## with delta and frame-rate independent smoothing.
+func _process(frame_delta: float) -> void:
 	if state != State.PLAYING and state != State.DEAD:
 		return
+	var delta := minf(frame_delta, 1.0 / 20.0)
 	Game.run.time += delta
 	if autopilot:
 		autopilot.drive(delta)

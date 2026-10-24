@@ -70,7 +70,8 @@ func refresh_sub() -> void:
 		sub.model.hull_material.albedo_color = frame.hull_color
 
 
-func _physics_process(delta: float) -> void:
+func _process(frame_delta: float) -> void:
+	var delta := minf(frame_delta, 1.0 / 20.0)
 	_t += delta
 	var drift := Vector2(sin(_t * 0.23) * 3.0, sin(_t * 0.31) * 1.5)
 	sub.external_move = ((_anchor + drift) - sub.pos).limit_length(1.0) * 0.25

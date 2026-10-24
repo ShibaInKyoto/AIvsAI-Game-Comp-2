@@ -120,7 +120,7 @@ static func _midnight() -> BiomeDef:
 	b.rock_tint_deep = Color(0.12, 0.14, 0.2)
 	b.sediment_tint = Color(0.35, 0.36, 0.42)
 	b.vein_color = Color(0.1, 0.8, 1.0)
-	b.vein_strength = 0.12
+	b.vein_strength = 0.08
 	b.water_color = Color(0.01, 0.03, 0.08)
 	b.water_color_deep = Color(0.0, 0.01, 0.03)
 	b.fog_density = 0.045
