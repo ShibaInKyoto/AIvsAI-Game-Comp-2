@@ -1,0 +1,313 @@
+class_name Creature
+extends Entity
+## Base for all creatures: health, damage, stun/blind, sonar marks, senses,
+## steering and the shared visual material. Subclasses implement [method think]
+## (perception, a few times a second) and [method behave] (steering, every tick).
+
+const SHADER := preload("res://src/fx/shaders/creature.gdshader")
+const THINK_INTERVAL := 0.2
+
+static var _materials: Dictionary[StringName, ShaderMaterial] = {}
+
+var species: StringName
+var max_hp := 30.0
+var hp := 30.0
+var contact_damage := 10.0
+var scannable := true
+## Creatures lighter than this are dragged in by the harpoon.
+var mass := 1.0
+var glow_color := Color(0.4, 1.0, 0.9)
+## Multiplier applied to noise radii when listening.
+var hearing := 1.0
+var salvage_drop := 3
+var hostile := true
+
+var model: Node3D
+var visuals: Array[GeometryInstance3D] = []
+var facing := Vector2.RIGHT
+## Upright creatures (jellies) keep their model vertical instead of facing
+## their velocity.
+var upright := false
+## When true, [member facing] is controlled by the subclass, not velocity.
+var lock_facing := false
+
+var _stun := 0.0
+var _blind := 0.0
+var _marked := 0.0
+var _mark_total := 1.0
+var _flash := 0.0
+var _think_timer := 0.0
+var _touch_cooldown := 0.0
+var _phase := 0.0
+var _turn_speed := 6.0
+var _roll := 0.0
+
+
+func setup() -> void:
+	targetable = true
+	hp = max_hp * Pressure.creature_health(level.pressure)
+	max_hp = hp
+	hearing *= Pressure.hearing(level.pressure)
+	_phase = level.rng.randf() * TAU
+	_think_timer = level.rng.randf() * THINK_INTERVAL
+	model = Node3D.new()
+	add_child(model)
+	build_model()
+	for v in visuals:
+		v.set_instance_shader_parameter(&"phase", _phase)
+
+
+## Override: create meshes under [member model] and register them in [member visuals].
+func build_model() -> void:
+	pass
+
+
+## Override: perception and decisions, called every [constant THINK_INTERVAL].
+func think() -> void:
+	pass
+
+
+## Override: steering for this tick.
+func behave(_delta: float) -> void:
+	pass
+
+
+func tick(delta: float) -> void:
+	_flash = maxf(_flash - delta * 4.0, 0.0)
+	_marked = maxf(_marked - delta, 0.0)
+	_blind = maxf(_blind - delta, 0.0)
+	_touch_cooldown = maxf(_touch_cooldown - delta, 0.0)
+	if _stun > 0.0:
+		_stun -= delta
+		vel = vel.lerp(Vector2.ZERO, 1.0 - exp(-3.0 * delta))
+	else:
+		_think_timer -= delta
+		if _think_timer <= 0.0:
+			_think_timer += THINK_INTERVAL
+			think()
+		behave(delta)
+	move_and_collide_field(delta, 0.2)
+	_check_player_contact()
+	_update_visuals(delta)
+
+
+func _check_player_contact() -> void:
+	var sub := level.player
+	if sub == null or not sub.alive or _touch_cooldown > 0.0 or _stun > 0.0:
+		return
+	if pos.distance_squared_to(sub.pos) < pow(radius + Submarine.RADIUS, 2.0):
+		_touch_cooldown = 0.8
+		on_touch_player(sub)
+		if sub.stats.contact_zap > 0.0:
+			take_damage(sub.stats.contact_zap, sub.pos, &"zap")
+
+
+## Override for contact behaviour; default bites for [member contact_damage].
+func on_touch_player(sub: Submarine) -> void:
+	if contact_damage > 0.0:
+		sub.take_damage(contact_damage, pos, self)
+
+
+func _update_visuals(delta: float) -> void:
+	if upright:
+		model.basis = Basis(Vector3.BACK, PI * 0.5 - clampf(vel.x * 0.06, -0.4, 0.4))
+		_update_instance_params()
+		return
+	if not lock_facing and vel.length_squared() > 0.04:
+		facing = facing.slerp(vel.normalized(), 1.0 - exp(-_turn_speed * delta)).normalized()
+	# Roll around the body axis first so the dorsal side stays up when
+	# heading left, then turn to the heading.
+	var target_roll := PI if facing.x < 0.0 else 0.0
+	_roll = lerp_angle(_roll, target_roll, 1.0 - exp(-5.0 * delta))
+	model.basis = Basis(Vector3.BACK, facing.angle()) * Basis(Vector3.RIGHT, _roll)
+	_update_instance_params()
+
+
+func _update_instance_params() -> void:
+	for v in visuals:
+		v.set_instance_shader_parameter(&"marked", _marked / _mark_total if _marked > 0.0 else 0.0)
+		v.set_instance_shader_parameter(&"hit_flash", _flash)
+		v.set_instance_shader_parameter(&"swim_speed", 0.6 + vel.length() * 0.15)
+
+
+# --- Damage and status -------------------------------------------------------
+
+func take_damage(amount: float, from: Vector2, _kind: StringName = &"") -> void:
+	if not alive:
+		return
+	hp -= amount
+	_flash = 1.0
+	vel += (pos - from).normalized() * clampf(amount * 0.25, 1.0, 8.0) / maxf(mass, 0.5)
+	Fx.ichor(level, pos, glow_color, 10)
+	Audio.play_at(&"creature_hit", pos, -3.0)
+	on_damaged(amount, from)
+	if hp <= 0.0:
+		die()
+
+
+## Override to react to being hurt (flee, retaliate...).
+func on_damaged(_amount: float, _from: Vector2) -> void:
+	pass
+
+
+func die() -> void:
+	if not alive:
+		return
+	Fx.ichor(level, pos, glow_color, 30)
+	Fx.bubble_burst(level, pos, 20, radius)
+	Audio.play_at(&"creature_die", pos, 0.0)
+	Events.creature_killed.emit(species, pos)
+	if level.player:
+		level.player.run.kills += 1
+	Pickup.scatter(level, pos, &"salvage", salvage_drop, radius)
+	despawn()
+
+
+func stun(duration: float) -> void:
+	_stun = maxf(_stun, duration)
+
+
+func blind(duration: float) -> void:
+	_blind = maxf(_blind, duration)
+
+
+func is_stunned() -> bool:
+	return _stun > 0.0
+
+
+func is_marked() -> bool:
+	return _marked > 0.0
+
+
+func mark_fraction() -> float:
+	return _marked / _mark_total
+
+
+func is_hostile() -> bool:
+	return hostile
+
+
+func on_sonar(origin: Vector2, mark_time: float) -> void:
+	var delay := pos.distance_to(origin) / Level.SONAR_SPEED
+	_marked = mark_time + delay
+	_mark_total = _marked
+	on_pinged(origin)
+
+
+## Override: hunters may turn towards the source of a ping.
+func on_pinged(_origin: Vector2) -> void:
+	pass
+
+
+func on_harpoon_hit(_harpoon: Node, damage: float) -> HarpoonReaction:
+	take_damage(damage, level.player.pos if level.player else pos, &"harpoon")
+	if not alive:
+		return HarpoonReaction.IGNORE
+	return HarpoonReaction.DRAG if mass < 2.5 else HarpoonReaction.STICK
+
+
+# --- Senses ------------------------------------------------------------------
+
+func player_in_range(r: float) -> bool:
+	var sub := level.player
+	return sub != null and sub.alive and pos.distance_squared_to(sub.pos) < r * r
+
+
+## Sees the submarine: lit subs are visible from far, dark ones only up close.
+func can_see_player(sight_range: float) -> bool:
+	if _blind > 0.0:
+		return false
+	var sub := level.player
+	if sub == null or not sub.alive:
+		return false
+	var d := pos.distance_to(sub.pos)
+	var effective := sight_range if sub.lamp_on else sight_range * 0.3
+	if d > effective:
+		return false
+	return level.field.line_of_sight(pos, sub.pos)
+
+
+## Recent loud noise this creature can hear, as a position, or Vector2.INF.
+func heard_noise() -> Vector2:
+	if _blind > 0.0:
+		return Vector2.INF
+	var n: Variant = level.loudest_noise_at(pos, hearing, self)
+	return n.pos if n != null else Vector2.INF
+
+
+## Strongest burning flare that draws this creature, or null.
+func nearest_flare() -> Flare:
+	var best: Flare = null
+	var best_s := 0.0
+	for f in level.flares:
+		var flare := f as Flare
+		if flare and flare.alive:
+			var s := flare.lure_strength(pos)
+			if s > best_s:
+				best_s = s
+				best = flare
+	return best
+
+
+# --- Steering ----------------------------------------------------------------
+
+## Accelerates towards a desired velocity with wall avoidance.
+func steer(desired: Vector2, agility: float, delta: float) -> void:
+	desired += avoid_walls(desired) * maxf(desired.length(), 2.0)
+	vel = vel.lerp(desired, 1.0 - exp(-agility * delta))
+
+
+func seek(target: Vector2, speed: float, agility: float, delta: float) -> void:
+	var to := target - pos
+	var d := to.length()
+	var desired := to / d * speed * clampf(d / 3.0, 0.2, 1.0) if d > 0.01 else Vector2.ZERO
+	steer(desired, agility, delta)
+
+
+## Push away from rock ahead and around, scaled 0..~1.5.
+func avoid_walls(heading: Vector2) -> Vector2:
+	var field := level.field
+	var push := Vector2.ZERO
+	var d0 := field.sample(pos)
+	if d0 < radius + 2.0:
+		push += field.normal(pos) * (1.0 - (d0 - radius) / 2.0)
+	if heading.length_squared() > 0.01:
+		var ahead := pos + heading.normalized() * (radius + 3.0)
+		var d1 := field.sample(ahead)
+		if d1 < radius + 1.0:
+			push += field.normal(ahead) * 0.8
+	return push
+
+
+## A random reachable point near [param center] for wandering.
+func wander_point(center: Vector2, spread: float) -> Vector2:
+	for _i in 8:
+		var p := center + Vector2(level.rng.randf_range(-spread, spread), level.rng.randf_range(-spread, spread))
+		if level.field.sample(p) > radius + 1.0 and level.field.line_of_sight(pos, p, radius * 0.5):
+			return p
+	return pos
+
+
+# --- Visual helpers ------------------------------------------------------------
+
+## Shared material per species and biome, configured once.
+func species_material(config: Callable) -> ShaderMaterial:
+	var key := StringName("%s/%s" % [species, level.biome.id])
+	if _materials.has(key):
+		return _materials[key]
+	var mat := ShaderMaterial.new()
+	mat.shader = SHADER
+	config.call(mat)
+	_materials[key] = mat
+	return mat
+
+
+func add_visual(mesh: Mesh, mat: Material, xf := Transform3D.IDENTITY) -> MeshInstance3D:
+	var mi := MeshInstance3D.new()
+	mi.mesh = mesh
+	mi.material_override = mat
+	mi.transform = xf
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	model.add_child(mi)
+	visuals.append(mi)
+	return mi

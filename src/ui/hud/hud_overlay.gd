@@ -1,0 +1,104 @@
+class_name HudOverlay
+extends Control
+## Screen-space drawing tied to world positions: the aiming reticle with the
+## sonar cooldown ring, the noise radius, the scan reticle, sonar blips and
+## the compass pointing at the descent.
+
+var hud: Hud
+
+
+func _draw() -> void:
+	if hud == null or hud.sub == null or hud.camera == null:
+		return
+	var sub := hud.sub
+	var cam := hud.camera
+	if not sub.alive:
+		return
+	var sub_screen := cam.unproject_position(Vector3(sub.pos.x, sub.pos.y, 0))
+
+	# Noise radius: how far creatures can hear you right now.
+	if sub.noise_radius > 2.0:
+		var edge := cam.unproject_position(Vector3(sub.pos.x + sub.noise_radius, sub.pos.y, 0))
+		var r := edge.x - sub_screen.x
+		var a := clampf(sub.noise_radius / 30.0, 0.1, 0.45)
+		_dashed_circle(sub_screen, r, Color(1.0, 0.85, 0.5, a), 48)
+
+	# Reticle: mouse cursor, or a point along the aim for gamepads.
+	var reticle: Vector2
+	if Settings.using_gamepad:
+		var p := sub.pos + sub.aim * 9.0
+		reticle = cam.unproject_position(Vector3(p.x, p.y, 0))
+	else:
+		reticle = get_local_mouse_position()
+	var col := UiTheme.ACCENT
+	draw_arc(reticle, 14.0, 0.0, TAU, 32, Color(col, 0.8), 2.0, true)
+	draw_circle(reticle, 2.5, col)
+	var cd_frac := 1.0 - sub.sonar_cooldown / maxf(sub.stats.sonar_cooldown, 0.01)
+	if cd_frac < 1.0:
+		draw_arc(reticle, 21.0, -PI * 0.5, -PI * 0.5 + TAU * cd_frac, 40, Color(col, 0.5), 3.0, true)
+	else:
+		draw_arc(reticle, 21.0, 0.0, TAU, 40, Color(col, 0.18), 1.5, true)
+
+	# Scan reticle.
+	if sub.scan_target and is_instance_valid(sub.scan_target):
+		var t := sub.scan_target
+		var c := cam.unproject_position(Vector3(t.pos.x, t.pos.y, 0))
+		var edge2 := cam.unproject_position(Vector3(t.pos.x + t.radius + 1.0, t.pos.y, 0))
+		var r2 := maxf(edge2.x - c.x, 28.0)
+		draw_arc(c, r2, 0.0, TAU, 48, Color(UiTheme.GOOD, 0.25), 2.0, true)
+		draw_arc(c, r2, -PI * 0.5, -PI * 0.5 + TAU * sub.scan_progress, 48, UiTheme.GOOD, 4.0, true)
+		var font := get_theme_default_font()
+		draw_string(font, c + Vector2(-60, -r2 - 12), "SCANNING", HORIZONTAL_ALIGNMENT_CENTER, 120, 16, UiTheme.GOOD)
+
+	# Sonar marks on creatures (visible through darkness).
+	for e in hud.level.entities:
+		var cr := e as Creature
+		if cr == null or not cr.alive or not cr.is_marked():
+			continue
+		var sp := cam.unproject_position(Vector3(cr.pos.x, cr.pos.y, 0))
+		var fade := clampf(cr.mark_fraction(), 0.0, 1.0)
+		var danger := cr.is_hostile()
+		var mc := UiTheme.DANGER if danger else UiTheme.ACCENT
+		draw_arc(sp, 10.0 + cr.radius * 4.0, 0.0, TAU, 20, Color(mc, 0.6 * fade), 2.0, true)
+
+	# Descent compass.
+	var exit := hud.level.layout.exit
+	if hud.level.exit_known or sub.stats.always_compass:
+		var exit_screen := cam.unproject_position(Vector3(exit.x, exit.y, 0))
+		var rect := get_viewport_rect().grow(-60)
+		var dist := sub.pos.distance_to(exit)
+		if rect.has_point(exit_screen):
+			draw_arc(exit_screen, 26.0, 0.0, TAU, 32, Color(UiTheme.GOOD, 0.8), 2.5, true)
+			_label(exit_screen + Vector2(0, -40), "DESCENT", UiTheme.GOOD)
+		else:
+			var dir := (exit_screen - rect.get_center()).normalized()
+			var edge_p := _clip_to_rect(rect, rect.get_center(), dir)
+			_arrow(edge_p, dir, UiTheme.GOOD)
+			_label(edge_p - dir * 46.0, "%d m" % int(dist), UiTheme.GOOD)
+
+
+func _label(at: Vector2, text: String, color: Color) -> void:
+	var font := get_theme_default_font()
+	draw_string(font, at + Vector2(-80, 0), text, HORIZONTAL_ALIGNMENT_CENTER, 160, 16, color)
+
+
+func _arrow(at: Vector2, dir: Vector2, color: Color) -> void:
+	var side := dir.orthogonal()
+	var pts := PackedVector2Array([at + dir * 18.0, at - dir * 10.0 + side * 12.0, at - dir * 4.0, at - dir * 10.0 - side * 12.0])
+	draw_colored_polygon(pts, Color(color, 0.85))
+
+
+func _dashed_circle(c: Vector2, r: float, color: Color, segments: int) -> void:
+	for i in segments:
+		if i % 2 == 0:
+			var a0 := TAU * i / segments
+			draw_arc(c, r, a0, a0 + TAU / segments, 4, color, 1.5, true)
+
+
+static func _clip_to_rect(rect: Rect2, from: Vector2, dir: Vector2) -> Vector2:
+	var t := INF
+	if absf(dir.x) > 0.0001:
+		t = minf(t, ((rect.end.x if dir.x > 0 else rect.position.x) - from.x) / dir.x)
+	if absf(dir.y) > 0.0001:
+		t = minf(t, ((rect.end.y if dir.y > 0 else rect.position.y) - from.y) / dir.y)
+	return from + dir * t

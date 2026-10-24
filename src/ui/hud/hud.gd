@@ -1,0 +1,285 @@
+class_name Hud
+extends CanvasLayer
+## In-dive heads-up display: gauges, tool slot, currencies, message feed and
+## the world-space overlay (crosshair, scan reticle, exit compass).
+
+var sub: Submarine
+var level: Level
+var camera: Camera3D
+
+var _depth_label: Label
+var _zone_label: Label
+var _hull_bar: ProgressBar
+var _hull_label: Label
+var _battery_bar: ProgressBar
+var _battery_label: Label
+var _salvage_label: Label
+var _research_label: Label
+var _tool_label: Label
+var _tool_hint: Label
+var _feed: VBoxContainer
+var _banner: VBoxContainer
+var _banner_title: Label
+var _banner_sub: Label
+var _overlay: HudOverlay
+var _vignette: ColorRect
+var _fps_label: Label
+var _banner_tween: Tween
+var _shown_salvage := 0.0
+var _flash := 0.0
+
+
+func _ready() -> void:
+	layer = 10
+	var root := Control.new()
+	root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.theme = UiTheme.get_theme()
+	add_child(root)
+
+	_vignette = ColorRect.new()
+	_vignette.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_vignette.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_vignette.material = _vignette_material()
+	root.add_child(_vignette)
+
+	_overlay = HudOverlay.new()
+	_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_overlay.hud = self
+	root.add_child(_overlay)
+
+	# Depth gauge (top left).
+	var depth_box := VBoxContainer.new()
+	_place(depth_box, Control.PRESET_TOP_LEFT, Vector2(40, 28), Vector2(500, 90))
+	depth_box.add_theme_constant_override(&"separation", -6)
+	root.add_child(depth_box)
+	_depth_label = Label.new()
+	_depth_label.theme_type_variation = &"TitleLabel"
+	_depth_label.add_theme_font_size_override(&"font_size", 54)
+	depth_box.add_child(_depth_label)
+	_zone_label = Label.new()
+	_zone_label.theme_type_variation = &"DimLabel"
+	_zone_label.add_theme_font_size_override(&"font_size", 20)
+	depth_box.add_child(_zone_label)
+
+	# Hull and battery (bottom left).
+	var gauges := VBoxContainer.new()
+	_place(gauges, Control.PRESET_BOTTOM_LEFT, Vector2(40, -120), Vector2(560, 80))
+	gauges.add_theme_constant_override(&"separation", 8)
+	root.add_child(gauges)
+	var hull := _gauge(gauges, "HULL", Color(1.0, 0.55, 0.25))
+	_hull_bar = hull[0]
+	_hull_label = hull[1]
+	var bat := _gauge(gauges, "BATTERY", Color(0.35, 0.95, 1.0))
+	_battery_bar = bat[0]
+	_battery_label = bat[1]
+
+	# Tool slot (bottom right).
+	var tool_box := VBoxContainer.new()
+	_place(tool_box, Control.PRESET_BOTTOM_RIGHT, Vector2(-440, -120), Vector2(400, 80))
+	tool_box.alignment = BoxContainer.ALIGNMENT_END
+	root.add_child(tool_box)
+	_tool_label = Label.new()
+	_tool_label.theme_type_variation = &"HeaderLabel"
+	_tool_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	tool_box.add_child(_tool_label)
+	_tool_hint = Label.new()
+	_tool_hint.theme_type_variation = &"DimLabel"
+	_tool_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	tool_box.add_child(_tool_hint)
+
+	# Currencies (top right).
+	var cur := VBoxContainer.new()
+	_place(cur, Control.PRESET_TOP_RIGHT, Vector2(-340, 28), Vector2(300, 80))
+	root.add_child(cur)
+	_salvage_label = Label.new()
+	_salvage_label.theme_type_variation = &"HeaderLabel"
+	_salvage_label.add_theme_color_override(&"font_color", UiTheme.WARN)
+	_salvage_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	cur.add_child(_salvage_label)
+	_research_label = Label.new()
+	_research_label.theme_type_variation = &"DimLabel"
+	_research_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	cur.add_child(_research_label)
+
+	# Message feed (right side).
+	_feed = VBoxContainer.new()
+	_place(_feed, Control.PRESET_TOP_RIGHT, Vector2(-580, 130), Vector2(540, 300))
+	_feed.alignment = BoxContainer.ALIGNMENT_BEGIN
+	root.add_child(_feed)
+
+	# Center banner.
+	_banner = VBoxContainer.new()
+	_place(_banner, Control.PRESET_CENTER_TOP, Vector2(-600, 170), Vector2(1200, 140))
+	_banner.modulate.a = 0.0
+	root.add_child(_banner)
+	_banner_title = Label.new()
+	_banner_title.theme_type_variation = &"TitleLabel"
+	_banner_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_banner.add_child(_banner_title)
+	_banner_sub = Label.new()
+	_banner_sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_banner_sub.add_theme_color_override(&"font_color", UiTheme.ACCENT)
+	_banner.add_child(_banner_sub)
+
+	_fps_label = Label.new()
+	_fps_label.theme_type_variation = &"DimLabel"
+	_place(_fps_label, Control.PRESET_BOTTOM_LEFT, Vector2(40, -34), Vector2(200, 30))
+	root.add_child(_fps_label)
+
+	Events.toast.connect(toast)
+	Events.banner.connect(show_banner)
+	Events.player_damaged.connect(_on_damaged)
+	Events.creature_scanned.connect(_on_scanned)
+
+
+func bind(p_sub: Submarine, p_level: Level, p_camera: Camera3D) -> void:
+	sub = p_sub
+	level = p_level
+	camera = p_camera
+	var biome := level.biome
+	_zone_label.text = "%s  -  ZONE %d" % [biome.display_name.to_upper(), level.zone + 1]
+	if BiomeLibrary.is_final_zone(level.zone):
+		_zone_label.text = "THE HADAL FLOOR"
+	_shown_salvage = sub.run.salvage
+
+
+func _gauge(parent: Control, title: String, color: Color) -> Array:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override(&"separation", 12)
+	parent.add_child(row)
+	var name_label := Label.new()
+	name_label.text = title
+	name_label.theme_type_variation = &"DimLabel"
+	name_label.custom_minimum_size = Vector2(96, 0)
+	row.add_child(name_label)
+	var bar := ProgressBar.new()
+	bar.custom_minimum_size = Vector2(320, 16)
+	bar.show_percentage = false
+	bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = color
+	fill.set_corner_radius_all(2)
+	bar.add_theme_stylebox_override(&"fill", fill)
+	row.add_child(bar)
+	var value := Label.new()
+	value.theme_type_variation = &"MonoLabel"
+	value.custom_minimum_size = Vector2(90, 0)
+	row.add_child(value)
+	return [bar, value]
+
+
+func _process(delta: float) -> void:
+	if sub == null:
+		return
+	var run := sub.run
+	var depth := level.depth_at(sub.pos.y)
+	_depth_label.text = "%s m" % _thousands(int(depth))
+	_hull_bar.max_value = sub.stats.max_hull
+	_hull_bar.value = run.hull
+	_hull_label.text = "%d" % ceili(run.hull)
+	_battery_bar.max_value = sub.stats.max_battery
+	_battery_bar.value = run.battery
+	_battery_label.text = "%d" % ceili(run.battery)
+	_shown_salvage = move_toward(_shown_salvage, run.salvage, maxf(40.0, absf(run.salvage - _shown_salvage) * 4.0) * delta)
+	_salvage_label.text = "%d SALVAGE" % roundi(_shown_salvage)
+	_research_label.text = "%d research" % run.research
+
+	var tool := sub.tools.current()
+	if tool == &"":
+		_tool_label.text = "HARPOON"
+		_tool_hint.text = "[LMB] fire   [Space] sonar"
+	else:
+		var ammo := sub.tools.ammo(tool)
+		var ammo_text := " x%d" % ammo if ammo >= 0 else "  %d power" % int(sub.stats.shock_cost)
+		_tool_label.text = Catalog.TOOL_NAMES.get(tool, String(tool)).to_upper() + ammo_text
+		_tool_hint.text = "[RMB] use   [Q] cycle" if sub.stats.tools.size() > 1 else "[RMB] use"
+		if Settings.using_gamepad:
+			_tool_hint.text = "[RB] use   [LB] cycle" if sub.stats.tools.size() > 1 else "[RB] use"
+
+	var low_hull := clampf(1.0 - run.hull / maxf(sub.stats.max_hull, 1.0) * 3.0, 0.0, 1.0)
+	var mat := _vignette.material as ShaderMaterial
+	_flash = maxf(_flash - delta * 2.5, 0.0)
+	mat.set_shader_parameter(&"flash", _flash)
+	mat.set_shader_parameter(&"danger", low_hull)
+	_fps_label.visible = Settings.show_fps
+	if Settings.show_fps:
+		_fps_label.text = "%d fps" % Engine.get_frames_per_second()
+	_overlay.queue_redraw()
+
+
+func toast(text: String, color := UiTheme.TEXT) -> void:
+	var label := Label.new()
+	label.text = text
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	label.add_theme_color_override(&"font_color", color)
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_feed.add_child(label)
+	while _feed.get_child_count() > 6:
+		_feed.get_child(0).free()
+	label.modulate.a = 0.0
+	var tween := label.create_tween()
+	tween.tween_property(label, ^"modulate:a", 1.0, 0.2)
+	tween.tween_interval(3.5)
+	tween.tween_property(label, ^"modulate:a", 0.0, 0.8)
+	tween.tween_callback(label.queue_free)
+
+
+func show_banner(title: String, subtitle: String) -> void:
+	_banner_title.text = title
+	_banner_sub.text = subtitle
+	if _banner_tween:
+		_banner_tween.kill()
+	_banner_tween = create_tween()
+	_banner_tween.tween_property(_banner, ^"modulate:a", 1.0, 0.8)
+	_banner_tween.tween_interval(3.0)
+	_banner_tween.tween_property(_banner, ^"modulate:a", 0.0, 1.2)
+
+
+func _on_damaged(amount: float) -> void:
+	_flash = maxf(_flash, clampf(amount / 25.0, 0.35, 1.0))
+
+
+func _on_scanned(id: StringName, first_time: bool) -> void:
+	var entry := CreatureCodex.entry(id)
+	var label_text := entry.name if entry else String(id)
+	toast("Scanned: %s%s" % [label_text, "  (new codex entry)" if first_time else ""], UiTheme.ACCENT)
+
+
+## Anchors a control to a preset corner and offsets it from that anchor.
+static func _place(c: Control, preset: Control.LayoutPreset, offset: Vector2, size: Vector2) -> void:
+	c.set_anchors_preset(preset)
+	c.offset_left = offset.x
+	c.offset_top = offset.y
+	c.offset_right = offset.x + size.x
+	c.offset_bottom = offset.y + size.y
+
+
+static func _thousands(n: int) -> String:
+	var s := str(absi(n))
+	var out := ""
+	while s.length() > 3:
+		out = "," + s.substr(s.length() - 3) + out
+		s = s.substr(0, s.length() - 3)
+	return ("-" if n < 0 else "") + s + out
+
+
+static func _vignette_material() -> ShaderMaterial:
+	var shader := Shader.new()
+	shader.code = """
+shader_type canvas_item;
+uniform float flash = 0.0;
+uniform float danger = 0.0;
+void fragment() {
+	vec2 uv = UV * 2.0 - 1.0;
+	float v = smoothstep(0.55, 1.45, length(uv * vec2(0.9, 1.0)));
+	float pulse = 0.6 + 0.4 * sin(TIME * 5.0);
+	float a = v * (0.35 + flash * 0.6 + danger * 0.45 * pulse);
+	vec3 col = mix(vec3(0.0, 0.02, 0.04), vec3(0.6, 0.02, 0.0), clamp(flash + danger * pulse, 0.0, 1.0));
+	COLOR = vec4(col, a);
+}
+"""
+	var mat := ShaderMaterial.new()
+	mat.shader = shader
+	return mat

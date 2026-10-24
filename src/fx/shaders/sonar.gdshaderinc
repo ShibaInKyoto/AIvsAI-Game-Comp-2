@@ -8,7 +8,7 @@ global uniform float sonar_time;
 global uniform vec4 sonar_color : source_color;
 
 const float SONAR_SPEED = 42.0;
-const float SONAR_LIFE = 7.0;
+const float SONAR_LIFE = 6.0;
 
 // Returns (wavefront, lingering reveal) for one ping at world point p.
 vec2 sonar_eval(vec4 ping, vec2 p) {
@@ -19,9 +19,9 @@ vec2 sonar_eval(vec4 ping, vec2 p) {
 	float d = distance(p, ping.xy);
 	float radius = age * SONAR_SPEED;
 	float range_fade = 1.0 - smoothstep(ping.w * 0.7, ping.w, d);
-	float front = exp(-pow((d - radius) / 1.4, 2.0)) * range_fade;
+	float front = exp(-pow((d - radius) / 1.1, 2.0)) * range_fade;
 	float since = age - d / SONAR_SPEED;
-	float reveal = step(0.0, since) * range_fade * exp(-since * 0.55);
+	float reveal = step(0.0, since) * range_fade * exp(-since * 0.7);
 	return vec2(front, reveal) * (1.0 - age / SONAR_LIFE);
 }
 

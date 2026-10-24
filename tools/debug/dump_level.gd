@@ -2,7 +2,7 @@ extends SceneTree
 ## Debug helper: generates zones and writes the distance field as PNGs.
 ## Usage: godot --headless --path . -s res://tools/debug/dump_level.gd -- <out_dir> [zone] [seed]
 
-func _init() -> void:
+func _initialize() -> void:
 	var args := OS.get_cmdline_user_args()
 	var out_dir := args[0] if args.size() > 0 else "user://"
 	var zone := int(args[1]) if args.size() > 1 else 0

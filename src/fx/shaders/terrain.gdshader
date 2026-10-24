@@ -170,8 +170,8 @@ void fragment() {
 		float grid = max(smoothstep(0.94, 1.0, abs(fract(world_pos.x * 0.25) * 2.0 - 1.0)),
 			smoothstep(0.94, 1.0, abs(fract(world_pos.y * 0.25) * 2.0 - 1.0))) * step(world_pos.z, -2.0);
 		float edge = smoothstep(1.5, 0.0, abs(sdf_value)) ;
-		float lines = wall * 0.6 + contour * 0.5 + grid * 0.25 + edge * 1.4;
-		emission += sonar_color.rgb * (sonar.x * (1.5 + lines * 2.0) + sonar.y * lines * 0.9);
+		float lines = wall * 0.35 + contour * 0.3 + grid * 0.15 + edge * 1.2;
+		emission += sonar_color.rgb * (sonar.x * (0.35 + lines * 1.1) + sonar.y * lines * 0.32);
 	}
 	EMISSION = emission;
 }

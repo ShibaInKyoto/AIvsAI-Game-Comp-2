@@ -1,1 +1,84 @@
 extends Node
+## Owns the persistent [MetaState], the current [RunState] and saving.
+
+signal meta_changed
+
+const SAVE_PATH := "user://save.json"
+
+var meta := MetaState.new()
+var run: RunState
+
+
+func _ready() -> void:
+	load_game()
+
+
+func load_game() -> void:
+	if not FileAccess.file_exists(SAVE_PATH):
+		return
+	var text := FileAccess.get_file_as_string(SAVE_PATH)
+	var parsed: Variant = JSON.parse_string(text)
+	if parsed is Dictionary:
+		meta = MetaState.from_dict(parsed)
+	else:
+		push_warning("Save file unreadable; starting fresh.")
+
+
+func save_game() -> void:
+	# Write to a temp file first so a crash mid-write cannot corrupt the save.
+	var tmp := SAVE_PATH + ".tmp"
+	var f := FileAccess.open(tmp, FileAccess.WRITE)
+	if f == null:
+		push_warning("Could not write save: %s" % error_string(FileAccess.get_open_error()))
+		return
+	f.store_string(JSON.stringify(meta.to_dict(), "\t"))
+	f.close()
+	DirAccess.rename_absolute(ProjectSettings.globalize_path(tmp), ProjectSettings.globalize_path(SAVE_PATH))
+	meta_changed.emit()
+
+
+func reset_progress() -> void:
+	meta = MetaState.new()
+	save_game()
+
+
+## Starts a new dive with the selected frame. Daily dives use a date seed.
+func start_run(daily := false) -> void:
+	run = RunState.new()
+	run.frame_id = StringName(meta.selected_frame)
+	run.daily = daily
+	run.pressure = meta.pressure_selected if not daily else 0
+	if daily:
+		var d := Time.get_date_dict_from_system()
+		run.run_seed = hash("%04d-%02d-%02d" % [d.year, d.month, d.day]) & 0x7fffffff
+	else:
+		run.run_seed = randi() & 0x7fffffff
+	run.rebuild_stats(meta.upgrades)
+	run.refill()
+	meta.dives += 1
+	save_game()
+
+
+## Ends the dive, banks currencies and records statistics.
+## Returns the amount of salvage banked.
+func end_run(outcome: RunState.Outcome) -> int:
+	if run == null:
+		return 0
+	run.outcome = outcome
+	var kept := run.salvage
+	if outcome == RunState.Outcome.SURFACED:
+		kept = int(run.salvage * Pressure.depth_bonus(run.zone))
+	elif outcome == RunState.Outcome.IMPLODED:
+		kept = int(run.salvage * clampf(run.stats.insurance, 0.0, 1.0))
+	elif outcome == RunState.Outcome.VICTORY:
+		kept = int(run.salvage * Pressure.depth_bonus(run.zone + 2))
+		meta.wins += 1
+		meta.pressure_unlocked = maxi(meta.pressure_unlocked, mini(run.pressure + 1, Pressure.MAX_LEVEL))
+	meta.salvage += kept
+	meta.total_salvage += kept
+	meta.research += run.research
+	meta.total_kills += run.kills
+	meta.deepest_zone = maxi(meta.deepest_zone, run.zone)
+	meta.deepest_depth = maxi(meta.deepest_depth, run.deepest_depth)
+	save_game()
+	return kept
