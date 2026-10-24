@@ -77,6 +77,7 @@ func open(sub: Submarine) -> void:
 	if _opened:
 		return
 	_opened = true
+	Events.cache_opened.emit(pos)
 	Audio.play_at(&"cache_open", pos, 0.0)
 	Fx.sparkle(level, pos, Color(1.0, 0.8, 0.3))
 	Fx.bubble_burst(level, pos, 24, 1.0)

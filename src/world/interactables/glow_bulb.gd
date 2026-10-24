@@ -74,6 +74,7 @@ func tick(delta: float) -> void:
 
 func _harvest(sub: Submarine) -> void:
 	_harvested = true
+	Events.bulb_harvested.emit(pos)
 	var gain := CHARGE * sub.stats.bulb_mult
 	sub.add_battery(gain)
 	Audio.play_at(&"bulb_harvest", pos, -2.0)

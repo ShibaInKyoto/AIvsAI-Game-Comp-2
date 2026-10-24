@@ -19,3 +19,7 @@ signal log_found(id: StringName)
 signal player_damaged(amount: float)
 signal player_died
 signal zone_exit_reached
+signal cache_opened(pos: Vector2)
+signal bulb_harvested(pos: Vector2)
+## Requests a brief freeze of the simulation for impact (seconds).
+signal hitstop(duration: float)

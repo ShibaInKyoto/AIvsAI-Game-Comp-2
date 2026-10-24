@@ -10,6 +10,9 @@ const KINDS: Dictionary[StringName, Dictionary] = {
 }
 
 static var _meshes: Dictionary[StringName, Mesh] = {}
+## Consecutive salvage pickups climb in pitch, so a burst sounds like a payout.
+static var _streak := 0
+static var _streak_time := 0
 static var _mats: Dictionary[StringName, Material] = {}
 
 var kind: StringName = &"salvage"
@@ -73,7 +76,10 @@ func _collect(sub: Submarine) -> void:
 		&"salvage":
 			var gained := ceili(amount * sub.stats.salvage_mult * Pressure.salvage(sub.run.pressure))
 			sub.run.salvage += gained
-			Audio.play(&"pickup_salvage", -6.0, randf_range(0.95, 1.15))
+			var now := Time.get_ticks_msec()
+			_streak = _streak + 1 if now - _streak_time < 700 else 0
+			_streak_time = now
+			Audio.play(&"pickup_salvage", -6.0, 1.0 + minf(_streak, 12) * 0.06)
 		&"power":
 			sub.add_battery(amount * sub.stats.bulb_mult)
 			Audio.play(&"pickup_power", -4.0)

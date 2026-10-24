@@ -156,6 +156,8 @@ func on_damaged(_amount: float, _from: Vector2) -> void:
 func die() -> void:
 	if not alive:
 		return
+	Events.hitstop.emit(0.06 if radius < 1.5 else 0.12)
+	Fx.flash(level, pos, glow_color, 6.0 + radius * 4.0, 0.35)
 	Fx.ichor(level, pos, glow_color, 30)
 	Fx.bubble_burst(level, pos, 20, radius)
 	Audio.play_at(&"creature_die", pos, 0.0)

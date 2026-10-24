@@ -14,6 +14,8 @@ var autopilot: Autopilot
 var _pause_menu: PauseMenu
 var _layout_result: LevelLayout
 var _call_timer := 45.0
+var _freeze := 0.0
+var objective: ZoneObjective
 
 
 func _ready() -> void:
@@ -29,6 +31,7 @@ func _ready() -> void:
 	add_child(_pause_menu)
 	_pause_menu.surface_requested.connect(_on_abandon)
 	Settings.changed.connect(_on_settings_changed)
+	Events.hitstop.connect(func(d: float) -> void: _freeze = maxf(_freeze, d))
 	if Autopilot.requested():
 		autopilot = Autopilot.new()
 		add_child(autopilot)
@@ -45,6 +48,9 @@ func load_zone(zone: int) -> void:
 	var run := Game.run
 	var biome := BiomeLibrary.biome_for_zone(zone)
 	var layout := await _generate(biome, run.zone_seed(zone), zone)
+	if objective:
+		objective.release()
+		objective = null
 	if level:
 		level.queue_free()
 		level = null
@@ -53,7 +59,8 @@ func load_zone(zone: int) -> void:
 	var event := ZoneEvents.roll(run.run_seed, zone)
 	level.build(layout, Settings.quality, run.pressure, event)
 	LevelPopulator.populate(level, run)
-	level.exit_reached.connect(_on_exit_reached)
+	# Deferred so zone objectives see the exit before the stop screen opens.
+	level.exit_reached.connect(_on_exit_reached, CONNECT_DEFERRED)
 	if level.boss:
 		level.boss.defeated.connect(_on_victory)
 
@@ -70,7 +77,9 @@ func load_zone(zone: int) -> void:
 	var water := WaterFx.new()
 	level.add_child(water)
 	water.setup(biome, layout.size(), camera, Settings.quality, level.current)
+	objective = ZoneObjective.roll(level, sub, run.run_seed)
 	hud.bind(sub, level, camera)
+	hud.objective = objective
 	if autopilot:
 		autopilot.bind(sub, level)
 	if Tutorial.wanted():
@@ -109,12 +118,18 @@ func _process(frame_delta: float) -> void:
 	if state != State.PLAYING and state != State.DEAD:
 		return
 	var delta := minf(frame_delta, 1.0 / 20.0)
+	if _freeze > 0.0:
+		_freeze -= frame_delta
+		camera.tick(delta)
+		return
 	Game.run.time += delta
 	if autopilot:
 		autopilot.drive(delta)
 	sub.tick(delta)
 	level.tick(delta)
 	_distant_calls(delta)
+	if objective:
+		objective.tick()
 	# Pull the camera back while the Choir sings so its whole body is in view.
 	var want_zoom := 1.5 if level.boss and level.boss.active else 1.0
 	camera.zoom = lerpf(camera.zoom, want_zoom, 1.0 - exp(-0.8 * delta))

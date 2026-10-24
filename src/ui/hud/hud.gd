@@ -6,9 +6,11 @@ extends CanvasLayer
 var sub: Submarine
 var level: Level
 var camera: Camera3D
+var objective: ZoneObjective
 
 var _depth_label: Label
 var _zone_label: Label
+var _objective_label: Label
 var _hull_bar: ProgressBar
 var _hull_label: Label
 var _battery_bar: ProgressBar
@@ -52,7 +54,7 @@ func _ready() -> void:
 
 	# Depth gauge (top left).
 	var depth_box := VBoxContainer.new()
-	_place(depth_box, Control.PRESET_TOP_LEFT, Vector2(40, 28), Vector2(500, 90))
+	_place(depth_box, Control.PRESET_TOP_LEFT, Vector2(40, 28), Vector2(700, 110))
 	depth_box.add_theme_constant_override(&"separation", -6)
 	root.add_child(depth_box)
 	_depth_label = Label.new()
@@ -63,6 +65,10 @@ func _ready() -> void:
 	_zone_label.theme_type_variation = &"DimLabel"
 	_zone_label.add_theme_font_size_override(&"font_size", 20)
 	depth_box.add_child(_zone_label)
+	_objective_label = Label.new()
+	_objective_label.theme_type_variation = &"DimLabel"
+	_objective_label.add_theme_font_size_override(&"font_size", 18)
+	depth_box.add_child(_objective_label)
 
 	# Hull and battery (bottom left).
 	var gauges := VBoxContainer.new()
@@ -228,6 +234,12 @@ func _process(delta: float) -> void:
 	_flash = maxf(_flash - delta * 2.5, 0.0)
 	mat.set_shader_parameter(&"flash", _flash)
 	mat.set_shader_parameter(&"danger", low_hull)
+	_objective_label.visible = objective != null
+	if objective:
+		var status := "  -  DONE" if objective.done else ("  -  FAILED" if objective.failed else "")
+		_objective_label.text = "OBJECTIVE: %s   %s%s" % [objective.describe(), objective.reward_text(), status]
+		_objective_label.add_theme_color_override(&"font_color",
+			UiTheme.GOOD if objective.done else (UiTheme.TEXT_DIM if objective.failed else UiTheme.WARN))
 	_fps_label.visible = Settings.show_fps
 	if Settings.show_fps:
 		_fps_label.text = "%d fps" % Engine.get_frames_per_second()

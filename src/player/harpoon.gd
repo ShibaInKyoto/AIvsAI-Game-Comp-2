@@ -146,6 +146,8 @@ func _hit_entity(e: Entity) -> void:
 			state = State.ATTACHED
 			Audio.play_at(&"harpoon_hook", tip, -2.0)
 		Entity.HarpoonReaction.STICK:
+			Events.hitstop.emit(0.035)
+			Events.shake_requested.emit(0.15)
 			target = e
 			_target_offset = tip - e.pos
 			state = State.ATTACHED
