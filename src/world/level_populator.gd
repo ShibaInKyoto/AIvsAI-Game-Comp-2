@@ -26,6 +26,8 @@ static func populate(level: Level, run: RunState) -> void:
 	var layout := level.layout
 	var rng := level.rng
 	var used := PackedVector2Array([layout.start])
+	if not layout.has_exit:
+		_spawn_boss(level, used)
 	_spawn_creatures(level, run, used)
 	_spawn_bulbs(level, used)
 	_spawn_caches(level, used)
@@ -39,9 +41,13 @@ static func _spawn_creatures(level: Level, run: RunState, used: PackedVector2Arr
 	var biome := level.biome
 	var rng := level.rng
 	var budget := biome.creature_budget * Pressure.creature_budget(run.pressure)
-	# The very first zone eases players in.
+	# The very first zone eases players in; the arena keeps the focus on the Choir.
 	if level.zone == 0:
 		budget *= 0.7
+	if not level.layout.has_exit:
+		budget *= 0.35
+	if level.event == &"frenzy":
+		budget *= 1.6
 	var ids: Array[StringName] = []
 	var weights := PackedFloat32Array()
 	for id in biome.creatures:
@@ -56,7 +62,7 @@ static func _spawn_creatures(level: Level, run: RunState, used: PackedVector2Arr
 		guard += 1
 		var id := ids[rng.rand_weighted(weights)]
 		if id == &"stalker":
-			if stalkers >= 1:
+			if stalkers >= 1 or not level.layout.has_exit:
 				continue
 			stalkers += 1
 		var p := _creature_spot(level, id, used)
@@ -91,12 +97,27 @@ static func _creature_spot(level: Level, id: StringName, used: PackedVector2Arra
 	return {"pos": spot}
 
 
+static func _spawn_boss(level: Level, used: PackedVector2Array) -> void:
+	var arena: LevelLayout.Chamber = level.layout.chambers_of_kind(&"arena")[0]
+	var boss := ChoirBoss.new()
+	boss.center = arena.center
+	boss.arena_radius = arena.radius.x
+	level.boss = boss
+	level.add_entity(boss)
+	# Keep ordinary spawns out of the arena.
+	for i in 16:
+		var a := TAU * i / 16.0
+		used.append(arena.center + Vector2(cos(a) * arena.radius.x, sin(a) * arena.radius.y) * 0.6)
+	used.append(arena.center)
+
+
 static func _spawn_bulbs(level: Level, used: PackedVector2Array) -> void:
 	var layout := level.layout
 	var rng := level.rng
 	var placed := 0
 	var guard := 0
-	while placed < level.biome.bulb_count and guard < 200 and not layout.anchors.is_empty():
+	var target := level.biome.bulb_count + (4 if level.event == &"blackout" or level.event == &"bloom" else 0)
+	while placed < target and guard < 300 and not layout.anchors.is_empty():
 		guard += 1
 		var a: LevelLayout.Anchor = layout.anchors[rng.randi() % layout.anchors.size()]
 		if not _far_from(a.pos, used, 14.0):
@@ -123,7 +144,7 @@ static func _spawn_caches(level: Level, used: PackedVector2Array) -> void:
 		level.add_entity(cache)
 		used.append(cache.pos)
 	# A couple more in the open so every route pays something.
-	for _i in 2:
+	for _i in (6 if level.event == &"wrecks" else 2):
 		var p := layout.random_open_point(rng, 2.0, used, 12.0)
 		if p == Vector2.INF:
 			continue
@@ -138,7 +159,7 @@ static func _spawn_caches(level: Level, used: PackedVector2Array) -> void:
 static func _spawn_debris(level: Level) -> void:
 	var layout := level.layout
 	var rng := level.rng
-	var count := 10 + level.zone
+	var count := (10 + level.zone) * (2 if level.event == &"wrecks" else 1)
 	for _i in count:
 		var p: Vector2
 		if rng.randf() < 0.6 and layout.main_path.size() > 0:

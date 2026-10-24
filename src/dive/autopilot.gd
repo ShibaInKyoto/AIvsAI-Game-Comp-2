@@ -56,6 +56,9 @@ func bind(p_sub: Submarine, p_level: Level) -> void:
 func drive(delta: float) -> void:
 	if sub == null or not sub.alive:
 		return
+	if level.boss and level.boss.active:
+		_fight_boss()
+		return
 	var path := level.layout.main_path
 	# Advance along the path once we are close to the current waypoint.
 	while _path_index < path.size() - 1 and sub.pos.distance_to(path[_path_index]) < 6.0:
@@ -88,6 +91,29 @@ func drive(delta: float) -> void:
 			_path_index = mini(_path_index + 3, path.size() - 1)
 		_stuck_timer = 0.0
 		_last_pos = sub.pos
+
+
+## Holds position near an organ, answers every wave and strikes open organs.
+func _fight_boss() -> void:
+	var boss := level.boss
+	var eta := boss.next_arrival(sub.pos)
+	if eta < 0.12:
+		sub.try_ping()
+	var organ: ChoirOrgan = null
+	for o in boss.organs:
+		if organ == null or o.pos.distance_to(sub.pos) < organ.pos.distance_to(sub.pos):
+			organ = o
+	if organ == null:
+		sub.external_move = Vector2.ZERO
+		return
+	var to := organ.pos - sub.pos
+	var want := organ.pos - to.normalized() * 9.0
+	sub.external_move = (want - sub.pos).limit_length(1.0)
+	sub.aim = to.normalized()
+	sub.facing = 1.0 if sub.aim.x >= 0.0 else -1.0
+	if boss.vulnerable > 0.3 and sub.harpoon.state == Harpoon.State.IDLE and to.length() < sub.stats.harpoon_range:
+		sub.harpoon.fire(sub.aim)
+		sub.harpoon.release()
 
 
 func _nearest_threat() -> Creature:

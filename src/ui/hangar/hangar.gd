@@ -15,6 +15,7 @@ var _pressure_label: Label
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	_backdrop = MenuBackdrop.new()
+	_backdrop.view_shift = -10.0
 	add_child(_backdrop)
 	Audio.play_music(&"title")
 	var layer := CanvasLayer.new()
@@ -151,12 +152,18 @@ func _build_upgrades() -> void:
 		info.add_child(UiUtil.label(up.name, &"HeaderLabel", 26))
 		info.add_child(UiUtil.label(up.description, &"DimLabel"))
 		var level := Game.meta.upgrade_level(up.id)
-		var pips := ""
+		var pips := HBoxContainer.new()
+		pips.add_theme_constant_override(&"separation", 5)
+		pips.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		for i in up.max_level():
-			pips += "[#] " if i < level else "[ ] "
-		var pip_label := UiUtil.label(pips, &"MonoLabel", 22, UiTheme.ACCENT)
-		pip_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		row.add_child(pip_label)
+			var pip := Panel.new()
+			pip.custom_minimum_size = Vector2(22, 10)
+			var style := StyleBoxFlat.new()
+			style.set_corner_radius_all(2)
+			style.bg_color = UiTheme.ACCENT if i < level else Color(0.3, 0.6, 0.7, 0.18)
+			pip.add_theme_stylebox_override(&"panel", style)
+			pips.add_child(pip)
+		row.add_child(pips)
 		var b: Button
 		if level >= up.max_level():
 			b = UiUtil.button("Maxed", func() -> void: pass, 220)

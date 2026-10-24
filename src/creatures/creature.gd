@@ -47,7 +47,7 @@ func setup() -> void:
 	targetable = true
 	hp = max_hp * Pressure.creature_health(level.pressure)
 	max_hp = hp
-	hearing *= Pressure.hearing(level.pressure)
+	hearing *= Pressure.hearing(level.pressure) * (1.6 if level.event == &"quiet" else 1.0)
 	_phase = level.rng.randf() * TAU
 	_think_timer = level.rng.randf() * THINK_INTERVAL
 	model = Node3D.new()
@@ -86,6 +86,7 @@ func tick(delta: float) -> void:
 			_think_timer += THINK_INTERVAL
 			think()
 		behave(delta)
+	vel += level.current_at(pos) * delta * 0.6
 	move_and_collide_field(delta, 0.2)
 	_check_player_contact()
 	_update_visuals(delta)

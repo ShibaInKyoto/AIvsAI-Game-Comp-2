@@ -7,7 +7,9 @@ var _ui: Control
 
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	add_child(MenuBackdrop.new())
+	var backdrop := MenuBackdrop.new()
+	backdrop.view_shift = -6.0
+	add_child(backdrop)
 	Audio.play_music(&"title")
 	var layer := CanvasLayer.new()
 	add_child(layer)

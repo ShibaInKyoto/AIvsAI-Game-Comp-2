@@ -8,6 +8,8 @@ var sun: DirectionalLight3D
 var fog_volume: FogVolume
 
 var _biome: BiomeDef
+## Multiplier on ambient light (zone events darken or brighten a zone).
+var ambient_scale := 1.0
 var _fog_material: FogMaterial
 
 
@@ -99,7 +101,7 @@ func update_depth(t: float) -> void:
 	environment.background_color = water * 0.6
 	environment.fog_light_color = water
 	environment.ambient_light_color = _biome.ambient_color
-	environment.ambient_light_energy = _biome.ambient_energy * lerpf(1.0, 0.6, t)
+	environment.ambient_light_energy = _biome.ambient_energy * lerpf(1.0, 0.6, t) * ambient_scale
 	_fog_material.albedo = water.lightened(0.35)
 	_fog_material.emission = water * 0.25
 	if sun:

@@ -9,4 +9,6 @@ func _ready() -> void:
 	if Autopilot.requested():
 		Game.start_run()
 		target = Router.DIVE
+	elif OS.get_cmdline_user_args().has("--hangar"):
+		target = Router.HANGAR
 	get_tree().change_scene_to_file.call_deferred(target)

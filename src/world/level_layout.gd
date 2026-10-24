@@ -33,6 +33,8 @@ var field: TerrainField
 var reachable: PackedByteArray
 var start := Vector2.ZERO
 var exit := Vector2.ZERO
+## False for the final arena, which ends with the encounter instead of a descent.
+var has_exit := true
 var main_path := PackedVector2Array()
 var chambers: Array[Chamber] = []
 var anchors: Array[Anchor] = []

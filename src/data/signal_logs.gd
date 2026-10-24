@@ -29,7 +29,14 @@ const LOGS: Array[Dictionary] = [
 ]
 
 
+## Spoken by the Choir itself when the song ends. Not part of the found set.
+const FINAL := {"id": "log_final", "title": "Unknown transmission", "author": "the Choir / I. Okafor",
+	"text": "You answered. You kept answering. It has never been answered for that long. It is not dying - it is listening now, and the trench is holding still. Go up. Tell them the sea is not empty. Tell them it sings."}
+
+
 static func get_log(id: StringName) -> Dictionary:
+	if String(id) == FINAL.id:
+		return FINAL
 	for l in LOGS:
 		if l.id == String(id):
 			return l

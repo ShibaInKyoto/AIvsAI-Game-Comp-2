@@ -7,6 +7,8 @@ const SAVE_PATH := "user://save.json"
 
 var meta := MetaState.new()
 var run: RunState
+## Salvage banked by the last victorious dive (shown by the ending).
+var last_victory_banked := 0
 
 
 func _ready() -> void:

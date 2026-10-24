@@ -22,6 +22,7 @@ func _ready() -> void:
 	add_child(camera)
 	hud = Hud.new()
 	add_child(hud)
+	add_child(LogReader.new())
 	_pause_menu = PauseMenu.new()
 	add_child(_pause_menu)
 	_pause_menu.surface_requested.connect(_on_abandon)
@@ -47,9 +48,12 @@ func load_zone(zone: int) -> void:
 		level = null
 	level = Level.new()
 	add_child(level)
-	level.build(layout, Settings.quality, run.pressure)
+	var event := ZoneEvents.roll(run.run_seed, zone)
+	level.build(layout, Settings.quality, run.pressure, event)
 	LevelPopulator.populate(level, run)
 	level.exit_reached.connect(_on_exit_reached)
+	if level.boss:
+		level.boss.defeated.connect(_on_victory)
 
 	sub = Submarine.new()
 	level.add_child(sub)
@@ -63,16 +67,23 @@ func load_zone(zone: int) -> void:
 	camera.snap()
 	var water := WaterFx.new()
 	level.add_child(water)
-	water.setup(biome, layout.size(), camera, Settings.quality)
+	water.setup(biome, layout.size(), camera, Settings.quality, level.current)
 	hud.bind(sub, level, camera)
 	if autopilot:
 		autopilot.bind(sub, level)
+	if Tutorial.wanted():
+		var tutorial := Tutorial.new()
+		level.add_child(tutorial)
+		tutorial.bind(sub, level)
 
 	Audio.play_music(biome.music)
 	Audio.play_ambience(&"ambience")
 	var depth := BiomeLibrary.zone_depth_range(zone)
 	if BiomeLibrary.is_final_zone(zone):
 		Events.banner.emit("THE HADAL FLOOR", "%d m  -  the signal is close" % int(depth.x))
+	elif event != ZoneEvents.NONE:
+		Events.banner.emit(biome.display_name.to_upper(), "%d - %d m   -   %s: %s" % [int(depth.x), int(depth.y),
+			ZoneEvents.display_name(event).to_upper(), ZoneEvents.description(event)])
 	else:
 		Events.banner.emit(biome.display_name.to_upper(), "%s   %d - %d m" % [biome.tagline, int(depth.x), int(depth.y)])
 	state = State.PLAYING
@@ -120,6 +131,9 @@ func _on_exit_reached() -> void:
 	var run := Game.run
 	if BiomeLibrary.is_final_zone(run.zone):
 		return
+	if not Game.meta.tutorial_done:
+		Game.meta.tutorial_done = true
+		Game.save_game()
 	run.zone += 1
 	if autopilot:
 		_continue_after_stop()
@@ -137,6 +151,15 @@ func _on_exit_reached() -> void:
 func _continue_after_stop() -> void:
 	Router.fade_through(func() -> void:
 		await load_zone(Game.run.zone))
+
+
+func _on_victory() -> void:
+	if state == State.DEAD:
+		return
+	state = State.STOPPED
+	sub.input_enabled = false
+	Game.last_victory_banked = Game.end_run(RunState.Outcome.VICTORY)
+	Router.go_to(Router.ENDING, 2.5)
 
 
 func _on_player_died() -> void:

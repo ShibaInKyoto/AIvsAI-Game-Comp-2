@@ -25,9 +25,15 @@ var _snow: GPUParticles3D
 var _camera: Camera3D
 
 
-func setup(biome: BiomeDef, level_size: Vector2, camera: Camera3D, quality: int) -> void:
+func setup(biome: BiomeDef, level_size: Vector2, camera: Camera3D, quality: int, current := Vector2.ZERO) -> void:
 	_camera = camera
 	_build_snow(biome, quality)
+	if current != Vector2.ZERO:
+		var pm := _snow.process_material as ParticleProcessMaterial
+		pm.gravity = Vector3(current.x, current.y, 0) * 0.6
+		pm.initial_velocity_min = 1.0
+		pm.initial_velocity_max = 2.5
+		pm.direction = Vector3(current.x, current.y, 0).normalized()
 	if biome.sun_energy > 0.0:
 		_build_shafts(biome, level_size)
 

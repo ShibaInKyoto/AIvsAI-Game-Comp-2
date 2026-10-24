@@ -39,6 +39,20 @@ func _draw() -> void:
 	else:
 		draw_arc(reticle, 21.0, 0.0, TAU, 40, Color(col, 0.18), 1.5, true)
 
+	# The Choir's approaching song wave: a ring closing in on the submarine.
+	# Ping when it meets the inner circle.
+	var boss := hud.level.boss
+	if boss and boss.active:
+		var eta := boss.next_arrival(sub.pos)
+		if eta < 1.4:
+			var k := clampf(eta / 1.4, 0.0, 1.0)
+			var good := absf(eta) < 0.25
+			var ring_col := UiTheme.GOOD if good else Color(1.0, 0.4, 0.9)
+			draw_arc(sub_screen, 34.0, 0.0, TAU, 48, Color(ring_col, 0.9), 3.0, true)
+			draw_arc(sub_screen, 34.0 + k * 170.0, 0.0, TAU, 64, Color(1.0, 0.4, 0.9, 0.35 + (1.0 - k) * 0.6), 4.0, true)
+			if good:
+				_label(sub_screen + Vector2(0, -58), "PING!", UiTheme.GOOD)
+
 	# Scan reticle.
 	if sub.scan_target and is_instance_valid(sub.scan_target):
 		var t := sub.scan_target

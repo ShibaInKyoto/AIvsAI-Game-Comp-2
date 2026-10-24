@@ -23,27 +23,41 @@ var noises: Array[Dictionary] = []
 var time := 0.0
 var depth_range := Vector2.ZERO
 var pressure := 0
+## Active zone event id (see [ZoneEvents]), or &"".
+var event: StringName = &""
+## Base water current for the "currents" event, in m/s.
+var current := Vector2.ZERO
 ## Every flare currently burning (creatures that hunt light are drawn to them).
 var flares: Array[Entity] = []
 ## Set once a sonar ping has reached the descent; the HUD compass then shows it.
 var exit_known := false
+## The final encounter, present only on the hadal floor.
+var boss: ChoirBoss
 
 var _pending_remove: Array[Entity] = []
 var _ping_slot := 0
 var _exit_triggered := false
 
 
-func build(zone_layout: LevelLayout, quality: int, pressure_level := 0) -> void:
+func build(zone_layout: LevelLayout, quality: int, pressure_level := 0, zone_event: StringName = &"") -> void:
 	layout = zone_layout
 	field = layout.field
 	biome = layout.biome
 	zone = layout.zone
 	pressure = pressure_level
-	depth_range = BiomeLibrary.zone_depth_range(zone)
 	rng.seed = layout.zone_seed ^ 0x5eed
+	event = zone_event
+	if event == &"currents":
+		var a := (rng.randf() - 0.5) * PI * 0.8 + (0.0 if rng.randf() < 0.5 else PI)
+		current = Vector2(cos(a), sin(a) * 0.4) * 2.6
+	depth_range = BiomeLibrary.zone_depth_range(zone)
 
 	environment_rig = LevelEnvironment.new()
 	add_child(environment_rig)
+	if event == &"blackout":
+		environment_rig.ambient_scale = 0.35
+	elif event == &"bloom":
+		environment_rig.ambient_scale = 1.35
 	environment_rig.setup(biome, layout.size())
 	environment_rig.apply_quality(quality)
 
@@ -58,6 +72,13 @@ func build(zone_layout: LevelLayout, quality: int, pressure_level := 0) -> void:
 
 func size() -> Vector2:
 	return layout.size()
+
+
+## Water current at a point; banded so it reads as streams, not wind.
+func current_at(p: Vector2) -> Vector2:
+	if current == Vector2.ZERO:
+		return Vector2.ZERO
+	return current * (0.55 + 0.45 * sin(p.y * 0.08 + time * 0.25))
 
 
 ## Depth in meters shown on the HUD for a world-space height.
@@ -100,7 +121,7 @@ func tick(delta: float) -> void:
 		noises.pop_front()
 	if player and environment_rig:
 		environment_rig.update_depth(biome_progress(player.pos.y))
-	if player and not _exit_triggered and player.alive and player.pos.distance_to(layout.exit) < 5.0:
+	if layout.has_exit and player and not _exit_triggered and player.alive and player.pos.distance_to(layout.exit) < 5.0:
 		_exit_triggered = true
 		exit_reached.emit()
 
@@ -135,7 +156,7 @@ func ping(origin: Vector2, ping_range: float, mark_time: float) -> void:
 	for e in entities:
 		if e.alive and e.pos.distance_to(origin) < ping_range:
 			e.on_sonar(origin, mark_time)
-	if not exit_known and origin.distance_to(layout.exit) < ping_range:
+	if layout.has_exit and not exit_known and origin.distance_to(layout.exit) < ping_range:
 		exit_known = true
 		var delay := origin.distance_to(layout.exit) / SONAR_SPEED
 		get_tree().create_timer(delay).timeout.connect(func() -> void:

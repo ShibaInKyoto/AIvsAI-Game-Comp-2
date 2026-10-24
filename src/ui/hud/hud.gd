@@ -145,6 +145,8 @@ func bind(p_sub: Submarine, p_level: Level, p_camera: Camera3D) -> void:
 	_zone_label.text = "%s  -  ZONE %d" % [biome.display_name.to_upper(), level.zone + 1]
 	if BiomeLibrary.is_final_zone(level.zone):
 		_zone_label.text = "THE HADAL FLOOR"
+	if level.event != ZoneEvents.NONE:
+		_zone_label.text += "  -  " + ZoneEvents.display_name(level.event).to_upper()
 	_shown_salvage = sub.run.salvage
 	_map.bind(level, sub)
 	_layout_map()

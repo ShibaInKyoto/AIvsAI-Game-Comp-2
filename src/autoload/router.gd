@@ -21,6 +21,29 @@ func _ready() -> void:
 	_fade.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_layer.add_child(_fade)
+	_setup_capture()
+
+
+## Debug capture: `-- --capture=<dir> --capture-at=2,5,8` saves screenshots at
+## those times (seconds since boot) and quits after the last one.
+func _setup_capture() -> void:
+	var dir := ""
+	var times := PackedFloat32Array()
+	for a in OS.get_cmdline_user_args():
+		if a.begins_with("--capture="):
+			dir = a.split("=", true, 1)[1]
+		elif a.begins_with("--capture-at="):
+			for t in a.split("=", true, 1)[1].split(","):
+				times.append(float(t))
+	if dir == "" or times.is_empty():
+		return
+	for i in times.size():
+		var path := dir.path_join("capture_%02d.png" % i)
+		var last := i == times.size() - 1
+		get_tree().create_timer(times[i], true, false, true).timeout.connect(func() -> void:
+			get_viewport().get_texture().get_image().save_png(path)
+			if last:
+				get_tree().quit())
 
 
 func _unhandled_input(event: InputEvent) -> void:

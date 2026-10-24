@@ -246,6 +246,7 @@ func _update_movement(delta: float, move: Vector2) -> void:
 		vel = vel.lerp(Vector2.ZERO, 1.0 - exp(-stats.drag * delta))
 	# Gentle neutral-buoyancy drift so the sub never feels frozen.
 	vel.y += sin(_time * 0.9) * 0.15 * delta
+	vel += level.current_at(pos) * delta * 1.1
 	_thrust_amount = move.length()
 	var impact := _move(delta)
 	if impact > COLLISION_DAMAGE_SPEED:

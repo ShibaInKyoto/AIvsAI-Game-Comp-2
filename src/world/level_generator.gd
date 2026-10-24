@@ -42,6 +42,8 @@ func _try_generate(biome: BiomeDef, zone_seed: int, zone: int) -> LevelLayout:
 	var layout := LevelLayout.new()
 	layout.biome = biome
 	layout.zone = zone
+	if BiomeLibrary.is_final_zone(zone):
+		return _generate_arena(layout)
 
 	var size := Vector2(_rng.randi_range(biome.zone_width.x, biome.zone_width.y),
 		biome.zone_height + _rng.randi_range(-10, 20))
@@ -83,6 +85,43 @@ func _try_generate(biome: BiomeDef, zone_seed: int, zone: int) -> LevelLayout:
 	_carve_branches(layout, waypoints, size, biome)
 	_add_spires(layout, biome)
 	_erode(biome, PackedFloat32Array([layout.start.x, exit_room.x]))
+	_build_field(layout)
+	_flood_reachable(layout)
+	_collect_anchors(layout)
+	return layout
+
+
+## The hadal floor: a short descent into one vast chamber where the Choir
+## waits. There is no exit; the zone ends when the encounter does.
+func _generate_arena(layout: LevelLayout) -> LevelLayout:
+	var size := Vector2(150, 175)
+	_w = int(size.x / CELL) + 1
+	_h = int(size.y / CELL) + 1
+	_rock = PackedFloat32Array()
+	_rock.resize(_w * _h)
+	_rock.fill(ROCK_CAP)
+	layout.start = Vector2(size.x * 0.5 + _rng.randf_range(-12, 12), -10.0)
+	var arena := Vector2(size.x * 0.5, -112.0)
+	var arena_r := Vector2(40.0, 30.0)
+	_carve_ellipse(layout.start, Vector2(9.0, 7.0))
+	_carve_capsule(layout.start, Vector2(layout.start.x, 3.0), 3.4, 4.2)
+	layout.chambers.append(LevelLayout.Chamber.new(layout.start, Vector2(9.0, 7.0), &"spawn"))
+	var mid := Vector2(size.x * 0.5 + _rng.randf_range(-25, 25), -45.0)
+	var waypoints := PackedVector2Array([layout.start, mid, arena + Vector2(0, arena_r.y * 0.6)])
+	layout.main_path = _spline(waypoints, 3.0)
+	_carve_path(layout.main_path, Vector2(5.0, 7.5))
+	_carve_ellipse(mid, Vector2(13.0, 9.0))
+	layout.chambers.append(LevelLayout.Chamber.new(mid, Vector2(13.0, 9.0), &"loot"))
+	_carve_ellipse(arena, arena_r)
+	layout.chambers.append(LevelLayout.Chamber.new(arena, arena_r, &"arena"))
+	# A few broken columns of rock for cover.
+	for i in 3:
+		var c := arena + Vector2((i - 1) * 24.0 + _rng.randf_range(-3, 3), -arena_r.y * 0.55)
+		_add_rock_capsule(c, c + Vector2(_rng.randf_range(-2, 2), _rng.randf_range(5, 9)), 2.4, 0.8)
+	# The "exit" is the arena itself: the retry loop checks it is reachable.
+	layout.exit = arena
+	layout.has_exit = false
+	_erode(layout.biome, PackedFloat32Array([layout.start.x]))
 	_build_field(layout)
 	_flood_reachable(layout)
 	_collect_anchors(layout)

@@ -10,12 +10,19 @@ var _t := 0.0
 var _ping_timer := 2.0
 var _anchor := Vector2.ZERO
 var _run: RunState
+## Horizontal camera offset; negative values push the submarine to the right
+## of the screen to leave room for menus on the left.
+var view_shift := -5.0
+## Zone to show; -1 picks the deepest biome the player has reached.
+var force_zone := -1
 
 
 func _ready() -> void:
 	var zone := clampi(Game.meta.deepest_zone, 0, BiomeLibrary.BIOME_COUNT * BiomeLibrary.ZONES_PER_BIOME - 1)
 	# Show the deepest biome reached so far; the backdrop evolves with progress.
 	zone = zone - zone % BiomeLibrary.ZONES_PER_BIOME
+	if force_zone >= 0:
+		zone = force_zone
 	var layout := LevelGenerator.new().generate(BiomeLibrary.biome_for_zone(zone), 777 + zone, zone)
 	level = Level.new()
 	add_child(level)
@@ -41,7 +48,7 @@ func _ready() -> void:
 	camera.far = 140.0
 	add_child(camera)
 	camera.current = true
-	camera.position = Vector3(_anchor.x - 4.0, _anchor.y + 1.0, 20.0)
+	camera.position = Vector3(_anchor.x + view_shift, _anchor.y + 1.5, 17.0)
 	var water := WaterFx.new()
 	level.add_child(water)
 	water.setup(layout.biome, layout.size(), camera, Settings.quality)
@@ -77,6 +84,6 @@ func _physics_process(delta: float) -> void:
 		Audio.play(&"sonar_ping", -12.0)
 	sub.tick(delta)
 	level.tick(delta)
-	var target := Vector3(sub.pos.x + 5.0 + sin(_t * 0.1) * 2.0, sub.pos.y + 1.5, 19.0 + sin(_t * 0.13) * 1.5)
+	var target := Vector3(sub.pos.x + view_shift + sin(_t * 0.1) * 1.5, sub.pos.y + 1.5, 17.0 + sin(_t * 0.13) * 1.5)
 	camera.position = camera.position.lerp(target, 1.0 - exp(-0.8 * delta))
-	camera.look_at(Vector3(sub.pos.x + 3.0, sub.pos.y, 0.0))
+	camera.look_at(Vector3(sub.pos.x + view_shift * 0.55, sub.pos.y, 0.0))

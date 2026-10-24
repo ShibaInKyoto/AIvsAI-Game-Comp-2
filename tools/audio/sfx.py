@@ -444,5 +444,56 @@ def engine_loop():
     return normalize(sig, 0.6)
 
 
+
+
+# --- The Choir ------------------------------------------------------------------------
+
+def _choir_voice(f0: float, d: float, vowel: str = "o", vib: float = 5.0) -> np.ndarray:
+    t = t_axis(d)
+    ph = phase_from_freq(f0 * (1 + 0.008 * np.sin(2 * np.pi * vib * t)))
+    out = np.zeros(seconds(d))
+    for k, a in enumerate(formant_amps(f0, VOWELS[vowel], 40)):
+        if a > 0.003:
+            out += a * np.sin(ph * (k + 1))
+    return out
+
+
+def choir_wave():
+    d = 2.2
+    v = mix(_choir_voice(185, d, "o"), _choir_voice(277, d, "u") * 0.6, _choir_voice(370, d, "a") * 0.3)
+    return normalize(trim_silence(wet_dry(v * env_adsr(d, 0.05, 0.4, 0.5, 1.4), BIG_WATER, 0.5)), 0.7)
+
+
+def choir_answer():
+    d = 1.6
+    v = mix(_choir_voice(554, d, "a") * 0.6, sine(1250, d) * env_exp(d, 0.35) * 0.8, _choir_voice(740, d, "e") * 0.3)
+    return normalize(trim_silence(wet_dry(v * env_adsr(d, 0.01, 0.3, 0.4, 1.0), BIG_WATER, 0.45)), 0.7)
+
+
+def choir_call():
+    d = 4.0
+    f = 123 * (1 + 0.12 * np.sin(np.pi * np.linspace(0, 1, seconds(d))))
+    v = mix(_choir_voice(123, d, "o") * 0.8, _choir_voice(185, d, "a") * 0.5, sine(f) * 0.3)
+    return normalize(trim_silence(wet_dry(v * env_adsr(d, 0.6, 0.8, 0.7, 1.8), HUGE_WATER, 0.55)), 0.85)
+
+
+def choir_death():
+    d = 7.0
+    t = np.linspace(0, 1, seconds(d))
+    v = np.zeros(seconds(d))
+    for f, vw in [(123, "o"), (185, "a"), (246, "u"), (370, "e")]:
+        voice = _choir_voice(f, d, vw)
+        v += voice * (1 - t) ** 0.5
+    rise = sine(220 * (1 + 3 * t ** 2)) * env_adsr(d, 1.0, 1.0, 0.4, 3.0) * 0.2
+    return normalize(trim_silence(wet_dry(mix(v * env_adsr(d, 0.2, 1.0, 0.8, 4.0), rise), HUGE_WATER, 0.6)), 0.9)
+
+
+def organ_burst():
+    d = 2.5
+    burst = lowpass(noise(d, "pink"), 1500) * env_exp(d, 0.3, 0.002)
+    wail = _choir_voice(330, d, "a") * env_adsr(d, 0.01, 0.2, 0.5, 1.5) * 0.5
+    return normalize(trim_silence(wet_dry(mix(burst, wail, _bubbles(d, 30, 300, 1200) * 0.4), BIG_WATER, 0.5)), 0.85)
+
+
 ALL = {name: fn for name, fn in list(globals().items())
        if callable(fn) and not name.startswith("_") and fn.__module__ == __name__}
