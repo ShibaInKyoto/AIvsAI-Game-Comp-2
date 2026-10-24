@@ -65,6 +65,11 @@ func build(zone_layout: LevelLayout, quality: int, pressure_level := 0, zone_eve
 	add_child(terrain)
 	terrain.build(layout, quality)
 
+	if layout.has_exit:
+		var marker := DescentMarker.new()
+		add_child(marker)
+		marker.position = Vector3(layout.exit.x, layout.exit.y, 0.0)
+
 	for i in 4:
 		RenderingServer.global_shader_parameter_set(StringName("sonar_ping%d" % i), Vector4(0, 0, -100, 0))
 	RenderingServer.global_shader_parameter_set(&"sonar_time", 0.0)

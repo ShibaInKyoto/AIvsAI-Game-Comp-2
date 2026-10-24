@@ -146,7 +146,7 @@ void fragment() {
 		float v = texture(detail_noise, world_pos.xy * 0.02 + vec2(0.13, 0.4)).r;
 		float ridge = 1.0 - abs(v * 2.0 - 1.0);
 		float spots = texture(detail_noise, world_pos.xy * 0.11 + vec2(0.71, 0.2)).r;
-		float vein = smoothstep(0.86, 0.97, ridge) * smoothstep(0.45, 0.75, spots);
+		float vein = smoothstep(0.9, 0.985, ridge) * smoothstep(0.5, 0.8, spots);
 		vein *= smoothstep(-1.0, 1.5, world_pos.z) * (0.4 + 0.6 * (1.0 - abs(n.z)));
 		float pulse = 0.7 + 0.3 * sin(TIME * 0.6 + world_pos.x * 0.15 + world_pos.y * 0.1);
 		emission += vein_color * vein * vein_strength * pulse * 1.6;

@@ -187,7 +187,7 @@ static func _hadal() -> BiomeDef:
 	b.rock_tint_deep = Color(0.14, 0.1, 0.2)
 	b.sediment_tint = Color(0.5, 0.45, 0.55)
 	b.vein_color = Color(0.6, 0.3, 1.0)
-	b.vein_strength = 0.6
+	b.vein_strength = 0.3
 	b.water_color = Color(0.03, 0.01, 0.06)
 	b.water_color_deep = Color(0.01, 0.0, 0.02)
 	b.fog_density = 0.05

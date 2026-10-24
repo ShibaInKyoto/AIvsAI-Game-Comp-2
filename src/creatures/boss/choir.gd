@@ -60,13 +60,13 @@ func _build_heart() -> void:
 	_heart_mat.set_shader_parameter(&"back_color", Color(0.18, 0.06, 0.22))
 	_heart_mat.set_shader_parameter(&"belly_color", Color(0.3, 0.12, 0.35))
 	_heart_mat.set_shader_parameter(&"glow_color", Color(1.0, 0.3, 0.85))
-	_heart_mat.set_shader_parameter(&"glow_strength", 3.5)
+	_heart_mat.set_shader_parameter(&"glow_strength", 4.5)
 	_heart_mat.set_shader_parameter(&"glow_pulse", 0.6)
 	_heart_mat.set_shader_parameter(&"rim_strength", 0.8)
 	_heart_mat.set_shader_parameter(&"swim_amp", 0.0)
 	var heart_mesh := MeshKit.lathe(PackedVector2Array([
 			Vector2(0.0, 0.5), Vector2(0.2, 4.0), Vector2(0.5, 5.5), Vector2(0.8, 4.5), Vector2(1.0, 1.0)]),
-		11.0, 28, 22, 1.0, 1.0, func(t: float, a: float) -> float:
+		13.0, 28, 22, 1.15, 1.15, func(t: float, a: float) -> float:
 			var veins := 1.0 - smoothstep(0.0, 0.12, absf(sin(a * 5.0 + t * 9.0)))
 			return clampf(veins * 0.9 + (0.6 if t > 0.92 else 0.0), 0.0, 1.0))
 	_heart = MeshInstance3D.new()
@@ -84,6 +84,15 @@ func _build_heart() -> void:
 	_light.omni_attenuation = 0.8
 	_light.position = Vector3(0, 0, -2.0)
 	add_child(_light)
+	var tentacle_mat := ShaderMaterial.new()
+	tentacle_mat.shader = Creature.SHADER
+	tentacle_mat.set_shader_parameter(&"back_color", Color(0.1, 0.04, 0.13))
+	tentacle_mat.set_shader_parameter(&"belly_color", Color(0.2, 0.08, 0.24))
+	tentacle_mat.set_shader_parameter(&"glow_color", Color(1.0, 0.35, 0.9))
+	tentacle_mat.set_shader_parameter(&"glow_strength", 1.6)
+	tentacle_mat.set_shader_parameter(&"glow_pulse", 0.8)
+	tentacle_mat.set_shader_parameter(&"rim_strength", 0.5)
+	tentacle_mat.set_shader_parameter(&"swim_amp", 0.0)
 	for i in 7:
 		var mesh := ArrayMesh.new()
 		_tentacles.append(mesh)
@@ -91,7 +100,7 @@ func _build_heart() -> void:
 		_tentacle_dirs.append(Vector2(cos(a), sin(a)))
 		var mi := MeshInstance3D.new()
 		mi.mesh = mesh
-		mi.material_override = _heart_mat
+		mi.material_override = tentacle_mat
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		mi.top_level = true
 		add_child(mi)
@@ -150,6 +159,8 @@ func _begin() -> void:
 	var stats := level.player.stats
 	stats.sonar_cooldown = minf(stats.sonar_cooldown, 0.75)
 	stats.sonar_cost = minf(stats.sonar_cost, 2.0)
+	# Short-range answers keep the screen readable at this ping rate.
+	stats.sonar_range = minf(stats.sonar_range, 38.0)
 	get_tree().create_timer(3.5).timeout.connect(func() -> void:
 		Events.toast.emit("Ping as each song wave reaches you to answer it.", UiTheme.ACCENT)
 		Events.toast.emit("Answered waves open its voice organs - strike them.", UiTheme.ACCENT))
@@ -213,7 +224,7 @@ func _answer(w: Dictionary) -> void:
 	vulnerable = OPEN_TIME
 	_answer_streak += 1
 	Audio.play(&"choir_answer", 0.0, 1.0 + minf(_answer_streak, 6) * 0.04)
-	Fx.shockwave(level, level.player.pos, 6.0, Color(0.5, 1.0, 1.0))
+	Fx.shockwave(level, level.player.pos, 4.0, Color(0.3, 0.7, 0.7))
 	if not _hinted:
 		_hinted = true
 		Events.toast.emit("Answered! Its organs are open - harpoon them!", UiTheme.GOOD)
@@ -299,6 +310,6 @@ func _animate(delta: float) -> void:
 			var t := k / 13.0
 			var side := Vector2(-dir.y, dir.x) * sin(_t * 0.7 + i * 1.3 + t * 4.0) * 4.0 * t
 			var p := pos + dir * (5.0 + t * arena_radius * 1.1) + side
-			pts.append(Vector3(p.x, p.y, lerpf(-8.0, -6.5 + sin(i + _t * 0.4) * 1.5, t)))
-			radii.append(lerpf(1.6, 0.15, t))
-		MeshKit.tube(_tentacles[i], pts, radii, 8, 0.8)
+			pts.append(Vector3(p.x, p.y, lerpf(-9.0, -7.0 + sin(i + _t * 0.4) * 1.2, t)))
+			radii.append(lerpf(0.95, 0.08, t))
+		MeshKit.tube(_tentacles[i], pts, radii, 8, 0.6)

@@ -37,6 +37,7 @@ var harpoon: Harpoon
 var tools: ToolBelt
 var bubbles: GPUParticles3D
 var engine_audio: AudioStreamPlayer
+var leak: GPUParticles3D
 
 var _yaw := 0.0
 var _invulnerable := 0.0
@@ -48,6 +49,8 @@ var _thrust_amount := 0.0
 var _low_battery_warned := false
 var _time := 0.0
 var _camera: Camera3D
+var _alarm_timer := 0.0
+var _creak_timer := 12.0
 
 
 func setup(p_level: Level, p_run: RunState, start: Vector2) -> void:
@@ -83,6 +86,11 @@ func setup(p_level: Level, p_run: RunState, start: Vector2) -> void:
 	bubbles = Fx.bubble_emitter()
 	bubbles.position = Vector3(-2.2, 0, 0)
 	model.add_child(bubbles)
+	# A damaged hull leaks a stream of bubbles from the tower.
+	leak = Fx.bubble_emitter()
+	leak.position = Vector3(-0.2, 0.9, 0.2)
+	leak.emitting = false
+	model.add_child(leak)
 
 	engine_audio = AudioStreamPlayer.new()
 	engine_audio.bus = &"SFX"
@@ -145,6 +153,7 @@ func tick(delta: float) -> void:
 	harpoon.tick(delta)
 	tools.tick(delta)
 
+	_update_hull_feedback(delta)
 	if stats.regen > 0.0 and _since_damage > 4.0 and run.hull < stats.max_hull:
 		run.hull = minf(run.hull + stats.regen * delta, stats.max_hull)
 	run.deepest_depth = maxi(run.deepest_depth, int(level.depth_at(pos.y)))
@@ -387,6 +396,23 @@ func take_damage(amount: float, from: Vector2, source: Node = null, knockback :=
 	if run.hull <= 0.0:
 		run.hull = 0.0
 		_die()
+
+
+## Leaks, alarms and the groan of the hull under pressure.
+func _update_hull_feedback(delta: float) -> void:
+	var frac := run.hull / maxf(stats.max_hull, 1.0)
+	leak.emitting = frac < 0.4
+	leak.amount_ratio = clampf(1.0 - frac * 2.0, 0.3, 1.0)
+	Audio.set_muffle(clampf((0.3 - frac) / 0.3, 0.0, 0.6))
+	_alarm_timer -= delta
+	if frac < 0.25 and _alarm_timer <= 0.0:
+		_alarm_timer = 2.5
+		Audio.play(&"warning", -10.0)
+	_creak_timer -= delta
+	if _creak_timer <= 0.0:
+		var depth_frac := clampf(level.depth_at(pos.y) / 11000.0, 0.0, 1.0)
+		_creak_timer = randf_range(18.0, 32.0) * (1.0 - depth_frac * 0.5)
+		Audio.play(&"creak", -14.0 + depth_frac * 6.0, randf_range(0.8, 1.1))
 
 
 ## Continuous damage without hit feedback (parasites, hazards).

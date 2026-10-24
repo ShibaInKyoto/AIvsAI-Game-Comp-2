@@ -89,7 +89,8 @@ static func transformed(mesh: Mesh, xf: Transform3D) -> ArrayMesh:
 	return merge([[mesh, xf]])
 
 
-## Tube through [param points] (in the XY plane) with per-point radii.
+## Tube through [param points] (in the XY plane) with per-point radii;
+## [param glow_tail] scales the glowing bands along it.
 ## Writes into [param target] so callers can rebuild a mesh every frame.
 static func tube(target: ArrayMesh, points: PackedVector3Array, radii: PackedFloat32Array, sides := 8,
 		glow_tail := 0.0) -> void:
@@ -118,7 +119,9 @@ static func tube(target: ArrayMesh, points: PackedVector3Array, radii: PackedFlo
 			var dir := side * cos(a) + up * sin(a)
 			verts.append(points[i] + dir * radii[i])
 			normals.append(dir)
-			colors.append(Color(glow_tail * smoothstep(0.6, 1.0, 1.0 - t) * (0.5 + 0.5 * sin(a)), smoothstep(0.2, -0.8, cos(a)), 0.0))
+			# Photophore bands along the body, brightest on the camera-facing side.
+			var band := 1.0 if fmod(t * 8.0, 1.0) < 0.2 else 0.08
+			colors.append(Color(glow_tail * band * (0.4 + 0.6 * maxf(sin(a), 0.0)), smoothstep(0.2, -0.8, cos(a)), 0.0))
 	var row := sides + 1
 	for i in n - 1:
 		for j in sides:

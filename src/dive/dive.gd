@@ -108,6 +108,9 @@ func _physics_process(delta: float) -> void:
 		autopilot.drive(delta)
 	sub.tick(delta)
 	level.tick(delta)
+	# Pull the camera back while the Choir sings so its whole body is in view.
+	var want_zoom := 1.5 if level.boss and level.boss.active else 1.0
+	camera.zoom = lerpf(camera.zoom, want_zoom, 1.0 - exp(-0.8 * delta))
 	camera.tick(delta)
 
 
