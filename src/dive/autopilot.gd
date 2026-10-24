@@ -12,6 +12,9 @@ var shots_dir := ""
 var time_limit := 60.0
 var shot_interval := 4.0
 
+## With --stops the decompression stop UI is shown (for screenshots).
+var show_stops := false
+var ping_interval := 9.0
 var _elapsed := 0.0
 var _shot_timer := 1.5
 var _path_index := 0
@@ -20,9 +23,6 @@ var _shots := 0
 var _stuck_timer := 0.0
 var _last_pos := Vector2.ZERO
 var _zones_cleared := 0
-## With --stops the decompression stop UI is shown (for screenshots).
-var show_stops := false
-var ping_interval := 9.0
 
 
 static func requested() -> bool:

@@ -44,7 +44,8 @@ func _build() -> void:
 	_column.add_child(UiUtil.label(next_text, &"HeaderLabel"))
 	var event := ZoneEvents.roll(_run.run_seed, _run.zone)
 	if event != ZoneEvents.NONE:
-		_column.add_child(UiUtil.label("Sensor forecast: %s - %s" % [ZoneEvents.display_name(event), ZoneEvents.description(event)],
+		_column.add_child(UiUtil.label("Sensor forecast: %s - %s" % [ZoneEvents.display_name(event),
+				ZoneEvents.description(event)],
 			&"", 22, UiTheme.WARN))
 	_status = UiUtil.label("", &"MonoLabel")
 	_column.add_child(_status)
@@ -74,10 +75,11 @@ func _build() -> void:
 	_descend = UiUtil.button("Descend", func() -> void: _finish(&"descend"), 300)
 	row.add_child(_descend)
 	var bonus := Pressure.depth_bonus(_run.zone)
-	var surface := UiUtil.button("Surface  (bank %d salvage)" % int(_run.salvage * bonus), func() -> void: _finish(&"surface"), 420)
+	var surface := UiUtil.button("Surface  (bank %d salvage)" % int(_run.salvage * bonus),
+			func() -> void: _finish(&"surface"), 420)
 	row.add_child(surface)
-	_column.add_child(UiUtil.label("Surfacing now banks all salvage with a x%.1f depth bonus. Implode and you keep only %d%%." % [
-		bonus, int(_run.stats.insurance * 100)], &"DimLabel"))
+	var terms := "Surfacing now banks all salvage with a x%.1f depth bonus. Implode and you keep only %d%%."
+	_column.add_child(UiUtil.label(terms % [bonus, int(_run.stats.insurance * 100)], &"DimLabel"))
 	_refresh()
 	if first:
 		first.grab_focus()
@@ -97,7 +99,8 @@ func _module_card(mod: Catalog.ModuleDef) -> Button:
 	box.offset_bottom = -16
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	b.add_child(box)
-	var rarity := UiUtil.label(Catalog.RARITY_NAMES[mod.rarity].to_upper(), &"DimLabel", 16, Catalog.RARITY_COLORS[mod.rarity])
+	var rarity := UiUtil.label(Catalog.RARITY_NAMES[mod.rarity].to_upper(), &"DimLabel", 16,
+			Catalog.RARITY_COLORS[mod.rarity])
 	box.add_child(rarity)
 	var title := UiUtil.label(mod.name, &"HeaderLabel", 28, mod.color)
 	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

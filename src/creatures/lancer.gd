@@ -49,7 +49,8 @@ func build_model() -> void:
 			var stripe := 1.0 - smoothstep(0.08, 0.2, absf(cos(a)))
 			var eye := 1.0 if (t > 0.86 and t < 0.9 and cos(a) > 0.3) else 0.0
 			return maxf(stripe * smoothstep(0.1, 0.3, t) * 0.8, eye))
-	var tail := MeshKit.fin(PackedVector2Array([Vector2(0, 0), Vector2(-0.55, 0.42), Vector2(-0.35, 0.0), Vector2(-0.55, -0.42)]), 0.03, 0.4)
+	var tail := MeshKit.fin(PackedVector2Array([Vector2(0, 0), Vector2(-0.55, 0.42), Vector2(-0.35, 0.0),
+			Vector2(-0.55, -0.42)]), 0.03, 0.4)
 	var dorsal := MeshKit.fin(PackedVector2Array([Vector2(0.3, 0), Vector2(-0.25, 0.32), Vector2(-0.35, 0.0)]), 0.03, 0.0)
 	var mesh := MeshKit.merge([
 		[body], [tail, Transform3D(Basis(), Vector3(-1.25, 0, 0))],

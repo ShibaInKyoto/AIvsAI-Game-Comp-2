@@ -24,21 +24,27 @@ static func entries() -> Array[Entry]:
 	if _entries.is_empty():
 		_entries = [
 			Entry.new(&"shoal", "Glimmer Shoal", "Lucens gregaria", "Harmless",
-				"Schools of finger-length fish that flash in unison. They scatter from engines and are hunted by almost everything else down here."),
+				"Schools of finger-length fish that flash in unison. They scatter from engines " +
+					"and are hunted by almost everything else down here."),
 			Entry.new(&"jelly", "Drifter Jelly", "Medusa errans", "Low",
 				"Drifts on the currents and drifts towards light. Its tentacles carry a charge that shorts batteries on contact."),
 			Entry.new(&"lancer", "Lancer", "Sphyraena sonans", "Medium",
 				"A needle-nosed hunter that strikes at sound. It winds up before every dash - cut your engines and it loses you."),
 			Entry.new(&"lurelight", "Lurelight", "Melanocetus mendax", "High",
-				"An ambush angler that hangs a living lantern in the dark. Whatever swims up to the light is swallowed. Sonar shows the body behind the bait."),
+				"An ambush angler that hangs a living lantern in the dark. Whatever swims up to " +
+					"the light is swallowed. Sonar shows the body behind the bait."),
 			Entry.new(&"gulper", "Gulper Eel", "Saccopharynx cavus", "High",
-				"Lives in burrows in the cave wall and feels vibrations through the rock. Pass slowly and it may never notice you."),
+				"Lives in burrows in the cave wall and feels vibrations through the rock. Pass " +
+					"slowly and it may never notice you."),
 			Entry.new(&"stalker", "Stalker", "Leviathanops auditor", "Extreme",
-				"An apex predator the size of a bus. It hunts by sound and charges any light it sees. Flares distract it; torpedoes only make it angry."),
+				"An apex predator the size of a bus. It hunts by sound and charges any light it " +
+					"sees. Flares distract it; torpedoes only make it angry."),
 			Entry.new(&"isopod", "Vent Isopod", "Bathynomus ferrovorax", "Medium",
-				"Armored scavengers that crawl the vent walls. They latch onto hulls and chew through power lines. A shock pulse or a burst of speed shakes them off."),
+				"Armored scavengers that crawl the vent walls. They latch onto hulls and chew " +
+					"through power lines. A shock pulse or a burst of speed shakes them off."),
 			Entry.new(&"siphon", "Lantern Chain", "Praya catenata", "Low",
-				"Not one animal but thousands, strung into a living chain longer than a bus. Every bell can sting. Drift around it, not through it."),
+				"Not one animal but thousands, strung into a living chain longer than a bus. " +
+					"Every bell can sting. Drift around it, not through it."),
 			Entry.new(&"mimic", "Mimic", "Cista mendax", "High",
 				"It wears the shape of an expedition crate. Sonar marks it as alive - that is the only warning you get."),
 			Entry.new(&"choir", "The Choir", "-", "Unknown",

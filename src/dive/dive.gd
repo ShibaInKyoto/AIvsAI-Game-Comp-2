@@ -10,12 +10,12 @@ var camera: DiveCamera
 var hud: Hud
 var state := State.LOADING
 var autopilot: Autopilot
-
+var objective: ZoneObjective
 var _pause_menu: PauseMenu
 var _layout_result: LevelLayout
 var _call_timer := 45.0
 var _freeze := 0.0
-var objective: ZoneObjective
+
 
 
 func _ready() -> void:

@@ -52,16 +52,20 @@ func build_model() -> void:
 		2.8, 16, 14, 1.0, 0.8, func(t: float, a: float) -> float:
 			# Faint photophore spots along the flank.
 			return 0.6 if (fmod(t * 9.0, 1.0) < 0.12 and absf(cos(a)) < 0.25 and t > 0.25 and t < 0.75) else 0.0)
-	var tail := MeshKit.fin(PackedVector2Array([Vector2(0, 0), Vector2(-0.7, 0.6), Vector2(-0.5, 0), Vector2(-0.7, -0.6)]), 0.04)
+	var tail := MeshKit.fin(PackedVector2Array([Vector2(0, 0), Vector2(-0.7, 0.6), Vector2(-0.5, 0), Vector2(-0.7,
+			-0.6)]), 0.04)
 	add_visual(MeshKit.merge([[body], [tail, Transform3D(Basis(), Vector3(-1.4, 0, 0))]]), mat)
 
 	# Lower jaw with teeth; opens wide during a snap.
-	var jaw_mesh := MeshKit.lathe(PackedVector2Array([Vector2(0, 0.55), Vector2(0.6, 0.6), Vector2(1, 0.3)]), 1.2, 12, 4, 0.45, 0.85)
+	var jaw_mesh := MeshKit.lathe(PackedVector2Array([Vector2(0, 0.55), Vector2(0.6, 0.6), Vector2(1, 0.3)]), 1.2, 12,
+			4, 0.45, 0.85)
 	var teeth := []
 	for i in 7:
 		var x := -0.3 + i * 0.14
-		teeth.append([MeshKit.spike(0.05, 0.32, 0.0, 4), Transform3D(Basis(Vector3.BACK, PI * 0.5), Vector3(x, 0.15, 0.35 - absf(x) * 0.2))])
-		teeth.append([MeshKit.spike(0.05, 0.32, 0.0, 4), Transform3D(Basis(Vector3.BACK, PI * 0.5), Vector3(x, 0.15, -0.35 + absf(x) * 0.2))])
+		teeth.append([MeshKit.spike(0.05, 0.32, 0.0, 4), Transform3D(Basis(Vector3.BACK, PI * 0.5), Vector3(x, 0.15,
+				0.35 - absf(x) * 0.2))])
+		teeth.append([MeshKit.spike(0.05, 0.32, 0.0, 4), Transform3D(Basis(Vector3.BACK, PI * 0.5), Vector3(x, 0.15,
+				-0.35 + absf(x) * 0.2))])
 	var tooth_mat := StandardMaterial3D.new()
 	tooth_mat.albedo_color = Color(0.9, 0.88, 0.8)
 	tooth_mat.emission_enabled = true

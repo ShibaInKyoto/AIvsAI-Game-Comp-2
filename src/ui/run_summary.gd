@@ -52,7 +52,8 @@ func show_result(run: RunState, outcome: RunState.Outcome) -> void:
 		grid.add_child(UiUtil.label(r[0], &"DimLabel", 22))
 		grid.add_child(UiUtil.label(r[1], &"MonoLabel", 24))
 	if outcome == RunState.Outcome.IMPLODED:
-		column.add_child(UiUtil.label("Insurance recovered %d%% of your salvage." % int(run.stats.insurance * 100), &"DimLabel"))
+		column.add_child(UiUtil.label("Insurance recovered %d%% of your salvage." % int(run.stats.insurance * 100),
+				&"DimLabel"))
 	var row := HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.add_theme_constant_override(&"separation", 20)

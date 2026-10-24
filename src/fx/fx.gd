@@ -209,7 +209,8 @@ static func explosion(level: Node3D, at: Vector2, radius: float) -> void:
 	pm.damping_max = radius * 2.0
 	pm.scale_min = 1.0
 	pm.scale_max = 3.0
-	pm.color_ramp = _color_ramp(PackedColorArray([Color(1, 0.95, 0.8, 1), Color(1, 0.55, 0.15, 0.9), Color(0.3, 0.1, 0.05, 0.0)]),
+	pm.color_ramp = _color_ramp(PackedColorArray([Color(1, 0.95, 0.8, 1), Color(1, 0.55, 0.15, 0.9), Color(0.3, 0.1,
+			0.05, 0.0)]),
 		PackedFloat32Array([0.0, 0.25, 1.0]))
 	_spawn(level, _emitter(40, 0.9, pm, _quad(0.6, particle_material(soft_texture(), true, 5.0))), at)
 	bubble_burst(level, at, 50, radius / 3.0)

@@ -24,7 +24,8 @@ func _initialize() -> void:
 				c = (Color(0.1, 0.4, 0.6) if reach else Color(0.4, 0.1, 0.1)).lerp(Color(0.6, 0.9, 1.0), clampf(v / 12.0, 0, 1))
 			img.set_pixel(x, y, c)
 	for a in layout.anchors:
-		img.set_pixel(clampi(int(a.pos.x / f.cell), 0, f.width - 1), clampi(int(-a.pos.y / f.cell), 0, f.height - 1), Color.YELLOW)
+		img.set_pixel(clampi(int(a.pos.x / f.cell), 0, f.width - 1), clampi(int(-a.pos.y / f.cell), 0, f.height - 1),
+				Color.YELLOW)
 	for c in layout.chambers:
 		var col := Color.GREEN if c.kind == &"loot" else (Color.MAGENTA if c.kind == &"exit" else Color.WHITE)
 		img.fill_rect(Rect2i(int(c.center.x / f.cell) - 2, int(-c.center.y / f.cell) - 2, 5, 5), col)

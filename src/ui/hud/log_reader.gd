@@ -27,7 +27,8 @@ func _ready() -> void:
 	_panel.offset_right = 640
 	_panel.offset_top = -40
 	_panel.offset_bottom = 220
-	_panel.add_theme_stylebox_override(&"panel", UiTheme.panel_style(Color(0.01, 0.05, 0.04, 0.88), Color(UiTheme.GOOD, 0.6), 1, 6))
+	_panel.add_theme_stylebox_override(&"panel", UiTheme.panel_style(Color(0.01, 0.05, 0.04, 0.88),
+			Color(UiTheme.GOOD, 0.6), 1, 6))
 	_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_panel.modulate.a = 0.0
 	root.add_child(_panel)

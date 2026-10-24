@@ -56,7 +56,8 @@ func build_model() -> void:
 			var eye := 1.0 if (t > 0.9 and t < 0.94 and cos(a) > 0.15 and cos(a) < 0.6) else 0.0
 			var flank := 0.7 if (absf(cos(a)) < 0.12 and t > 0.25 and t < 0.85 and fmod(t * 14.0, 1.0) < 0.55) else 0.0
 			return maxf(eye * 2.0, flank))
-	var tail := MeshKit.fin(PackedVector2Array([Vector2(0, 0), Vector2(-1.6, 1.5), Vector2(-1.1, 0), Vector2(-1.6, -1.5)]), 0.08, 0.2)
+	var tail := MeshKit.fin(PackedVector2Array([Vector2(0, 0), Vector2(-1.6, 1.5), Vector2(-1.1, 0), Vector2(-1.6,
+			-1.5)]), 0.08, 0.2)
 	var dorsal := MeshKit.fin(PackedVector2Array([Vector2(0.8, 0), Vector2(-0.6, 1.1), Vector2(-1.2, 0)]), 0.08)
 	var pectoral := MeshKit.fin(PackedVector2Array([Vector2(0.3, 0), Vector2(-0.8, -0.2), Vector2(-0.4, -0.9)]), 0.06)
 	add_visual(MeshKit.merge([
@@ -64,10 +65,12 @@ func build_model() -> void:
 		[dorsal, Transform3D(Basis(), Vector3(0.0, 1.0, 0))],
 		[pectoral, Transform3D(Basis(), Vector3(1.2, -0.5, 0.6))],
 		[pectoral, Transform3D(Basis(), Vector3(1.2, -0.5, -0.6))]]), mat)
-	var jaw := MeshKit.lathe(PackedVector2Array([Vector2(0, 0.7), Vector2(0.7, 0.6), Vector2(1, 0.15)]), 1.8, 12, 4, 0.35, 0.8)
+	var jaw := MeshKit.lathe(PackedVector2Array([Vector2(0, 0.7), Vector2(0.7, 0.6), Vector2(1, 0.15)]), 1.8, 12, 4,
+			0.35, 0.8)
 	var teeth := []
 	for i in 6:
-		teeth.append([MeshKit.spike(0.07, 0.4, 0.2, 4), Transform3D(Basis(Vector3.BACK, PI * 0.5), Vector3(-0.3 + i * 0.22, 0.12, 0.0))])
+		teeth.append([MeshKit.spike(0.07, 0.4, 0.2, 4), Transform3D(Basis(Vector3.BACK, PI * 0.5),
+				Vector3(-0.3 + i * 0.22, 0.12, 0.0))])
 	_jaw = add_visual(MeshKit.merge([[jaw], [MeshKit.merge(teeth)]]), mat, Transform3D(Basis(), Vector3(2.6, -0.45, 0)))
 
 

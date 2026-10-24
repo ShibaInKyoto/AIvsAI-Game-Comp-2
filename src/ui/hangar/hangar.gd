@@ -59,7 +59,8 @@ func _ready() -> void:
 	var tabs := HBoxContainer.new()
 	tabs.add_theme_constant_override(&"separation", 8)
 	left.add_child(tabs)
-	for t: Array in [[Tab.UPGRADES, "Upgrades"], [Tab.FRAMES, "Submarines"], [Tab.CODEX, "Codex"], [Tab.LOGS, "Signal logs"]]:
+	for t: Array in [[Tab.UPGRADES, "Upgrades"], [Tab.FRAMES, "Submarines"], [Tab.CODEX, "Codex"], [Tab.LOGS,
+			"Signal logs"]]:
 		var tab_id: Tab = t[0]
 		var b := UiUtil.button(t[1], func() -> void: _show_tab(tab_id), 230)
 		b.toggle_mode = true
@@ -142,7 +143,8 @@ func _row_panel() -> HBoxContainer:
 
 func _build_upgrades() -> void:
 	if Game.meta.pressure_selected > 0:
-		var notes := "Active pressure modifiers: " + ", ".join(Pressure.DESCRIPTIONS.slice(1, Game.meta.pressure_selected + 1))
+		var notes := "Active pressure modifiers: " + ", ".join(Pressure.DESCRIPTIONS.slice(1,
+				Game.meta.pressure_selected + 1))
 		var l := UiUtil.label(notes, &"DimLabel", 18, UiTheme.WARN)
 		l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		_content.add_child(l)
@@ -227,7 +229,8 @@ func _build_frames() -> void:
 			b.disabled = Game.meta.research < f.research_cost
 		b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		row.add_child(b)
-	_content.add_child(UiUtil.label("Research comes from scanning creatures with your lamp and recovering signal logs.", &"DimLabel"))
+	_content.add_child(UiUtil.label("Research comes from scanning creatures with your lamp and recovering signal " +
+		"logs.", &"DimLabel"))
 
 
 func _build_codex() -> void:
@@ -244,7 +247,8 @@ func _build_codex() -> void:
 			var notes := UiUtil.label(e.notes)
 			notes.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			info.add_child(notes)
-			info.add_child(UiUtil.label("Threat: %s   -   Scanned %d times" % [e.threat, Game.meta.codex[String(e.id)]], &"DimLabel"))
+			info.add_child(UiUtil.label("Threat: %s   -   Scanned %d times" % [e.threat,
+					Game.meta.codex[String(e.id)]], &"DimLabel"))
 		else:
 			info.add_child(UiUtil.label("? ? ?", &"HeaderLabel", 26, UiTheme.TEXT_DIM))
 			info.add_child(UiUtil.label("Not yet scanned. Hold your lamp on a creature to scan it.", &"DimLabel"))

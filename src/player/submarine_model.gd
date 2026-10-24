@@ -4,6 +4,7 @@ extends Node3D
 ## the Lantern research sub, the Mako racer, the armored Bathysphere and the
 ## Whisper stealth drone. The nose points along local +X.
 
+static var _plating: ImageTexture
 var propeller: Node3D
 var strobe: MeshInstance3D
 var cockpit_material: StandardMaterial3D
@@ -14,7 +15,6 @@ var _steel: StandardMaterial3D
 var _prop_speed := 0.0
 var _strobe_t := 0.0
 
-static var _plating: ImageTexture
 
 
 func build(frame_id: StringName, hull_color: Color) -> void:
@@ -147,9 +147,11 @@ func _build_mako() -> void:
 		4.6, 20, 14, 0.85, 1.0)
 	_part(hull, hull_material, Vector3(-0.1, 0, 0), Vector3.ZERO)
 	_part(_cylinder(0.5, 0.5, 0.16, 20), _dark, Vector3(0.6, 0, 0), Vector3(0, 0, -90))
-	var canopy := MeshKit.lathe(PackedVector2Array([Vector2(0, 0.05), Vector2(0.4, 0.32), Vector2(1, 0.02)]), 1.5, 16, 8, 1.0, 0.8)
+	var canopy := MeshKit.lathe(PackedVector2Array([Vector2(0, 0.05), Vector2(0.4, 0.32), Vector2(1, 0.02)]), 1.5, 16,
+			8, 1.0, 0.8)
 	_part(canopy, cockpit_material, Vector3(0.85, 0.36, 0), Vector3.ZERO)
-	var wing := MeshKit.fin(PackedVector2Array([Vector2(0.4, 0), Vector2(-0.6, 0), Vector2(-0.9, -0.75), Vector2(-0.3, -0.7)]), 0.05)
+	var wing := MeshKit.fin(PackedVector2Array([Vector2(0.4, 0), Vector2(-0.6, 0), Vector2(-0.9, -0.75), Vector2(-0.3,
+			-0.7)]), 0.05)
 	_part(wing, hull_material, Vector3(-0.6, -0.05, 0.42), Vector3(-75, 0, 0))
 	_part(wing, hull_material, Vector3(-0.6, -0.05, -0.42), Vector3(75, 0, 0))
 	var dorsal := MeshKit.fin(PackedVector2Array([Vector2(0.2, 0), Vector2(-0.7, 0), Vector2(-0.95, 0.7)]), 0.05)
@@ -157,7 +159,8 @@ func _build_mako() -> void:
 	_part(dorsal, _dark, Vector3(-1.4, -0.35, 0), Vector3(180, 0, 0))
 	_part(_cylinder(0.24, 0.2, 0.4, 14), _dark, Vector3(-2.35, 0, 0), Vector3(0, 0, -90))
 	_add_propeller(Vector3(-2.5, 0, 0), 4, 0.28)
-	strobe = _part(MeshKit.sphere(0.05), MeshKit.emissive_material(Color.WHITE, 6.0), Vector3(-1.95, 1.05, 0), Vector3.ZERO)
+	strobe = _part(MeshKit.sphere(0.05), MeshKit.emissive_material(Color.WHITE, 6.0), Vector3(-1.95, 1.05, 0),
+			Vector3.ZERO)
 	_running_lights(Vector3(-1.1, -0.15, 1.12), Vector3(-1.1, -0.15, -1.12))
 	_part(_cylinder(0.11, 0.16, 0.25, 10), _dark, Vector3(1.5, -0.32, 0.0), Vector3(0, 0, -90))
 	# Torpedo tubes under the hull.
@@ -202,14 +205,17 @@ func _build_whisper() -> void:
 	_part(hull, hull_material, Vector3(0, 0, 0), Vector3.ZERO)
 	var seam := MeshKit.emissive_material(Color(0.6, 0.4, 1.0), 3.0)
 	_part(_box(Vector3(3.0, 0.03, 1.35)), seam, Vector3(-0.1, 0.0, 0.0), Vector3.ZERO)
-	var sensor := MeshKit.lathe(PackedVector2Array([Vector2(0, 0.02), Vector2(0.5, 0.2), Vector2(1, 0.02)]), 0.9, 12, 6, 0.5, 1.0)
+	var sensor := MeshKit.lathe(PackedVector2Array([Vector2(0, 0.02), Vector2(0.5, 0.2), Vector2(1, 0.02)]), 0.9, 12,
+			6, 0.5, 1.0)
 	_part(sensor, cockpit_material, Vector3(1.25, 0.18, 0), Vector3.ZERO)
-	var vane := MeshKit.fin(PackedVector2Array([Vector2(0.2, 0), Vector2(-0.5, 0), Vector2(-0.7, 0.55), Vector2(-0.3, 0.5)]), 0.04)
+	var vane := MeshKit.fin(PackedVector2Array([Vector2(0.2, 0), Vector2(-0.5, 0), Vector2(-0.7, 0.55), Vector2(-0.3,
+			0.5)]), 0.04)
 	_part(vane, hull_material, Vector3(-1.2, 0.2, 0.35), Vector3(-20, 0, 0))
 	_part(vane, hull_material, Vector3(-1.2, 0.2, -0.35), Vector3(20, 0, 0))
 	_part(_cylinder(0.32, 0.36, 0.5, 6), _dark, Vector3(-1.95, 0, 0), Vector3(0, 0, -90))
 	_add_propeller(Vector3(-2.05, 0, 0), 6, 0.26)
-	strobe = _part(MeshKit.sphere(0.04), MeshKit.emissive_material(Color(0.6, 0.4, 1.0), 4.0), Vector3(-0.6, 0.3, 0), Vector3.ZERO)
+	strobe = _part(MeshKit.sphere(0.04), MeshKit.emissive_material(Color(0.6, 0.4, 1.0), 4.0), Vector3(-0.6, 0.3, 0),
+			Vector3.ZERO)
 	_part(_cylinder(0.1, 0.14, 0.25, 8), _dark, Vector3(1.4, -0.22, 0.0), Vector3(0, 0, -90))
 
 

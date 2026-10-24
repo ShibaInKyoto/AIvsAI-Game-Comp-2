@@ -91,6 +91,11 @@ func setup(p_level: Level, p_run: RunState, start: Vector2) -> void:
 	beam.material_override = beam_mat
 	beam.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	lamp.add_child(beam)
+	var lens := MeshInstance3D.new()
+	lens.mesh = MeshKit.sphere(0.13, 10, 6)
+	lens.material_override = MeshKit.emissive_material(Color(1.0, 0.95, 0.8), 7.0)
+	lens.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	lamp.add_child(lens)
 
 	fill_light = OmniLight3D.new()
 	fill_light.light_color = Color(0.6, 0.85, 1.0)
@@ -387,7 +392,8 @@ func _update_visuals(delta: float, move: Vector2) -> void:
 	bubbles.emitting = move.length() > 0.2
 	bubbles.amount_ratio = 1.0 if boosting else 0.5
 	var speed_frac := clampf(vel.length() / (stats.max_speed * stats.boost_mult), 0.0, 1.0)
-	engine_audio.volume_db = lerpf(engine_audio.volume_db, linear_to_db(0.08 + _thrust_amount * 0.35 + (0.2 if boosting else 0.0)), 1.0 - exp(-5.0 * delta))
+	engine_audio.volume_db = lerpf(engine_audio.volume_db,
+			linear_to_db(0.08 + _thrust_amount * 0.35 + (0.2 if boosting else 0.0)), 1.0 - exp(-5.0 * delta))
 	engine_audio.pitch_scale = 0.75 + speed_frac * 0.6
 
 	lamp.visible = lamp_on

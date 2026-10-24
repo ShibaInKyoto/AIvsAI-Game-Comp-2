@@ -83,8 +83,10 @@ func _draw() -> void:
 			continue
 		var top := cam.unproject_position(Vector3(cr.pos.x, cr.pos.y + cr.radius + 1.2, 0))
 		var pop := 1.0 + maxf(cr.alert_fraction() - 0.8, 0.0) * 2.5
-		draw_string_outline(font, top + Vector2(-8, 0), "!", HORIZONTAL_ALIGNMENT_CENTER, 16, int(34 * pop), 6, Color(0, 0, 0, 0.8))
-		draw_string(font, top + Vector2(-8, 0), "!", HORIZONTAL_ALIGNMENT_CENTER, 16, int(34 * pop), Color(UiTheme.DANGER, clampf(cr.alert_fraction() * 2.0, 0.0, 1.0)))
+		draw_string_outline(font, top + Vector2(-8, 0), "!", HORIZONTAL_ALIGNMENT_CENTER, 16, int(34 * pop), 6,
+				Color(0, 0, 0, 0.8))
+		draw_string(font, top + Vector2(-8, 0), "!", HORIZONTAL_ALIGNMENT_CENTER, 16, int(34 * pop),
+				Color(UiTheme.DANGER, clampf(cr.alert_fraction() * 2.0, 0.0, 1.0)))
 
 	# Descent compass.
 	var exit := hud.level.layout.exit
@@ -109,7 +111,8 @@ func _label(at: Vector2, text: String, color: Color) -> void:
 
 func _arrow(at: Vector2, dir: Vector2, color: Color) -> void:
 	var side := dir.orthogonal()
-	var pts := PackedVector2Array([at + dir * 18.0, at - dir * 10.0 + side * 12.0, at - dir * 4.0, at - dir * 10.0 - side * 12.0])
+	var pts := PackedVector2Array([at + dir * 18.0, at - dir * 10.0 + side * 12.0, at - dir * 4.0,
+			at - dir * 10.0 - side * 12.0])
 	draw_colored_polygon(pts, Color(color, 0.85))
 
 

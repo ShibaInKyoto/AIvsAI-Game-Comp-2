@@ -51,8 +51,10 @@ func build_model() -> void:
 	tooth_mat.albedo_color = Color(0.95, 0.92, 0.85)
 	var teeth := []
 	for i in 6:
-		teeth.append([MeshKit.spike(0.06, 0.3, 0.0, 4), Transform3D(Basis(Vector3.BACK, -PI * 0.5), Vector3(-0.6 + i * 0.24, 0.05, 0.4))])
-		teeth.append([MeshKit.spike(0.06, 0.3, 0.0, 4), Transform3D(Basis(Vector3.BACK, PI * 0.5), Vector3(-0.6 + i * 0.24, -0.25, 0.4))])
+		teeth.append([MeshKit.spike(0.06, 0.3, 0.0, 4), Transform3D(Basis(Vector3.BACK, -PI * 0.5),
+				Vector3(-0.6 + i * 0.24, 0.05, 0.4))])
+		teeth.append([MeshKit.spike(0.06, 0.3, 0.0, 4), Transform3D(Basis(Vector3.BACK, PI * 0.5),
+				Vector3(-0.6 + i * 0.24, -0.25, 0.4))])
 	var t_mesh := MeshInstance3D.new()
 	t_mesh.mesh = MeshKit.merge(teeth)
 	t_mesh.material_override = tooth_mat

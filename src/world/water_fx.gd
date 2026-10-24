@@ -108,6 +108,7 @@ func _build_shafts(biome: BiomeDef, level_size: Vector2) -> void:
 		mi.mesh = quad
 		mi.material_override = mat
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		mi.position = Vector3(rng.randf_range(0.0, level_size.x), rng.randf_range(4.0, -level_size.y * 0.25), rng.randf_range(-7.0, 3.0))
+		mi.position = Vector3(rng.randf_range(0.0, level_size.x), rng.randf_range(4.0, -level_size.y * 0.25),
+				rng.randf_range(-7.0, 3.0))
 		mi.rotation = Vector3(0, rng.randf_range(-0.3, 0.3), rng.randf_range(-0.35, -0.15))
 		add_child(mi)

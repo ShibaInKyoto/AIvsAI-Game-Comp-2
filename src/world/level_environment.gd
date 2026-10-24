@@ -7,9 +7,9 @@ var environment: Environment
 var sun: DirectionalLight3D
 var fog_volume: FogVolume
 
-var _biome: BiomeDef
 ## Multiplier on ambient light (zone events darken or brighten a zone).
 var ambient_scale := 1.0
+var _biome: BiomeDef
 var _fog_material: FogMaterial
 
 

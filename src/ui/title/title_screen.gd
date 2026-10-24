@@ -39,6 +39,7 @@ func _ready() -> void:
 	title.add_theme_color_override(&"font_color", Color(0.85, 0.97, 1.0))
 	title.add_theme_constant_override(&"shadow_offset_y", 6)
 	title.add_theme_color_override(&"font_shadow_color", Color(0.0, 0.3, 0.4, 0.6))
+	title.material = _logo_material()
 	column.add_child(title)
 	column.add_child(UiUtil.label("Light reveals.  Sound betrays.", &"HeaderLabel", 30))
 	column.add_child(UiUtil.spacer(40))
@@ -61,7 +62,8 @@ func _ready() -> void:
 		meta.dives, Hud._thousands(meta.deepest_depth), meta.salvage, meta.research]
 	column.add_child(UiUtil.label(stats, &"DimLabel"))
 	if meta.dives == 0:
-		column.add_child(UiUtil.label("New pilot: start with Dive. The first zone teaches the basics.", &"DimLabel", 18, UiTheme.ACCENT))
+		column.add_child(UiUtil.label("New pilot: start with Dive. The first zone teaches the basics.", &"DimLabel",
+				18, UiTheme.ACCENT))
 
 	var version := UiUtil.label("v%s" % ProjectSettings.get_setting("application/config/version", "1.0"), &"DimLabel", 16)
 	version.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
@@ -82,6 +84,25 @@ func _on_dive() -> void:
 func _on_daily() -> void:
 	Game.start_run(true)
 	Router.go_to(Router.DIVE)
+
+
+## A slow sonar sweep that brightens the logo as it passes.
+static func _logo_material() -> ShaderMaterial:
+	var shader := Shader.new()
+	shader.code = """
+shader_type canvas_item;
+void fragment() {
+	vec4 c = texture(TEXTURE, UV) * COLOR;
+	float sweep = fract(TIME * 0.12) * 3.0 - 1.0;
+	float x = SCREEN_UV.x * 2.2;
+	float band = exp(-pow((x - sweep) * 6.0, 2.0));
+	c.rgb += vec3(0.25, 0.95, 1.0) * band * 0.9 * c.a;
+	COLOR = c;
+}
+"""
+	var m := ShaderMaterial.new()
+	m.shader = shader
+	return m
 
 
 static func _side_shade() -> ShaderMaterial:

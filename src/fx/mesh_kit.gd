@@ -58,7 +58,7 @@ static func fin(outline: PackedVector2Array, thickness := 0.03, glow := 0.0, bel
 
 
 ## Simple sphere with uniform vertex color.
-static func ball(radius: float, glow := 0.0, belly := 0.0, sides := 12, rings := 8) -> ArrayMesh:
+static func ball(radius: float, glow := 0.0, sides := 12, rings := 8) -> ArrayMesh:
 	var profile := PackedVector2Array()
 	for i in rings + 1:
 		var t := float(i) / rings

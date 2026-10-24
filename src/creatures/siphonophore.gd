@@ -44,7 +44,8 @@ func build_model() -> void:
 		m.set_shader_parameter(&"roughness", 0.1)
 		m.set_shader_parameter(&"body_length", 1.0)
 		m.set_shader_parameter(&"swim_amp", 0.05))
-	var bell := MeshKit.lathe(PackedVector2Array([Vector2(0, 0.1), Vector2(0.4, 0.45), Vector2(0.8, 0.4), Vector2(1, 0.0)]),
+	var bell := MeshKit.lathe(PackedVector2Array([Vector2(0, 0.1), Vector2(0.4, 0.45), Vector2(0.8, 0.4), Vector2(1,
+			0.0)]),
 		1.0, 10, 6, 0.8, 1.0, func(t: float, _a: float) -> float: return 0.3 + 0.7 * (1.0 - smoothstep(0.0, 0.5, t)))
 	var frond := MeshKit.lathe(PackedVector2Array([Vector2(0, 0.01), Vector2(1, 0.04)]), 1.2, 4, 3, 1.0, 1.0,
 		func(_t: float, _a: float) -> float: return 0.6)

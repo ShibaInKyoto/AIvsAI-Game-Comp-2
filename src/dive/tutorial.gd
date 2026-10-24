@@ -8,8 +8,8 @@ var level: Level
 
 var _panel: PanelContainer
 var _label: Label
-var _steps: Array[Dictionary] = []
-var _current: Dictionary = {}
+var _steps: Array[StringName] = []
+var _current: StringName = &""
 var _shown_time := 0.0
 var _start_pos := Vector2.ZERO
 var _pinged := false
@@ -28,24 +28,65 @@ func bind(p_sub: Submarine, p_level: Level) -> void:
 	_start_pos = sub.pos
 	Events.sonar_pinged.connect(func(_p: Vector2, _r: float) -> void: _pinged = true)
 	Events.creature_scanned.connect(func(_id: StringName, _f: bool) -> void: _scanned = true)
-	_steps = [
-		{"text": func() -> String: return "%s thrust     %s aim the lamp" % [Prompt.key(&"move"), Prompt.key(&"aim")],
-			"done": func() -> bool: return sub.pos.distance_to(_start_pos) > 12.0, "when": func() -> bool: return true},
-		{"text": func() -> String: return "%s sonar ping - charts the cave and finds the way down.  Creatures hear it too." % Prompt.key(&"ping"),
-			"done": func() -> bool: return _pinged, "when": func() -> bool: return true},
-		{"text": func() -> String: return "Follow the green marker to the DESCENT at the bottom of the zone.  %s shows the chart." % Prompt.key(&"map"),
-			"done": func() -> bool: return _shown_time > 7.0, "when": func() -> bool: return level.exit_known},
-		{"text": func() -> String: return "Keep your lamp on a creature to scan it.  Scans earn research for new submarines.",
-			"done": func() -> bool: return _scanned or _shown_time > 12.0, "when": func() -> bool: return sub.scan_target != null},
-		{"text": func() -> String: return "%s harpoon - hook salvage caches to drag them in, spear creatures, hold on rock to winch." % Prompt.key(&"fire"),
-			"done": func() -> bool: return _fired or _shown_time > 12.0, "when": func() -> bool: return _cache_near()},
-		{"text": func() -> String: return "Moving fast is loud (the faint ring).  Hunters follow noise.  %s boosts - loudly." % Prompt.key(&"boost"),
-			"done": func() -> bool: return _shown_time > 8.0, "when": func() -> bool: return _elapsed > 40.0},
-		{"text": func() -> String: return "The lamp drains battery.  Touch glowing bulbs on the walls to recharge.  %s toggles the lamp." % Prompt.key(&"lamp"),
-			"done": func() -> bool: return _shown_time > 9.0, "when": func() -> bool: return sub.run.battery < sub.stats.max_battery * 0.6},
-		{"text": func() -> String: return "%s fires a flare - a decoy light that draws predators away from you." % Prompt.key(&"tool"),
-			"done": func() -> bool: return _shown_time > 8.0, "when": func() -> bool: return _elapsed > 75.0},
-	]
+	_steps = [&"move", &"ping", &"descent", &"scan", &"harpoon", &"noise", &"battery", &"flare"]
+
+
+func _text(step: StringName) -> String:
+	match step:
+		&"move":
+			return "%s thrust     %s aim the lamp" % [Prompt.key(&"move"), Prompt.key(&"aim")]
+		&"ping":
+			return "%s sonar ping - charts the cave and finds the way down.  Creatures hear it too." % Prompt.key(&"ping")
+		&"descent":
+			return "Follow the green marker to the DESCENT at the bottom of the zone.  %s shows the chart." \
+				% Prompt.key(&"map")
+		&"scan":
+			return "Keep your lamp on a creature to scan it.  Scans earn research for new submarines."
+		&"harpoon":
+			return "%s harpoon - hook caches to drag them in, spear creatures, hold on rock to winch." \
+				% Prompt.key(&"fire")
+		&"noise":
+			return "Moving fast is loud (the faint ring).  Hunters follow noise.  %s boosts - loudly." % Prompt.key(&"boost")
+		&"battery":
+			return "The lamp drains battery.  Touch glowing bulbs on the walls to recharge.  %s toggles the lamp." \
+				% Prompt.key(&"lamp")
+		&"flare":
+			return "%s fires a flare - a decoy light that draws predators away from you." % Prompt.key(&"tool")
+	return ""
+
+
+## Whether a step's hint should appear now.
+func _ready_to_show(step: StringName) -> bool:
+	match step:
+		&"descent":
+			return level.exit_known
+		&"scan":
+			return sub.scan_target != null
+		&"harpoon":
+			return _cache_near()
+		&"noise":
+			return _elapsed > 40.0
+		&"battery":
+			return sub.run.battery < sub.stats.max_battery * 0.6
+		&"flare":
+			return _elapsed > 75.0
+	return true
+
+
+## Whether the hint has done its job and can disappear.
+func _finished(step: StringName) -> bool:
+	match step:
+		&"move":
+			return sub.pos.distance_to(_start_pos) > 12.0
+		&"ping":
+			return _pinged
+		&"scan":
+			return _scanned or _shown_time > 12.0
+		&"harpoon":
+			return _fired or _shown_time > 12.0
+		&"descent":
+			return _shown_time > 7.0
+	return _shown_time > 8.5
 
 
 func _ready() -> void:
@@ -77,9 +118,9 @@ func _process(delta: float) -> void:
 		return
 	_elapsed += delta
 	_fired = _fired or sub.harpoon.state != Harpoon.State.IDLE
-	if _current.is_empty():
+	if _current == &"":
 		for step in _steps:
-			if step.when.call():
+			if _ready_to_show(step):
 				_current = step
 				_steps.erase(step)
 				_shown_time = 0.0
@@ -87,10 +128,10 @@ func _process(delta: float) -> void:
 				break
 	else:
 		_shown_time += delta
-		_label.text = _current.text.call()
-		if _current.done.call():
-			_current = {}
-	var target_alpha := 0.0 if _current.is_empty() else 1.0
+		_label.text = _text(_current)
+		if _finished(_current):
+			_current = &""
+	var target_alpha := 0.0 if _current == &"" else 1.0
 	_panel.modulate.a = move_toward(_panel.modulate.a, target_alpha, delta * 3.0)
 
 

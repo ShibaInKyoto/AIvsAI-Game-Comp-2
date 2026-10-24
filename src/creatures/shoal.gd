@@ -49,7 +49,8 @@ func build_model() -> void:
 		m.set_shader_parameter(&"swim_amp", 0.05)
 		m.set_shader_parameter(&"swim_freq", 14.0)
 		m.set_shader_parameter(&"swim_wave", 8.0))
-	var body := MeshKit.lathe(PackedVector2Array([Vector2(0, 0.01), Vector2(0.25, 0.05), Vector2(0.6, 0.08), Vector2(1, 0)]),
+	var body := MeshKit.lathe(PackedVector2Array([Vector2(0, 0.01), Vector2(0.25, 0.05), Vector2(0.6, 0.08),
+			Vector2(1, 0)]),
 		0.45, 8, 6, 1.0, 0.5, func(t: float, a: float) -> float:
 			return 1.0 - smoothstep(0.1, 0.3, absf(cos(a))) if t > 0.2 else 0.0)
 	var tail := MeshKit.fin(PackedVector2Array([Vector2(0, 0), Vector2(-0.12, 0.08), Vector2(-0.12, -0.08)]), 0.01, 0.3)

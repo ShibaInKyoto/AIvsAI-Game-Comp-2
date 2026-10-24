@@ -15,6 +15,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Lint GDScript
+        run: |
+          pip install --quiet "gdtoolkit==4.*"
+          gdlint src tests tools
+
       - name: Cache Godot
         id: cache-godot
         uses: actions/cache@v4

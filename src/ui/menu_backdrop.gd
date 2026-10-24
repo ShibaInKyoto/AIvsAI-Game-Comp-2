@@ -6,15 +6,15 @@ extends Node3D
 var level: Level
 var sub: Submarine
 var camera: Camera3D
-var _t := 0.0
-var _ping_timer := 2.0
-var _anchor := Vector2.ZERO
-var _run: RunState
 ## Horizontal camera offset; negative values push the submarine to the right
 ## of the screen to leave room for menus on the left.
 var view_shift := -5.0
 ## Zone to show; -1 picks the deepest biome the player has reached.
 var force_zone := -1
+var _t := 0.0
+var _ping_timer := 2.0
+var _anchor := Vector2.ZERO
+var _run: RunState
 
 
 func _ready() -> void:

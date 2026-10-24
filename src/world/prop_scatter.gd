@@ -111,7 +111,8 @@ static func _add_vent_plumes(level: Level, xforms: Array[Transform3D]) -> void:
 		pm.turbulence_enabled = true
 		pm.turbulence_noise_strength = 1.5
 		var g := Gradient.new()
-		g.colors = PackedColorArray([Color(0.9, 0.45, 0.15, 0.5), Color(0.15, 0.12, 0.12, 0.35), Color(0.05, 0.05, 0.05, 0.0)])
+		g.colors = PackedColorArray([Color(0.9, 0.45, 0.15, 0.5), Color(0.15, 0.12, 0.12, 0.35), Color(0.05, 0.05,
+				0.05, 0.0)])
 		g.offsets = PackedFloat32Array([0.0, 0.35, 1.0])
 		var ramp := GradientTexture1D.new()
 		ramp.gradient = g
@@ -252,7 +253,8 @@ static func _kelp() -> ArrayMesh:
 		parts.append([stem, Transform3D(Basis(), off)])
 		var y := 0.6
 		while y < h:
-			var leaf := MeshKit.fin(PackedVector2Array([Vector2(0, 0), Vector2(0.35, 0.18), Vector2(0.75, 0.05), Vector2(0.35, -0.08)]), 0.01)
+			var leaf := MeshKit.fin(PackedVector2Array([Vector2(0, 0), Vector2(0.35, 0.18), Vector2(0.75, 0.05),
+					Vector2(0.35, -0.08)]), 0.01)
 			var side := 1.0 if int(y * 3.0) % 2 == 0 else -1.0
 			var xf := Transform3D(Basis(Vector3.UP, rng.randf() * TAU) * Basis(Vector3.BACK, side * 0.5), off + Vector3(0, y, 0))
 			parts.append([leaf, xf])
@@ -305,7 +307,7 @@ static func _coral() -> ArrayMesh:
 			var b2 := b * Basis(Vector3.UP, k * PI + rng.randf_range(-0.4, 0.4)) * Basis(Vector3.BACK, rng.randf_range(0.3, 0.6))
 			parts.append([twig, Transform3D(b2, tip)])
 	# A rounded brain-coral lump at the base.
-	var lump := MeshKit.ball(0.45, 0.0, 0.0, 12, 8)
+	var lump := MeshKit.ball(0.45, 0.0, 12, 8)
 	parts.append([lump, Transform3D(Basis().scaled(Vector3(1.3, 0.7, 1.1)), Vector3(0.35, 0.1, 0.2))])
 	return _paint(MeshKit.merge(parts), func(v: Vector3) -> Color:
 		var tip := smoothstep(0.9, 1.35, v.length())
@@ -369,7 +371,8 @@ static func _spine() -> ArrayMesh:
 		var height := 3.2 - absf(r - 2.0) * 0.45
 		for i in 5:
 			var t := float(i) / 4.0
-			var seg := _upright(PackedVector2Array([Vector2(0, lerpf(0.32, 0.12, t)), Vector2(1, lerpf(0.28, 0.07, t))]), height / 4.5, 6, 1)
+			var seg := _upright(PackedVector2Array([Vector2(0, lerpf(0.32, 0.12, t)), Vector2(1, lerpf(0.28, 0.07,
+					t))]), height / 4.5, 6, 1)
 			var bend := Basis(Vector3.BACK, -0.32 * i)
 			var y := 0.0
 			var off := Vector3.ZERO

@@ -67,7 +67,9 @@ func behave(delta: float) -> void:
 		desired += (flare.pos - pos).normalized() * 1.8
 	steer(desired, 0.8, delta)
 	if level.field.sample(pos) < radius + 1.5:
-		_drift = _drift.reflect(level.field.normal(pos)).normalized() * 0.6 if _drift.dot(level.field.normal(pos)) < 0.0 else _drift
+		var n := level.field.normal(pos)
+		if _drift.dot(n) < 0.0:
+			_drift = _drift.reflect(n).normalized() * 0.6
 	_bell.scale = Vector3(1.0 + pulse * 0.08, 1.0 - pulse * 0.12, 1.0 - pulse * 0.12)
 
 

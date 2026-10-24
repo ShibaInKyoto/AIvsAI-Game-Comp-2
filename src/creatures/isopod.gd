@@ -56,7 +56,8 @@ func build_model() -> void:
 	for i in 6:
 		var x := -0.45 + i * 0.18
 		for z: float in [-0.35, 0.35]:
-			legs.append([MeshKit.spike(0.04, 0.35, 0.0, 4), Transform3D(Basis(Vector3.BACK, -PI * 0.5 - 0.3), Vector3(x, -0.2, z))])
+			legs.append([MeshKit.spike(0.04, 0.35, 0.0, 4), Transform3D(Basis(Vector3.BACK, -PI * 0.5 - 0.3),
+					Vector3(x, -0.2, z))])
 	_legs = add_visual(MeshKit.merge(legs), mat)
 
 

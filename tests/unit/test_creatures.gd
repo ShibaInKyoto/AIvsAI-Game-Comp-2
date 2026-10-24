@@ -21,7 +21,8 @@ func test_each_species_engages() -> void:
 		level.build(layout, 0)
 		var sub := Submarine.new()
 		level.add_child(sub)
-		var room: LevelLayout.Chamber = layout.chambers_of_kind(&"main")[0] if not layout.chambers_of_kind(&"main").is_empty() else layout.chambers[0]
+		var rooms := layout.chambers_of_kind(&"main")
+		var room: LevelLayout.Chamber = rooms[0] if not rooms.is_empty() else layout.chambers[0]
 		sub.setup(level, run, room.center)
 		sub.input_enabled = false
 		level.player = sub

@@ -179,7 +179,8 @@ func _emit_wave(speed: float) -> void:
 	add_child(mi)
 	mi.global_position = Vector3(pos.x, pos.y, 0.4)
 	mi.scale = Vector3.ONE * 0.5
-	_waves.append({"radius": 0.5, "speed": speed, "resolved": false, "arrived": 0.0, "deadline": -1.0, "mesh": mi, "mat": mat})
+	_waves.append({"radius": 0.5, "speed": speed, "resolved": false, "arrived": 0.0, "deadline": -1.0, "mesh": mi,
+			"mat": mat})
 	_beat = 1.0
 	Audio.play(&"choir_wave", -1.0, randf_range(0.9, 1.1))
 	level.emit_noise(pos, 20.0, self)
@@ -262,7 +263,8 @@ func on_organ_destroyed(organ: ChoirOrgan) -> void:
 		_defeat()
 		return
 	var remaining := organs.size()
-	Events.toast.emit("The song falters... %d voice%s remain." % [remaining, "" if remaining == 1 else "s"], UiTheme.ACCENT)
+	Events.toast.emit("The song falters... %d voice%s remain." % [remaining, "" if remaining == 1 else "s"],
+			UiTheme.ACCENT)
 	_summon(phase)
 
 
