@@ -42,6 +42,7 @@ func _ready() -> void:
 
 func _exit_tree() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	Audio.set_muffle(0.0)
 
 
 func load_zone(zone: int) -> void:

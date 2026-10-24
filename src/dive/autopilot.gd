@@ -23,6 +23,7 @@ var _shots := 0
 var _stuck_timer := 0.0
 var _last_pos := Vector2.ZERO
 var _zones_cleared := 0
+var _route := PackedVector2Array()
 
 
 static func requested() -> bool:
@@ -56,6 +57,9 @@ func bind(p_sub: Submarine, p_level: Level) -> void:
 	sub.input_enabled = false
 	_path_index = 0
 	_last_pos = sub.pos
+	_route = level.layout.find_path(sub.pos, level.layout.exit)
+	if _route.is_empty():
+		_route = level.layout.main_path
 
 
 func drive(delta: float) -> void:
@@ -64,7 +68,7 @@ func drive(delta: float) -> void:
 	if level.boss and level.boss.active:
 		_fight_boss()
 		return
-	var path := level.layout.main_path
+	var path := _route
 	# Advance along the path once we are close to the current waypoint.
 	while _path_index < path.size() - 1 and sub.pos.distance_to(path[_path_index]) < 6.0:
 		_path_index += 1
