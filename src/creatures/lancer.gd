@@ -57,6 +57,7 @@ func build_model() -> void:
 		[dorsal, Transform3D(Basis(), Vector3(-0.2, 0.26, 0))],
 		[dorsal, Transform3D(Basis().scaled(Vector3(0.7, -0.7, 1)), Vector3(-0.5, -0.22, 0))]])
 	add_visual(mesh, mat)
+	add_eyes(Vector3(0.95, 0.07, 0.13), 0.07, Color(0.95, 0.9, 0.6))
 
 
 func think() -> void:

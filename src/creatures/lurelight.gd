@@ -77,6 +77,7 @@ func build_model() -> void:
 	teeth_mi.material_override = tooth_mat
 	_jaw.add_child(teeth_mi)
 
+	add_eyes(Vector3(1.05, 0.5, 0.62), 0.11, Color(0.75, 0.85, 0.8))
 	# The lure: a stalk arcing forward with a glowing bulb.
 	_lure = Node3D.new()
 	_lure.position = Vector3(1.0, 0.95, 0)

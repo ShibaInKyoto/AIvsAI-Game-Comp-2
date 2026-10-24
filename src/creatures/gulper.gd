@@ -60,6 +60,7 @@ func build_model() -> void:
 		var z := -0.24 + i * 0.16
 		fangs.append([MeshKit.spike(0.05, 0.3, 0.3, 4), Transform3D(Basis(Vector3.BACK, -PI * 0.5), Vector3(0.7, 0.3, z))])
 	_head = add_visual(MeshKit.merge([[head], [MeshKit.merge(fangs)]]), mat)
+	add_eyes(Vector3(0.55, 0.32, 0.38), 0.08, Color(1.0, 0.4, 0.5), 3.0)
 	# The body is rebuilt in world space every frame, so it lives outside `model`.
 	_body = MeshInstance3D.new()
 	_body.mesh = _body_mesh

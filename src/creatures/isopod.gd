@@ -59,6 +59,7 @@ func build_model() -> void:
 			legs.append([MeshKit.spike(0.04, 0.35, 0.0, 4), Transform3D(Basis(Vector3.BACK, -PI * 0.5 - 0.3),
 					Vector3(x, -0.2, z))])
 	_legs = add_visual(MeshKit.merge(legs), mat)
+	add_eyes(Vector3(0.55, 0.12, 0.25), 0.06, Color(0.1, 0.1, 0.1))
 
 
 func think() -> void:

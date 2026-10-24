@@ -94,16 +94,17 @@ func reveal(center: Vector2, radius: float) -> void:
 		return
 	var w := _reveal_img.get_width()
 	var h := _reveal_img.get_height()
-	var cx := int(center.x)
-	var cy := int(-center.y)
-	var r := int(radius)
-	for y in range(maxi(cy - r, 0), mini(cy + r + 1, h)):
-		for x in range(maxi(cx - r, 0), mini(cx + r + 1, w)):
-			var d := Vector2(x - cx, y - cy).length()
-			if d <= radius:
-				var a := clampf((radius - d) / 6.0, 0.0, 1.0)
-				if a > _reveal_img.get_pixel(x, y).r:
-					_reveal_img.set_pixel(x, y, Color(a, a, a))
+	# One filled span per row keeps this cheap enough to run on every ping;
+	# the texture's linear filtering softens the edge.
+	var cx := center.x
+	var cy := -center.y
+	for y in range(maxi(int(cy - radius), 0), mini(int(cy + radius) + 1, h)):
+		var dy := y + 0.5 - cy
+		var half := sqrt(maxf(radius * radius - dy * dy, 0.0))
+		var x0 := clampi(int(cx - half), 0, w - 1)
+		var x1 := clampi(int(cx + half), 0, w - 1)
+		if x1 > x0:
+			_reveal_img.fill_rect(Rect2i(x0, y, x1 - x0 + 1, 1), Color.WHITE)
 	_reveal_tex.update(_reveal_img)
 
 

@@ -72,6 +72,7 @@ func build_model() -> void:
 		teeth.append([MeshKit.spike(0.07, 0.4, 0.2, 4), Transform3D(Basis(Vector3.BACK, PI * 0.5),
 				Vector3(-0.3 + i * 0.22, 0.12, 0.0))])
 	_jaw = add_visual(MeshKit.merge([[jaw], [MeshKit.merge(teeth)]]), mat, Transform3D(Basis(), Vector3(2.6, -0.45, 0)))
+	add_eyes(Vector3(2.75, 0.45, 0.55), 0.17, Color(1.0, 0.85, 0.75), 4.0)
 
 
 func _patrol_point() -> Vector2:

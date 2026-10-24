@@ -318,6 +318,35 @@ func species_material(config: Callable) -> ShaderMaterial:
 	return mat
 
 
+## A pair of eyes on either flank of the head. Glowing eyes read in the dark;
+## glossy ones catch the lamp.
+func add_eyes(at: Vector3, eye_radius: float, color: Color, glow := 0.0) -> void:
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = color
+	mat.roughness = 0.05
+	mat.metallic = 0.3
+	if glow > 0.0:
+		mat.emission_enabled = true
+		mat.emission = color
+		mat.emission_energy_multiplier = glow
+	var pupil_mat := StandardMaterial3D.new()
+	pupil_mat.albedo_color = Color(0.02, 0.02, 0.03)
+	pupil_mat.roughness = 0.0
+	for side: float in [1.0, -1.0]:
+		var eye := MeshInstance3D.new()
+		eye.mesh = MeshKit.sphere(eye_radius, 10, 6)
+		eye.material_override = mat
+		eye.position = Vector3(at.x, at.y, at.z * side)
+		eye.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		model.add_child(eye)
+		if glow <= 0.0:
+			var pupil := MeshInstance3D.new()
+			pupil.mesh = MeshKit.sphere(eye_radius * 0.55, 8, 4)
+			pupil.material_override = pupil_mat
+			pupil.position = Vector3(eye_radius * 0.35, 0, eye_radius * 0.55 * side)
+			eye.add_child(pupil)
+
+
 func add_visual(mesh: Mesh, mat: Material, xf := Transform3D.IDENTITY) -> MeshInstance3D:
 	var mi := MeshInstance3D.new()
 	mi.mesh = mesh
