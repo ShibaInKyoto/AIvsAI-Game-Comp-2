@@ -37,6 +37,10 @@ static func entries() -> Array[Entry]:
 				"An apex predator the size of a bus. It hunts by sound and charges any light it sees. Flares distract it; torpedoes only make it angry."),
 			Entry.new(&"isopod", "Vent Isopod", "Bathynomus ferrovorax", "Medium",
 				"Armored scavengers that crawl the vent walls. They latch onto hulls and chew through power lines. A shock pulse or a burst of speed shakes them off."),
+			Entry.new(&"siphon", "Lantern Chain", "Praya catenata", "Low",
+				"Not one animal but thousands, strung into a living chain longer than a bus. Every bell can sting. Drift around it, not through it."),
+			Entry.new(&"mimic", "Mimic", "Cista mendax", "High",
+				"It wears the shape of an expedition crate. Sonar marks it as alive - that is the only warning you get."),
 			Entry.new(&"choir", "The Choir", "-", "Unknown",
 				"Whatever has been answering our pings. The station logs call it the Choir. It sings the trench into new shapes."),
 		]

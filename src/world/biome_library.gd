@@ -94,7 +94,7 @@ static func _reef() -> BiomeDef:
 	b.sun_energy = 0.25
 	b.snow_amount = 1.0
 	b.glow_color = Color(1.0, 0.35, 0.85)
-	b.creatures = {&"shoal": 2.0, &"jelly": 2.0, &"lancer": 1.6, &"lurelight": 1.0}
+	b.creatures = {&"shoal": 2.0, &"jelly": 2.0, &"lancer": 1.6, &"lurelight": 1.0, &"siphon": 0.6}
 	b.creature_budget = 12
 	b.props = {&"coral": 1.2, &"fan": 1.0, &"rock": 0.8, &"anemone": 0.8, &"kelp": 0.3}
 	b.bulb_count = 5
@@ -128,7 +128,7 @@ static func _midnight() -> BiomeDef:
 	b.ambient_energy = 1.6
 	b.snow_amount = 1.2
 	b.glow_color = Color(0.2, 0.9, 1.0)
-	b.creatures = {&"gulper": 2.0, &"lurelight": 1.5, &"jelly": 1.0, &"shoal": 1.0, &"lancer": 1.0, &"stalker": 0.6}
+	b.creatures = {&"gulper": 2.0, &"lurelight": 1.5, &"jelly": 1.0, &"shoal": 1.0, &"lancer": 1.0, &"stalker": 0.6, &"siphon": 0.7}
 	b.creature_budget = 13
 	b.props = {&"crystal": 1.0, &"mushroom": 1.0, &"rock": 1.0, &"spine": 0.5}
 	b.bulb_count = 6
@@ -195,7 +195,7 @@ static func _hadal() -> BiomeDef:
 	b.ambient_energy = 1.4
 	b.snow_amount = 1.4
 	b.glow_color = Color(0.7, 0.4, 1.0)
-	b.creatures = {&"stalker": 1.0, &"gulper": 1.5, &"lurelight": 1.2, &"jelly": 1.2, &"isopod": 1.0, &"lancer": 1.2}
+	b.creatures = {&"stalker": 1.0, &"gulper": 1.5, &"lurelight": 1.2, &"jelly": 1.2, &"isopod": 1.0, &"lancer": 1.2, &"siphon": 0.6}
 	b.creature_budget = 15
 	b.props = {&"crystal": 1.2, &"spine": 1.0, &"rock": 0.8, &"mushroom": 0.4}
 	b.bulb_count = 6

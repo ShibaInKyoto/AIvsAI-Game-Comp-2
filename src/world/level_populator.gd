@@ -12,12 +12,13 @@ const SPECIES: Dictionary[StringName, Script] = {
 	&"gulper": preload("res://src/creatures/gulper.gd"),
 	&"stalker": preload("res://src/creatures/stalker.gd"),
 	&"isopod": preload("res://src/creatures/isopod.gd"),
+	&"siphon": preload("res://src/creatures/siphonophore.gd"),
 }
 const WALL_DWELLERS: Array[StringName] = [&"gulper", &"lurelight", &"isopod"]
 ## Spawn cost of each species against the biome's creature budget.
 const COST: Dictionary[StringName, float] = {
 	&"shoal": 0.6, &"jelly": 0.8, &"lancer": 1.0, &"lurelight": 1.5,
-	&"gulper": 1.4, &"stalker": 4.0, &"isopod": 0.7,
+	&"gulper": 1.4, &"stalker": 4.0, &"isopod": 0.7, &"siphon": 1.6,
 }
 const SAFE_RADIUS := 26.0
 
@@ -90,7 +91,7 @@ static func _creature_spot(level: Level, id: StringName, used: PackedVector2Arra
 				continue
 			return {"pos": a.pos + a.normal * 0.6, "normal": a.normal}
 		return {}
-	var clearance := 5.0 if id == &"stalker" else 2.5
+	var clearance := 5.0 if id == &"stalker" or id == &"siphon" else 2.5
 	var spot := layout.random_open_point(rng, clearance, PackedVector2Array([layout.start]), SAFE_RADIUS)
 	if spot == Vector2.INF or not _far_from(spot, used, 5.0):
 		return {}
@@ -143,10 +144,17 @@ static func _spawn_caches(level: Level, used: PackedVector2Array) -> void:
 		cache.rich = rng.randf() < 0.35
 		level.add_entity(cache)
 		used.append(cache.pos)
-	# A couple more in the open so every route pays something.
+	# A couple more in the open so every route pays something. Below the
+	# reef, some of them are not caches at all.
 	for _i in (6 if level.event == &"wrecks" else 2):
 		var p := layout.random_open_point(rng, 2.0, used, 12.0)
 		if p == Vector2.INF:
+			continue
+		if level.zone >= 4 and rng.randf() < 0.35:
+			var mimic := Mimic.new()
+			mimic.pos = p
+			level.add_entity(mimic)
+			used.append(p)
 			continue
 		var cache := SalvageCache.new()
 		cache.pos = p
