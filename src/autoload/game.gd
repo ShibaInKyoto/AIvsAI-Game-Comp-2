@@ -61,6 +61,11 @@ func start_run(daily := false) -> void:
 	save_game()
 
 
+## Guaranteed salvage for the depth reached, independent of the outcome.
+static func expedition_pay(r: RunState) -> int:
+	return r.zone * 8
+
+
 ## Ends the dive, banks currencies and records statistics.
 ## Returns the amount of salvage banked.
 func end_run(outcome: RunState.Outcome) -> int:
@@ -76,6 +81,8 @@ func end_run(outcome: RunState.Outcome) -> int:
 		kept = int(run.salvage * Pressure.depth_bonus(run.zone + 2))
 		meta.wins += 1
 		meta.pressure_unlocked = maxi(meta.pressure_unlocked, mini(run.pressure + 1, Pressure.MAX_LEVEL))
+	# Expedition pay: every zone reached is worth something, even in defeat.
+	kept += expedition_pay(run)
 	meta.salvage += kept
 	meta.total_salvage += kept
 	meta.research += run.research

@@ -45,6 +45,7 @@ func show_result(run: RunState, outcome: RunState.Outcome) -> void:
 		["Species scanned", "%d" % run.scans],
 		["Signal logs", "%d" % run.logs],
 		["Salvage recovered", "%d" % run_salvage],
+		["Expedition pay", "%d" % Game.expedition_pay(run)],
 		["Salvage banked", "%d" % banked],
 		["Research gained", "%d" % run.research],
 	]

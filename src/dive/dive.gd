@@ -2,7 +2,7 @@ extends Node3D
 ## Runs a dive: generates each zone on a worker thread, owns the level,
 ## submarine, camera and HUD, and handles zone exits, death and surfacing.
 
-enum State { LOADING, PLAYING, STOPPED, DEAD }
+enum State { LOADING, PLAYING, DESCENDING, STOPPED, DEAD }
 
 var level: Level
 var sub: Submarine
@@ -115,7 +115,7 @@ func _generate(biome: BiomeDef, zone_seed: int, zone: int) -> LevelLayout:
 ## motion stays smooth on high refresh rate displays. Everything integrates
 ## with delta and frame-rate independent smoothing.
 func _process(frame_delta: float) -> void:
-	if state != State.PLAYING and state != State.DEAD:
+	if state != State.PLAYING and state != State.DEAD and state != State.DESCENDING:
 		return
 	var delta := minf(frame_delta, 1.0 / 20.0)
 	if _freeze > 0.0:
@@ -162,9 +162,14 @@ func _on_settings_changed() -> void:
 func _on_exit_reached() -> void:
 	if state != State.PLAYING:
 		return
-	state = State.STOPPED
+	state = State.DESCENDING
 	sub.input_enabled = false
+	sub.external_move = Vector2(0, -1)
 	Audio.play(&"zone_exit", -2.0)
+	# Let the current carry the sub down the fissure for a moment.
+	if not autopilot:
+		await get_tree().create_timer(1.4).timeout
+	state = State.STOPPED
 	var run := Game.run
 	if BiomeLibrary.is_final_zone(run.zone):
 		return
