@@ -24,6 +24,8 @@ var daily := false
 ## The daily dive's condition of the day (see [method ZoneEvents.for_zone]).
 var daily_event: StringName = &""
 var deepest_depth := 0
+## What last damaged the hull (see [method DeathTips.cause_of]).
+var last_hit_by: StringName = &""
 var outcome := Outcome.NONE
 
 

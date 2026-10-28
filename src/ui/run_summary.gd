@@ -17,7 +17,11 @@ func show_result(run: RunState, outcome: RunState.Outcome) -> void:
 	match outcome:
 		RunState.Outcome.IMPLODED:
 			title = "SIGNAL LOST"
-			subtitle = "The %s imploded at %d m." % [Catalog.frame(run.frame_id).name, run.deepest_depth]
+			if run.hull > 0.0:
+				subtitle = "You abandoned the dive at %d m." % run.deepest_depth
+			else:
+				subtitle = "The %s imploded at %d m, sunk by %s." % [Catalog.frame(run.frame_id).name,
+					run.deepest_depth, DeathTips.describe(run.last_hit_by)]
 			color = UiTheme.DANGER
 			Audio.play_music(&"loss", 1.0)
 		RunState.Outcome.SURFACED:
@@ -61,6 +65,10 @@ func show_result(run: RunState, outcome: RunState.Outcome) -> void:
 	if outcome == RunState.Outcome.IMPLODED:
 		column.add_child(UiUtil.label("Insurance recovered %d%% of your salvage." % int(run.stats.insurance * 100),
 				&"DimLabel"))
+		if run.hull <= 0.0:
+			var tip := UiUtil.label("TIP  " + DeathTips.tip(run.last_hit_by), &"", 20, UiTheme.ACCENT)
+			tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			column.add_child(tip)
 	var row := HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.add_theme_constant_override(&"separation", 20)

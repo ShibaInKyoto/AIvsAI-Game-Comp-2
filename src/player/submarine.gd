@@ -418,6 +418,7 @@ func take_damage(amount: float, from: Vector2, source: Node = null, knockback :=
 		amount *= Pressure.creature_damage(run.pressure)
 	amount *= Settings.damage_taken_mult()
 	run.hull -= amount
+	run.last_hit_by = DeathTips.cause_of(source)
 	Settings.rumble_pulse(amount / 25.0, 0.25)
 	_invulnerable = 0.35
 	_since_damage = 0.0

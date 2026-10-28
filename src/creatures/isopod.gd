@@ -124,6 +124,7 @@ func _ride(delta: float) -> void:
 	vel = sub.vel
 	facing = -_latch_offset.normalized()
 	sub.drain(1.2 * delta, 3.5 * delta)
+	sub.run.last_hit_by = species
 	if sub.boosting:
 		_shake += delta
 		if _shake > SHAKE_OFF_TIME:

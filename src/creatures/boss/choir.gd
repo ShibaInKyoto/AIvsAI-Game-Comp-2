@@ -236,7 +236,7 @@ func _miss(w: Dictionary) -> void:
 	w.resolved = true
 	_answer_streak = 0
 	var sub := level.player
-	sub.take_damage(WAVE_DAMAGE, pos, null)
+	sub.take_damage(WAVE_DAMAGE, pos, self)
 	sub.run.battery = maxf(sub.run.battery - 6.0, 0.0)
 	sub.vel += (sub.pos - pos).normalized() * 7.0
 

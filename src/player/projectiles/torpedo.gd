@@ -86,5 +86,5 @@ func explode() -> void:
 			var falloff := 1.0 - clampf(e.pos.distance_to(pos) / (BLAST_RADIUS + e.radius), 0.0, 0.7)
 			(e as Creature).take_damage(damage * falloff, pos, &"torpedo")
 	if owner_sub and owner_sub.alive and owner_sub.pos.distance_to(pos) < BLAST_RADIUS * 0.6:
-		owner_sub.take_damage(8.0, pos)
+		owner_sub.take_damage(8.0, pos, self)
 	despawn()
