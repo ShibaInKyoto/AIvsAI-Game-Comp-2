@@ -20,7 +20,10 @@ func _ready() -> void:
 	load_game()
 	Events.creature_killed.connect(func(id: StringName, _p: Vector2) -> void:
 		if id == &"stalker":
-			meta.stalkers_killed += 1)
+			meta.stalkers_killed += 1
+		elif id == &"mother":
+			meta.mothers_killed += 1
+			check_milestones())
 
 
 ## Hull color for a frame, honoring the chosen milestone paint.

@@ -12,6 +12,8 @@ const TIPS: Dictionary[StringName, String] = {
 	&"isopod": "A latched isopod drains hull and battery. Boost or fire a shock pulse to throw it off.",
 	&"siphon": "Lantern chains sting along their whole length. Go around the colony, never through it.",
 	&"mimic": "Deep caches sometimes bite. Hook one with the harpoon from a distance before you ram it.",
+	&"mother": "The Blind Mother strikes at sound. Ping beside a wall, slip away slowly, and hit her gills while " +
+		"she is stuck. Torpedo blasts make good decoys.",
 	&"choir": "Answer each wave with a ping just as it reaches you. The ring around your sub shows when.",
 	&"rock": "Ramming rock at speed cracks the hull. Ease off the boost in tight tunnels.",
 	&"torpedo": "Torpedoes do not care who fired them. Keep your distance from the blast.",
@@ -44,6 +46,8 @@ static func describe(cause: StringName) -> String:
 			return "the Choir's song"
 		&"stalker":
 			return "the Stalker"
+		&"mother":
+			return "the Blind Mother"
 		&"vent":
 			return "a thermal vent"
 	var entry := CreatureCodex.entry(cause)

@@ -148,14 +148,18 @@ func _process(frame_delta: float) -> void:
 	if objective:
 		objective.tick()
 	# Pull the camera back while the Choir sings so its whole body is in view.
-	var want_zoom := 1.5 if level.boss and level.boss.active else 1.0
+	var want_zoom := 1.0
+	if level.boss and level.boss.active:
+		want_zoom = 1.5
+	elif is_instance_valid(level.guardian) and level.guardian.active:
+		want_zoom = 1.3
 	camera.zoom = lerpf(camera.zoom, want_zoom, 1.0 - exp(-0.8 * delta))
 	camera.tick(delta)
 
 
 ## Every so often something far below sings. More often the deeper you go.
 func _distant_calls(delta: float) -> void:
-	if level.boss or state != State.PLAYING:
+	if level.boss or (is_instance_valid(level.guardian) and level.guardian.active) or state != State.PLAYING:
 		return
 	_call_timer -= delta
 	if _call_timer <= 0.0:

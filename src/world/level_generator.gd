@@ -79,7 +79,7 @@ func _try_generate(biome: BiomeDef, zone_seed: int, zone: int) -> LevelLayout:
 				_try_add_pillar(layout.main_path, waypoints[i], r)
 
 	# The exit: a room with a fissure dropping out of the bottom of the zone.
-	var exit_r := Vector2(10.0, 7.0)
+	var exit_r := Vector2(25.0, 14.0) if zone == BiomeLibrary.LAIR_ZONE else Vector2(10.0, 7.0)
 	_carve_ellipse(exit_room, exit_r)
 	layout.chambers.append(LevelLayout.Chamber.new(exit_room, exit_r, &"exit"))
 	_carve_capsule(exit_room, Vector2(exit_room.x, -size.y - 4.0), 3.6, 2.8)

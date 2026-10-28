@@ -7,6 +7,8 @@ const ZONES_PER_BIOME := 2
 const BIOME_COUNT := 5
 ## Zones in a full dive, including the final encounter.
 const TOTAL_ZONES := BIOME_COUNT * ZONES_PER_BIOME + 1
+## The last Midnight Caverns zone ends in the Blind Mother's lair.
+const LAIR_ZONE := 5
 
 static var _cache: Array[BiomeDef] = []
 

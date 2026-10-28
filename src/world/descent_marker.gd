@@ -4,10 +4,14 @@ extends Node3D
 ## zone exit so it reads from a distance even before sonar finds it.
 
 const COLOR := Color(0.35, 1.0, 0.75)
+## While a guardian lives the way down glows a warning red and stops flowing.
+const SEALED_COLOR := Color(1.0, 0.25, 0.2)
 
 var _light: OmniLight3D
 var _ring: MeshInstance3D
 var _ring_mat: StandardMaterial3D
+var _stream: GPUParticles3D
+var _color := COLOR
 var _t := 0.0
 
 
@@ -40,6 +44,7 @@ func _ready() -> void:
 	quad.size = Vector2(0.18, 0.18)
 	quad.material = Fx.particle_material(Fx.soft_texture(), true, 2.5)
 	var stream := GPUParticles3D.new()
+	_stream = stream
 	stream.amount = 70
 	stream.lifetime = 2.6
 	stream.process_material = pm
@@ -58,11 +63,19 @@ func _ready() -> void:
 	_ring_mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
 	_ring_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	_ring_mat.albedo_texture = Fx.ring_texture()
-	_ring_mat.albedo_color = Color(COLOR.r * 1.5, COLOR.g * 1.5, COLOR.b * 1.5, 0.6)
+	_ring_mat.albedo_color = Color(_color.r * 1.5, _color.g * 1.5, _color.b * 1.5, 0.6)
 	_ring.material_override = _ring_mat
 	_ring.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_ring.position = Vector3(0, 0, 0.3)
 	add_child(_ring)
+
+
+func set_sealed(sealed: bool) -> void:
+	_color = SEALED_COLOR if sealed else COLOR
+	if _light:
+		_light.light_color = _color
+		_ring_mat.albedo_color = Color(_color.r * 1.5, _color.g * 1.5, _color.b * 1.5, _ring_mat.albedo_color.a)
+		_stream.emitting = not sealed
 
 
 func _process(delta: float) -> void:

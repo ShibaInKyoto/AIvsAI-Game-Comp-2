@@ -157,7 +157,7 @@ func play_ui(sound: StringName, volume_db := 0.0) -> void:
 
 
 ## Positional sound on the gameplay plane.
-func play_at(sound: StringName, pos: Vector2, volume_db := 0.0, pitch_variance := 0.08) -> void:
+func play_at(sound: StringName, pos: Vector2, volume_db := 0.0, pitch_variance := 0.08, pitch := 1.0) -> void:
 	var stream := get_stream(sound)
 	if stream == null or _rate_limited(sound, 25):
 		return
@@ -165,7 +165,7 @@ func play_at(sound: StringName, pos: Vector2, volume_db := 0.0, pitch_variance :
 	_next_3d = (_next_3d + 1) % _pool3d.size()
 	p.stream = stream
 	p.volume_db = volume_db
-	p.pitch_scale = 1.0 + randf_range(-pitch_variance, pitch_variance)
+	p.pitch_scale = pitch * (1.0 + randf_range(-pitch_variance, pitch_variance))
 	p.global_position = Vector3(pos.x, pos.y, 0.0)
 	p.play()
 

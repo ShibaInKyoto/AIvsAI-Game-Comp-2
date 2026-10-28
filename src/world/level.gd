@@ -33,6 +33,10 @@ var flares: Array[Entity] = []
 var exit_known := false
 ## The final encounter, present only on the hadal floor.
 var boss: ChoirBoss
+## The Blind Mother, in the lair zone; the exit stays sealed while she lives.
+var guardian: BlindMother
+var exit_sealed := false
+var descent_marker: DescentMarker
 
 var _pending_remove: Array[Entity] = []
 var _ping_slot := 0
@@ -66,9 +70,9 @@ func build(zone_layout: LevelLayout, quality: int, pressure_level := 0, zone_eve
 	terrain.build(layout, quality)
 
 	if layout.has_exit:
-		var marker := DescentMarker.new()
-		add_child(marker)
-		marker.position = Vector3(layout.exit.x, layout.exit.y, 0.0)
+		descent_marker = DescentMarker.new()
+		add_child(descent_marker)
+		descent_marker.position = Vector3(layout.exit.x, layout.exit.y, 0.0)
 
 	for i in 4:
 		RenderingServer.global_shader_parameter_set(StringName("sonar_ping%d" % i), Vector4(0, 0, -100, 0))
@@ -126,9 +130,22 @@ func tick(delta: float) -> void:
 		noises.pop_front()
 	if player and environment_rig:
 		environment_rig.update_depth(biome_progress(player.pos.y))
-	if layout.has_exit and player and not _exit_triggered and player.alive and player.pos.distance_to(layout.exit) < 5.0:
+	if layout.has_exit and not exit_sealed and player and not _exit_triggered and player.alive \
+			and player.pos.distance_to(layout.exit) < 5.0:
 		_exit_triggered = true
 		exit_reached.emit()
+
+
+func seal_exit() -> void:
+	exit_sealed = true
+	if descent_marker:
+		descent_marker.set_sealed(true)
+
+
+func unseal_exit() -> void:
+	exit_sealed = false
+	if descent_marker:
+		descent_marker.set_sealed(false)
 
 
 func emit_noise(p: Vector2, radius: float, source: Node = null) -> void:

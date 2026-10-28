@@ -29,6 +29,8 @@ static func populate(level: Level, run: RunState) -> void:
 	var used := PackedVector2Array([layout.start])
 	if not layout.has_exit:
 		_spawn_boss(level, used)
+	elif level.zone == BiomeLibrary.LAIR_ZONE:
+		_spawn_guardian(level, used)
 	_spawn_creatures(level, run, used)
 	_spawn_bulbs(level, used)
 	_spawn_vents(level, used)
@@ -48,6 +50,8 @@ static func _spawn_creatures(level: Level, run: RunState, used: PackedVector2Arr
 		budget *= 0.7
 	if not level.layout.has_exit:
 		budget *= 0.35
+	elif level.zone == BiomeLibrary.LAIR_ZONE:
+		budget *= 0.7
 	if level.event == &"frenzy":
 		budget *= 1.6
 	var ids: Array[StringName] = []
@@ -97,6 +101,21 @@ static func _creature_spot(level: Level, id: StringName, used: PackedVector2Arra
 	if spot == Vector2.INF or not _far_from(spot, used, 5.0):
 		return {}
 	return {"pos": spot}
+
+
+## The Blind Mother coils in the exit chamber and seals the way down.
+static func _spawn_guardian(level: Level, used: PackedVector2Array) -> void:
+	var rooms := level.layout.chambers_of_kind(&"exit")
+	if rooms.is_empty():
+		return
+	var lair: LevelLayout.Chamber = rooms[0]
+	var mother := BlindMother.new()
+	mother.lair_center = lair.center
+	mother.lair_radius = lair.radius
+	level.guardian = mother
+	level.add_entity(mother)
+	level.seal_exit()
+	used.append(lair.center)
 
 
 static func _spawn_boss(level: Level, used: PackedVector2Array) -> void:

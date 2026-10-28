@@ -294,6 +294,29 @@ def boss() -> np.ndarray:
     return normalize(soft_clip(normalize(render_loop(length, ev, HALL, 0.4), 0.9), 1.2), 0.42)
 
 
+def lair() -> np.ndarray:
+    """The Blind Mother's lair: a slow double heartbeat under grinding low
+    drones, a minor-ninth swell that never resolves, and stray tolling bells."""
+    rng = np.random.default_rng(21)
+    length = 56.0
+    beat = 60.0 / 76.0
+    root = 33
+    ev = []
+    for b in range(int(length / beat)):
+        ev.append((b * beat, to_stereo(thump(40))))
+        ev.append((b * beat + 0.18, to_stereo(thump(48) * 0.55)))
+    for i in range(4):
+        dur = 14.0
+        ev.append((i * dur, to_stereo(sub_drone(midi_to_hz(root - 12), dur))))
+        ev.append((i * dur, pad(midi_to_hz(root), dur, 0.12, 3.0, 4.0) * 0.8))
+        ev.append((i * dur + 3.0, pad(midi_to_hz(root + 13 + i % 2), dur - 4.0, 0.25, 5.0, 3.0) * 0.45))
+    for _ in range(10):
+        t0 = float(rng.uniform(0, length - 4))
+        n = root + 24 + int(rng.choice([0, 1, 6, 7]))
+        ev.append((t0, to_stereo(bell(midi_to_hz(n), 2.5, 2.7, 3.5) * 0.35, float(rng.uniform(-0.8, 0.8)))))
+    return normalize(soft_clip(normalize(render_loop(length, ev, DEEP, 0.5), 0.9), 1.2), 0.75)
+
+
 def loss() -> np.ndarray:
     ev = []
     for f in chord_notes(50, [0, 3, 7, 10]):
@@ -350,5 +373,5 @@ def ambience() -> np.ndarray:
 
 TRACKS = {
     "title": title, "shelf": shelf, "reef": reef, "midnight": midnight, "vents": vents,
-    "hadal": hadal, "boss": boss, "loss": loss, "ending": ending, "ambience": ambience,
+    "hadal": hadal, "boss": boss, "lair": lair, "loss": loss, "ending": ending, "ambience": ambience,
 }

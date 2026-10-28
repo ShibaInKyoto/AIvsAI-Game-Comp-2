@@ -47,6 +47,9 @@ static func entries() -> Array[Entry]:
 					"Every bell can sting. Drift around it, not through it."),
 			Entry.new(&"mimic", "Mimic", "Cista mendax", "High",
 				"It wears the shape of an expedition crate. Sonar marks it as alive - that is the only warning you get."),
+			Entry.new(&"mother", "The Blind Mother", "Mater caeca", "Extreme",
+				"Thirty metres of eyeless eel coiled at the bottom of the Midnight Caverns. She hears a sub drift past " +
+					"from across her lair and strikes at the sound - straight through anything in the way."),
 			Entry.new(&"choir", "The Choir", "-", "Unknown",
 				"Whatever has been answering our pings. The station logs call it the Choir. It sings the trench into new shapes."),
 		]

@@ -14,6 +14,8 @@ var _objective_label: Label
 var _hull_bar: ProgressBar
 var _hull_label: Label
 var _battery_bar: ProgressBar
+var _boss_box: VBoxContainer
+var _boss_bar: ProgressBar
 var _battery_label: Label
 var _salvage_label: Label
 var _research_label: Label
@@ -133,6 +135,22 @@ func _ready() -> void:
 	_banner_sub.add_theme_color_override(&"font_color", UiTheme.ACCENT)
 	_banner.add_child(_banner_sub)
 
+	# Guardian health (top centre), shown while the Blind Mother is awake.
+	_boss_box = VBoxContainer.new()
+	_place(_boss_box, Control.PRESET_CENTER_TOP, Vector2(-320, 36), Vector2(640, 60))
+	_boss_box.visible = false
+	root.add_child(_boss_box)
+	var boss_name := UiUtil.label("THE BLIND MOTHER", &"HeaderLabel", 24, UiTheme.DANGER)
+	boss_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_boss_box.add_child(boss_name)
+	_boss_bar = ProgressBar.new()
+	_boss_bar.custom_minimum_size = Vector2(640, 12)
+	_boss_bar.show_percentage = false
+	var boss_fill := StyleBoxFlat.new()
+	boss_fill.bg_color = UiTheme.DANGER
+	_boss_bar.add_theme_stylebox_override(&"fill", boss_fill)
+	_boss_box.add_child(_boss_bar)
+
 	_fps_label = Label.new()
 	_fps_label.theme_type_variation = &"DimLabel"
 	_place(_fps_label, Control.PRESET_BOTTOM_LEFT, Vector2(40, -34), Vector2(200, 30))
@@ -229,6 +247,12 @@ func _process(delta: float) -> void:
 		_tool_hint.text = "[RMB] use   [Q] cycle" if sub.stats.tools.size() > 1 else "[RMB] use"
 		if Settings.using_gamepad:
 			_tool_hint.text = "[RB] use   [LB] cycle" if sub.stats.tools.size() > 1 else "[RB] use"
+
+	var guardian := level.guardian
+	_boss_box.visible = is_instance_valid(guardian) and guardian.active
+	if _boss_box.visible:
+		_boss_bar.max_value = guardian.max_hp
+		_boss_bar.value = guardian.hp
 
 	var low_hull := clampf(1.0 - run.hull / maxf(sub.stats.max_hull, 1.0) * 3.0, 0.0, 1.0)
 	var mat := _vignette.material as ShaderMaterial
