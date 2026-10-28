@@ -147,6 +147,10 @@ func _nearest_threat() -> Creature:
 
 
 func _process(delta: float) -> void:
+	# The clock starts once the first zone has loaded, so loading time (long in
+	# frames when running headless at a fixed frame rate) never eats the budget.
+	if sub == null:
+		return
 	_elapsed += delta
 	_frames += 1
 	_frame_ms_sum += delta * 1000.0

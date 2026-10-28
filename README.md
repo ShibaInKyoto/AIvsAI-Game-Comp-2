@@ -152,7 +152,8 @@ python3 tools/audio/generate.py                                 # regenerate all
 
 Debugging helpers: `-- --autopilot --zone=4 --shots=<dir>` flies a bot through
 a zone and saves screenshots. `-- --capture=<dir> --capture-at=5` screenshots
-any screen.
+any screen. `godot --headless --fixed-fps 20 --path . -- --autopilot --time=900`
+soak-tests whole dives far faster than real time.
 
 CI (`.github/workflows/ci.yml`) lints and checks every script, runs the tests
 (failing on any runtime script or shader error, via `tools/ci/godot_strict.sh`) and
