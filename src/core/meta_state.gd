@@ -46,6 +46,8 @@ var wreck_frame := ""
 var wreck_cargo := 0
 ## Contract taken in the hangar for the next dive ("" = none); used up when it starts.
 var contract_selected := ""
+## Biome to start dives in (0 = the surface); see [method deepest_start].
+var start_biome := 0
 
 
 func upgrade_level(id: StringName) -> int:
@@ -104,6 +106,12 @@ func clear_wreck() -> void:
 
 func has_wreck() -> bool:
 	return wreck_zone >= 0 and wreck_cargo > 0
+
+
+## The deepest biome a dive may start in: any whose first zone was reached.
+func deepest_start() -> int:
+	@warning_ignore("integer_division")
+	return clampi(deepest_zone / BiomeLibrary.ZONES_PER_BIOME, 0, BiomeLibrary.BIOME_COUNT - 1)
 
 
 func best_score() -> int:
@@ -182,6 +190,7 @@ func to_dict() -> Dictionary:
 		"wreck_frame": wreck_frame,
 		"wreck_cargo": wreck_cargo,
 		"contract_selected": contract_selected,
+		"start_biome": start_biome,
 	}
 
 
@@ -234,6 +243,7 @@ static func from_dict(d: Dictionary) -> MetaState:
 	m.wreck_frame = String(d.get("wreck_frame", ""))
 	m.wreck_cargo = maxi(int(d.get("wreck_cargo", 0)), 0)
 	m.contract_selected = String(d.get("contract_selected", ""))
+	m.start_biome = clampi(int(d.get("start_biome", 0)), 0, m.deepest_start())
 	if Contracts.find(StringName(m.contract_selected)) == null:
 		m.contract_selected = ""
 	if Catalog.frame(StringName(m.wreck_frame)) == null:

@@ -1,7 +1,7 @@
 class_name DiveScore
 extends RefCounted
 ## Scores a finished dive so runs can be compared across frames, outcomes and
-## pressure levels. Depth counts the most; what was hunted, learned and
+## pressure levels. Depth descended counts the most; what was hunted, learned and
 ## salvaged on the way adds to it, and pressure multiplies the sum.
 
 const PER_KILL := 25
@@ -17,7 +17,7 @@ const PRESSURE_STEP := 0.25
 ## The score's parts as [label, points] pairs, before the pressure multiplier.
 static func breakdown(run: RunState) -> Array:
 	var parts: Array = [
-		["depth", run.deepest_depth],
+		["depth", run.descent()],
 		["creatures", run.kills * PER_KILL],
 		["ambushes", run.ambushes * PER_AMBUSH],
 		["scans", run.scans * PER_SCAN],

@@ -153,6 +153,8 @@ func start_run(daily := false) -> void:
 	else:
 		run.run_seed = randi() & 0x7fffffff
 	run.rebuild_stats(meta.upgrades)
+	if not daily and meta.start_biome > 0:
+		run.start_deep(mini(meta.start_biome, meta.deepest_start()), meta.upgrades)
 	run.refill()
 	meta.dives += 1
 	save_game()
@@ -166,7 +168,7 @@ static func today() -> String:
 
 ## Guaranteed salvage for the depth reached, independent of the outcome.
 static func expedition_pay(r: RunState) -> int:
-	return r.zone * 8
+	return (r.zone - r.start_zone) * 8
 
 
 ## Ends the dive, banks currencies and records statistics.

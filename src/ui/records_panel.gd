@@ -37,7 +37,7 @@ func _ready() -> void:
 			for cell: String in ["#%d" % (i + 1), UiUtil.thousands(int(r.score)), frame.name if frame else "?",
 					"%s m" % UiUtil.thousands(int(r.depth)), result, r.date]:
 				grid.add_child(UiUtil.label(cell, &"MonoLabel", 22, color))
-	var rules := UiUtil.label(("Score: depth in metres, +%d per kill, +%d per ambush, +%d per scan, +%d per log, " +
+	var rules := UiUtil.label(("Score: metres descended, +%d per kill, +%d per ambush, +%d per scan, +%d per log, " +
 			"plus the salvage you recovered. Surfacing and silencing the Choir add bonuses; pressure multiplies " +
 			"it all.") % [DiveScore.PER_KILL, DiveScore.PER_AMBUSH, DiveScore.PER_SCAN, DiveScore.PER_LOG],
 			&"DimLabel", 17)

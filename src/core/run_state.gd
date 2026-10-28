@@ -7,6 +7,8 @@ enum Outcome { NONE, SURFACED, IMPLODED, VICTORY }
 var run_seed := 0
 var frame_id: StringName = &"lantern"
 var zone := 0
+## The zone the dive began in (deeper than 0 for a deep start).
+var start_zone := 0
 var modules: Array[StringName] = []
 var stats: SubStats
 var hull := 100.0
@@ -58,6 +60,25 @@ func rebuild_stats(upgrades: Dictionary) -> void:
 	battery = minf(battery, stats.max_battery)
 
 
+## Begins the dive in [param biome] instead of at the surface, with one
+## module drafted for each zone (and stop) skipped.
+func start_deep(biome: int, upgrades: Dictionary) -> void:
+	zone = clampi(biome, 0, BiomeLibrary.BIOME_COUNT - 1) * BiomeLibrary.ZONES_PER_BIOME
+	start_zone = zone
+	var rng := RandomNumberGenerator.new()
+	rng.seed = run_seed
+	for i in zone:
+		var offer := Catalog.draft(rng, modules, stats, 1)
+		if not offer.is_empty():
+			add_module(offer[0].id, upgrades)
+
+
+## Metres descended this dive: depth below where it started.
+func descent() -> int:
+	return maxi(deepest_depth - int(BiomeLibrary.zone_depth_range(start_zone).x), 0) if start_zone > 0 \
+		else deepest_depth
+
+
 func refill() -> void:
 	hull = stats.max_hull
 	battery = stats.max_battery
@@ -74,7 +95,7 @@ func add_module(id: StringName, upgrades: Dictionary) -> void:
 ## Snapshot for resuming an interrupted dive (stats are rebuilt on load).
 func to_dict() -> Dictionary:
 	return {
-		"run_seed": run_seed, "frame_id": frame_id, "zone": zone, "modules": modules,
+		"run_seed": run_seed, "frame_id": frame_id, "zone": zone, "start_zone": start_zone, "modules": modules,
 		"hull": hull, "battery": battery, "torpedoes": torpedoes, "flares": flares, "decoys": decoys,
 		"salvage": salvage, "research": research, "kills": kills, "ambushes": ambushes, "scans": scans, "logs": logs,
 		"time": time, "pressure": pressure, "daily": daily, "daily_event": daily_event, "contract": contract,
@@ -89,6 +110,7 @@ static func from_dict(d: Dictionary, upgrades: Dictionary) -> RunState:
 	if Catalog.frame(r.frame_id) == null:
 		r.frame_id = &"lantern"
 	r.zone = clampi(int(d.get("zone", 0)), 0, BiomeLibrary.TOTAL_ZONES - 1)
+	r.start_zone = clampi(int(d.get("start_zone", 0)), 0, r.zone)
 	r.contract = StringName(d.get("contract", ""))
 	if Contracts.find(r.contract) == null:
 		r.contract = &""

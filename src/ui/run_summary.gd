@@ -44,7 +44,7 @@ func show_result(run: RunState, outcome: RunState.Outcome) -> void:
 	panel.add_child(grid)
 	var rows: Array = [
 		["Deepest point", "%d m" % run.deepest_depth],
-		["Zones cleared", "%d" % run.zone],
+		["Zones cleared", "%d" % (run.zone - run.start_zone)],
 		["Dive time", UiUtil.format_time(run.time)],
 		["Creatures defeated", "%d" % run.kills],
 		["Species scanned", "%d" % run.scans],
@@ -57,6 +57,9 @@ func show_result(run: RunState, outcome: RunState.Outcome) -> void:
 	for r: Array in rows:
 		grid.add_child(UiUtil.label(r[0], &"DimLabel", 22))
 		grid.add_child(UiUtil.label(r[1], &"MonoLabel", 24))
+	if run.start_zone > 0:
+		column.add_child(UiUtil.label("Deep start: %s" % BiomeLibrary.biome_for_zone(run.start_zone).display_name,
+				&"DimLabel", 20))
 	var terms := Contracts.find(run.contract)
 	if terms:
 		column.add_child(UiUtil.label("Contract: %s  (%s)" % [terms.name, terms.rewards()], &"", 20, UiTheme.WARN))
