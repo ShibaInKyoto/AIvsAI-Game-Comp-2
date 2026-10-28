@@ -41,9 +41,14 @@ func check_milestones() -> Array[Milestones.Milestone]:
 
 
 func load_game() -> void:
-	if not FileAccess.file_exists(SAVE_PATH):
+	var path := SAVE_PATH
+	# A crash between replacing the old save and moving the new one into
+	# place leaves only the temp file; it is complete, so use it.
+	if not FileAccess.file_exists(path) and FileAccess.file_exists(SAVE_PATH + ".tmp"):
+		path = SAVE_PATH + ".tmp"
+	if not FileAccess.file_exists(path):
 		return
-	var text := FileAccess.get_file_as_string(SAVE_PATH)
+	var text := FileAccess.get_file_as_string(path)
 	var parsed: Variant = JSON.parse_string(text)
 	if parsed is Dictionary:
 		meta = MetaState.from_dict(parsed)
@@ -58,9 +63,16 @@ func save_game() -> void:
 	if f == null:
 		push_warning("Could not write save: %s" % error_string(FileAccess.get_open_error()))
 		return
-	f.store_string(JSON.stringify(meta.to_dict(), "\t"))
+	var text := JSON.stringify(meta.to_dict(), "\t")
+	f.store_string(text)
 	f.close()
-	DirAccess.rename_absolute(ProjectSettings.globalize_path(tmp), ProjectSettings.globalize_path(SAVE_PATH))
+	var err := DirAccess.rename_absolute(ProjectSettings.globalize_path(tmp), ProjectSettings.globalize_path(SAVE_PATH))
+	if err != OK:
+		# Some file systems refuse to replace in place; write directly instead.
+		var direct := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+		if direct:
+			direct.store_string(text)
+			direct.close()
 	meta_changed.emit()
 
 
