@@ -97,8 +97,16 @@ func _ready() -> void:
 		Router.go_to(Router.DIVE), 300)
 	footer.add_child(dive)
 
-	_show_tab(Tab.UPGRADES)
+	_show_tab(_initial_tab())
 	dive.grab_focus()
+
+
+## Debug: `-- --hangar --hangar-tab=1` opens on a given tab (for screenshots).
+static func _initial_tab() -> Tab:
+	for a in OS.get_cmdline_user_args():
+		if a.begins_with("--hangar-tab="):
+			return clampi(int(a.get_slice("=", 1)), 0, Tab.size() - 1) as Tab
+	return Tab.UPGRADES
 
 
 func _refresh_header() -> void:
@@ -118,6 +126,8 @@ func _change_pressure(delta: int) -> void:
 
 func _show_tab(tab: Tab) -> void:
 	_tab = tab
+	# Drop any frame preview from browsing the Submarines tab.
+	_backdrop.preview_frame(StringName(Game.meta.selected_frame))
 	for i in _tab_buttons.size():
 		_tab_buttons[i].button_pressed = i == tab
 	UiUtil.clear(_content)
@@ -193,6 +203,8 @@ func _build_upgrades() -> void:
 func _build_frames() -> void:
 	for f in Catalog.frames():
 		var row := _row_panel()
+		var frame_id := f.id
+		row.get_parent().mouse_entered.connect(func() -> void: _backdrop.preview_frame(frame_id))
 		var swatch := ColorRect.new()
 		swatch.color = f.hull_color
 		swatch.custom_minimum_size = Vector2(14, 80)
@@ -231,6 +243,8 @@ func _build_frames() -> void:
 				_show_tab(Tab.FRAMES), 300)
 			b.disabled = Game.meta.research < f.research_cost
 		b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		b.focus_entered.connect(func() -> void: _backdrop.preview_frame(frame_id))
+		b.mouse_entered.connect(func() -> void: _backdrop.preview_frame(frame_id))
 		row.add_child(b)
 	_content.add_child(UiUtil.label("Research comes from scanning creatures with your lamp and recovering signal " +
 		"logs.", &"DimLabel"))

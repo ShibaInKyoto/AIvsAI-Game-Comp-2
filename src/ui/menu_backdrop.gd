@@ -61,13 +61,23 @@ func _pick_spot(layout: LevelLayout) -> Vector2:
 	return layout.start + Vector2(0, -4)
 
 
-## Rebuilds the displayed submarine when the selected frame changes.
+## Rebuilds the displayed submarine when the selected frame or paint changes.
 func refresh_sub() -> void:
+	_show_frame(StringName(Game.meta.selected_frame))
+
+
+## Shows another frame (e.g. a locked one being browsed) without selecting it.
+func preview_frame(frame_id: StringName) -> void:
+	if sub and frame_id != _run.frame_id:
+		_show_frame(frame_id)
+
+
+func _show_frame(frame_id: StringName) -> void:
 	if sub == null:
 		return
 	var pos := sub.pos
 	sub.queue_free()
-	_run.frame_id = StringName(Game.meta.selected_frame)
+	_run.frame_id = frame_id
 	_run.rebuild_stats(Game.meta.upgrades)
 	_run.refill()
 	sub = Submarine.new()
