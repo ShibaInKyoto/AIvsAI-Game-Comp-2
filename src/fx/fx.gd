@@ -132,17 +132,18 @@ static func vent_plume(height: float) -> GPUParticles3D:
 	pm.initial_velocity_max = height * 1.3
 	pm.damping_min = height * 0.3
 	pm.damping_max = height * 0.5
-	pm.scale_min = 1.2
-	pm.scale_max = 3.2
+	pm.scale_min = 1.6
+	pm.scale_max = 4.2
 	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
-	pm.emission_sphere_radius = 0.6
+	pm.emission_sphere_radius = 0.8
 	pm.turbulence_enabled = true
 	pm.turbulence_noise_strength = 1.2
 	pm.turbulence_noise_scale = 3.0
 	pm.color_ramp = _color_ramp(PackedColorArray([Color(1.0, 0.85, 0.6, 0.9), Color(1.0, 0.45, 0.15, 0.6),
 		Color(0.55, 0.5, 0.5, 0.25), Color(0.4, 0.4, 0.42, 0.0)]), PackedFloat32Array([0.0, 0.2, 0.6, 1.0]))
-	var p := _emitter(70, 1.1, pm, _quad(1.0, particle_material(soft_texture(), false, 1.6)), false)
+	var p := _emitter(110, 1.1, pm, _quad(1.2, particle_material(soft_texture(), false, 1.6)), false)
 	p.local_coords = true
+	p.visibility_aabb = AABB(Vector3(-6, -2, -6), Vector3(12, height + 8.0, 12))
 	p.emitting = false
 	return p
 
