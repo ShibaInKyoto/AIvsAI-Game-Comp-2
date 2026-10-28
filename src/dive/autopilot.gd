@@ -179,14 +179,9 @@ func _fight_boss() -> void:
 		sub.external_move = (organ.pos - to.normalized() * 9.0 - sub.pos).limit_length(1.0)
 		sub.aim = to.normalized()
 	# Strike whatever the song summoned once it closes in, else the organs while they are open.
-	var target: Entity = _nearest_threat()
-	if target is ChoirOrgan or target and target.pos.distance_to(sub.pos) > 9.0:
-		target = null
-	if target == null and organ and boss.vulnerable > 0.3:
-		target = organ
-	if target:
-		sub.aim = (target.pos - sub.pos).normalized()
-		if sub.harpoon.state == Harpoon.State.IDLE and sub.pos.distance_to(target.pos) < sub.stats.harpoon_range:
+	if not _strike_close_threat() and organ and boss.vulnerable > 0.3:
+		sub.aim = (organ.pos - sub.pos).normalized()
+		if sub.harpoon.state == Harpoon.State.IDLE and sub.pos.distance_to(organ.pos) < sub.stats.harpoon_range:
 			sub.harpoon.fire(sub.aim)
 			sub.harpoon.release()
 	sub.facing = 1.0 if sub.aim.x >= 0.0 else -1.0
@@ -259,9 +254,11 @@ func _fight_lamplighter(angler: Lamplighter, delta: float) -> void:
 				want = away_from_lure
 			sub.external_move = want * 0.8
 			sub.lamp_on = d < Lamplighter.DAZZLE_RANGE - 2.0
+			_strike_close_threat()
 		_:
 			sub.lamp_on = false
 			sub.external_move = away_from_lure * 0.7
+			_strike_close_threat()
 
 
 ## Every few seconds near a threat, uses the current tool and cycles to the
@@ -276,12 +273,28 @@ func _use_tools(threat: Creature, move: Vector2, delta: float) -> void:
 	sub.tools.cycle()
 
 
-func _nearest_threat() -> Creature:
+## Harpoons the nearest ordinary hunter within [param reach] (never a guardian
+## or an organ), turning to face it. False if nothing is that close.
+func _strike_close_threat(reach := 9.0) -> bool:
+	var threat := _nearest_threat(true)
+	if threat == null or threat.pos.distance_to(sub.pos) > reach:
+		return false
+	sub.aim = (threat.pos - sub.pos).normalized()
+	sub.facing = 1.0 if sub.aim.x >= 0.0 else -1.0
+	if sub.harpoon.state == Harpoon.State.IDLE:
+		sub.harpoon.fire(sub.aim)
+		sub.harpoon.release()
+	return true
+
+
+## The nearest hostile creature in sight; with [param minor_only], leaving out
+## guardians and the Choir's organs.
+func _nearest_threat(minor_only := false) -> Creature:
 	var best: Creature = null
 	var best_d := 14.0
 	for e in level.targets_in_radius(sub.pos, 14.0):
 		var c := e as Creature
-		if c and c.is_hostile():
+		if c and c.is_hostile() and not (minor_only and (c is Guardian or c is ChoirOrgan)):
 			var d := c.pos.distance_to(sub.pos)
 			if d < best_d and level.field.line_of_sight(sub.pos, c.pos):
 				best = c
