@@ -1,8 +1,8 @@
 class_name MeridianStation
 extends Entity
 ## The ruins of Meridian Deep, the research station whose logs tell the
-## story, settled on the floor of the final zone's middle chamber behind the
-## playfield. Two habitat modules flank a domed hub; a few windows still have
+## story, settled on the floor of the final zone's station gallery (off the
+## middle chamber) behind the playfield. Two habitat modules flank a domed hub; a few windows still have
 ## power. The trench grew rock over the escape lock. The mast beacon that
 ## drew the expedition down still pings: each ping charts the cave around
 ## it, marks what swims nearby and is loud enough to draw hunters. The first
