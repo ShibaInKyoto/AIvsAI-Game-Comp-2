@@ -245,7 +245,9 @@ func _furnish(m: Morph) -> void:
 	var c: Vector2 = m.shapes[0][0]
 	var cache := SalvageCache.new()
 	cache.pos = c
-	cache.salvage = int(level.rng.randi_range(14, 20) * (1.0 + level.zone * 0.35))
+	# A little under a loot room's cache (up to four of these open in a run),
+	# but with an extra supply drop for the descent to the Choir.
+	cache.salvage = int(level.rng.randi_range(8, 12) * (1.0 + level.zone * 0.35))
 	cache.rich = true
 	level.add_entity(cache)
 	var floor_y := MeridianStation.floor_below(level.field, c, POCKET_RADIUS + 1.5)
