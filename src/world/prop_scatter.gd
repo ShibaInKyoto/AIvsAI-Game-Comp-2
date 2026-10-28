@@ -7,6 +7,7 @@ const SHADER := preload("res://src/fx/shaders/prop.gdshader")
 const ROCK_SHADER := preload("res://src/fx/shaders/rock_prop.gdshader")
 
 ## placement: floor / ceiling / wall / any. density: chance per anchor.
+## Optional yaw: max spin (radians) around the up axis; default is any.
 const DEFS: Dictionary[StringName, Dictionary] = {
 	&"kelp": {"placement": "floor", "density": 0.22, "scale": Vector2(0.6, 1.4), "z": Vector2(-4.5, 1.5),
 		"sway": 0.9, "height": 6.0, "rough": 0.7},
@@ -16,8 +17,8 @@ const DEFS: Dictionary[StringName, Dictionary] = {
 		"sway": 0.03, "height": 1.6, "rough": 0.6},
 	&"anemone": {"placement": "wall", "density": 0.12, "scale": Vector2(0.6, 1.3), "z": Vector2(-3.0, 0.0),
 		"sway": 0.18, "height": 0.9, "rough": 0.4},
-	&"fan": {"placement": "wall", "density": 0.12, "scale": Vector2(0.7, 1.5), "z": Vector2(-4.0, -1.0),
-		"sway": 0.12, "height": 1.4, "rough": 0.6},
+	&"fan": {"placement": "wall", "density": 0.12, "scale": Vector2(0.8, 1.7), "z": Vector2(-4.0, -1.0),
+		"sway": 0.12, "height": 1.4, "rough": 0.6, "yaw": 0.6},
 	&"crystal": {"placement": "any", "density": 0.1, "scale": Vector2(0.5, 1.5), "z": Vector2(-3.5, 0.5),
 		"sway": 0.0, "height": 1.0, "rough": 0.15},
 	&"mushroom": {"placement": "floor", "density": 0.16, "scale": Vector2(1.0, 2.4), "z": Vector2(-3.0, 0.0),
@@ -56,7 +57,8 @@ static func scatter(level: Level) -> void:
 			var up := a.normal
 			if def.placement == "floor":
 				up = (a.normal + Vector2.UP * 1.2).normalized()
-			var basis := Basis(Vector3.BACK, up.angle() - PI * 0.5) * Basis(Vector3.UP, rng.randf() * TAU)
+			var max_yaw: float = def.get("yaw", PI)
+			var basis := Basis(Vector3.BACK, up.angle() - PI * 0.5) * Basis(Vector3.UP, rng.randf_range(-max_yaw, max_yaw))
 			basis = basis.scaled(Vector3.ONE * rng.randf_range(def.scale.x, def.scale.y))
 			xforms.append(Transform3D(basis, Vector3(base.x, base.y, z)))
 			customs.append(Color(rng.randf(), rng.randf(), rng.randf_range(0.75, 1.15), rng.randf_range(0.6, 1.2)))
@@ -343,16 +345,34 @@ static func _anemone() -> ArrayMesh:
 		return Color(0.9, 0.8, 0.85, smoothstep(0.55, 0.85, v.y)))
 
 
+## Gorgonian sea fan: a flat lattice of forking branches facing the camera.
 static func _fan() -> ArrayMesh:
-	var outline := PackedVector2Array()
-	for i in 13:
-		var a := PI * i / 12.0
-		outline.append(Vector2(cos(a) * 0.75, 0.1 + sin(a) * 1.2))
-	var fan := MeshKit.fin(outline, 0.02)
-	var stalk := _upright(PackedVector2Array([Vector2(0, 0.05), Vector2(1, 0.03)]), 0.3, 4, 1)
-	return _paint(MeshKit.merge([[fan], [stalk]]), func(v: Vector3) -> Color:
-		var edge := smoothstep(0.9, 1.25, Vector2(v.x / 0.75, (v.y - 0.1) / 1.2).length() * 1.2)
-		return Color(0.8, 0.75, 0.8, edge * 0.8 + 0.1))
+	var parts := []
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 31
+	var seg := _upright(PackedVector2Array([Vector2(0, 1.0), Vector2(1, 0.75)]), 1.0, 4, 1)
+	_fan_branch(parts, seg, rng, Vector3.ZERO, Vector3.UP, 0.42, 0.055, 0)
+	return _paint(MeshKit.merge(parts), func(v: Vector3) -> Color:
+		return Color(0.8, 0.75, 0.8, smoothstep(0.5, 1.4, v.y) * 0.8 + 0.1))
+
+
+static func _fan_branch(parts: Array, seg: ArrayMesh, rng: RandomNumberGenerator, from: Vector3, dir: Vector3,
+		length: float, radius: float, depth: int) -> void:
+	var to := from + dir * length
+	parts.append([seg, _segment_xform(from, to, radius)])
+	if depth >= 4:
+		return
+	for side: float in [-1.0, 1.0]:
+		var d := dir.rotated(Vector3.BACK, side * rng.randf_range(0.25, 0.55)).lerp(Vector3.UP, 0.15).normalized()
+		_fan_branch(parts, seg, rng, to, d, length * rng.randf_range(0.7, 0.85), radius * 0.72, depth + 1)
+
+
+## Places a unit-height upright mesh so it spans [param from] to [param to].
+static func _segment_xform(from: Vector3, to: Vector3, radius: float) -> Transform3D:
+	var d := to - from
+	var axis := Vector3.UP.cross(d)
+	var rot := Basis() if axis.length() < 0.0001 else Basis(axis.normalized(), Vector3.UP.angle_to(d))
+	return Transform3D(rot * Basis().scaled(Vector3(radius, d.length(), radius)), from)
 
 
 static func _crystal() -> ArrayMesh:
