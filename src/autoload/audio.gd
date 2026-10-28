@@ -55,6 +55,21 @@ func _ready() -> void:
 	_apply_volumes()
 
 
+## Stops every playback and drops cached streams (used when quitting so
+## nothing outlives the audio server).
+func stop_all() -> void:
+	for p in _pool:
+		p.stop()
+	for p in _pool3d:
+		p.stop()
+	for m in _music:
+		m.stop()
+	_ambience.stop()
+	_current_music = &""
+	_current_ambience = &""
+	_streams.clear()
+
+
 func _setup_buses() -> void:
 	for bus_name: StringName in [&"Music", &"SFX", &"UI", &"Ambience"]:
 		if AudioServer.get_bus_index(bus_name) == -1:

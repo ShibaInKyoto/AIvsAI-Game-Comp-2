@@ -9,6 +9,9 @@ const LINES: PackedStringArray = [
 ]
 
 var _column: VBoxContainer
+## Set once the player presses something: the rest of the epilogue appears at once.
+var _fast := false
+var _tween: Tween
 
 
 func _ready() -> void:
@@ -71,10 +74,24 @@ func _sequence() -> void:
 	back.grab_focus()
 
 
+func _unhandled_input(event: InputEvent) -> void:
+	if _fast:
+		return
+	var pressed: bool = event.is_action_pressed(&"ui_accept") or event.is_action_pressed(&"ui_cancel") \
+		or (event is InputEventMouseButton and event.pressed)
+	if pressed:
+		_fast = true
+		get_viewport().set_input_as_handled()
+		if _tween and _tween.is_valid():
+			_tween.custom_step(60.0)
+
+
+## Fades [param node] in and holds. The tween belongs to this node, so leaving
+## the scene mid-sequence simply stops it.
 func _reveal(node: Control, hold: float) -> void:
 	node.modulate.a = 0.0
 	_column.add_child(node)
-	var tween := create_tween()
-	tween.tween_property(node, ^"modulate:a", 1.0, 1.2)
-	await tween.finished
-	await get_tree().create_timer(hold).timeout
+	_tween = create_tween()
+	_tween.tween_property(node, ^"modulate:a", 1.0, 0.2 if _fast else 1.2)
+	_tween.tween_interval(0.0 if _fast else hold)
+	await _tween.finished

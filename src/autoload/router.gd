@@ -43,7 +43,16 @@ func _setup_capture() -> void:
 		get_tree().create_timer(times[i], true, false, true).timeout.connect(func() -> void:
 			get_viewport().get_texture().get_image().save_png(path)
 			if last:
-				get_tree().quit())
+				quit())
+
+
+## Quits cleanly: silences audio and gives the audio server a few frames to
+## release its playbacks before the engine shuts down.
+func quit(exit_code := 0) -> void:
+	Audio.stop_all()
+	for i in 3:
+		await get_tree().process_frame
+	get_tree().quit(exit_code)
 
 
 func _unhandled_input(event: InputEvent) -> void:

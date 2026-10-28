@@ -71,7 +71,7 @@ func _run() -> void:
 	Router.go_to(Router.TITLE, 0.05)
 	await _wait_scene("title_screen")
 	print("FLOW: PASSED")
-	get_tree().quit(0)
+	Router.quit(0)
 
 
 func check(ok: bool, what: String) -> void:

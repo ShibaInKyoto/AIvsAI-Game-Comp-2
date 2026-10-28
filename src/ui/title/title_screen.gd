@@ -52,7 +52,7 @@ func _ready() -> void:
 	_menu.add_child(UiUtil.button("Daily dive", _on_daily, 360))
 	_menu.add_child(UiUtil.button("Hangar", func() -> void: Router.go_to(Router.HANGAR), 360))
 	_menu.add_child(UiUtil.button("Settings", func() -> void: add_child(SettingsPanel.new()), 360))
-	_menu.add_child(UiUtil.button("Quit", func() -> void: get_tree().quit(), 360))
+	_menu.add_child(UiUtil.button("Quit", func() -> void: Router.quit(), 360))
 	for b in _menu.get_children():
 		(b as Button).size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 		(b as Button).alignment = HORIZONTAL_ALIGNMENT_LEFT

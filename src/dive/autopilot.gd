@@ -177,4 +177,4 @@ func _report_and_quit() -> void:
 	print("RENDER: max_draw_calls=%d max_primitives=%d avg_frame=%.1fms worst_frame=%.1fms entities=%d" % [
 		_max_draw_calls, _max_primitives, _frame_ms_sum / maxi(_frames, 1), _max_frame_ms,
 		level.entities.size() if level else 0])
-	get_tree().quit()
+	Router.quit()

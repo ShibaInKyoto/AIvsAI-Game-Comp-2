@@ -69,4 +69,4 @@ func show_result(run: RunState, outcome: RunState.Outcome) -> void:
 		Router.go_to(Router.DIVE), 260))
 	hangar.grab_focus()
 	if Autopilot.requested():
-		get_tree().create_timer(1.0).timeout.connect(get_tree().quit)
+		get_tree().create_timer(1.0).timeout.connect(Router.quit)
