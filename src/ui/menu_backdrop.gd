@@ -97,6 +97,8 @@ func preview_creature(id: StringName) -> void:
 		specimen = Mimic.new()
 	elif id == &"lamplighter":
 		specimen = Lamplighter.new()
+	elif id == &"ironclad":
+		specimen = Ironclad.new()
 	if specimen == null or sub == null:
 		return
 	# Hide only the hull: the sub's lamp and fill light keep the specimen lit.
