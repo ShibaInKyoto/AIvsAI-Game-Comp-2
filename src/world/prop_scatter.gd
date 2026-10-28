@@ -389,14 +389,21 @@ static func _crystal() -> ArrayMesh:
 		return Color(0.8, 0.85, 0.9, 0.35 + smoothstep(0.2, 1.2, v.y) * 0.65))
 
 
+## Pale stalks with domed caps speckled with bioluminescent spots.
 static func _mushroom() -> ArrayMesh:
-	var stalk := _upright(PackedVector2Array([Vector2(0, 0.08), Vector2(1, 0.05)]), 0.7, 6, 2)
-	var cap := _upright(PackedVector2Array([Vector2(0, 0.42), Vector2(0.4, 0.38), Vector2(1, 0.0)]), 0.35, 12, 4)
+	var stalk := _upright(PackedVector2Array([Vector2(0, 0.09), Vector2(0.6, 0.06), Vector2(1, 0.07)]), 0.7, 8, 3)
+	var dome := PackedVector2Array([Vector2(0, 0.44), Vector2(0.25, 0.43), Vector2(0.55, 0.36), Vector2(0.8, 0.22),
+		Vector2(1, 0.0)])
+	var cap := _upright(dome, 0.34, 16, 6)
 	var parts := [[stalk], [cap, Transform3D(Basis(), Vector3(0, 0.62, 0))]]
 	parts.append([stalk, Transform3D(Basis(Vector3.BACK, 0.4).scaled(Vector3.ONE * 0.6), Vector3(0.3, 0, 0.1))])
 	parts.append([cap, Transform3D(Basis().scaled(Vector3.ONE * 0.6), Vector3(0.45, 0.42, 0.1))])
+	var spots := FastNoiseLite.new()
+	spots.frequency = 2.6
 	return _paint(MeshKit.merge(parts), func(v: Vector3) -> Color:
-		return Color(0.75, 0.75, 0.8, smoothstep(0.35, 0.6, v.y)))
+		var on_cap := smoothstep(0.38, 0.5, v.y)
+		var spot := smoothstep(0.1, 0.45, spots.get_noise_3dv(v))
+		return Color(0.75, 0.75, 0.8, on_cap * (0.15 + spot * 0.85)))
 
 
 ## Ribs of some enormous dead animal arching out of the rock.
