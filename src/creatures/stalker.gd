@@ -21,6 +21,19 @@ var _jaw: MeshInstance3D
 var _t := 0.0
 
 
+## How close this Stalker is to attacking (0 calm .. 1 hunting), for the
+## heartbeat that plays under it.
+func menace() -> float:
+	if not alive:
+		return 0.0
+	match state:
+		State.HUNT:
+			return 1.0
+		State.INVESTIGATE:
+			return 0.45
+	return 0.0
+
+
 func setup() -> void:
 	species = &"stalker"
 	max_hp = 230.0

@@ -10,6 +10,7 @@ var camera: DiveCamera
 var hud: Hud
 var state := State.LOADING
 var autopilot: Autopilot
+var heartbeat: Heartbeat
 var objective: ZoneObjective
 var _pause_menu: PauseMenu
 var _layout_result: LevelLayout
@@ -23,6 +24,8 @@ func _ready() -> void:
 		Game.start_run()
 	camera = DiveCamera.new()
 	add_child(camera)
+	heartbeat = Heartbeat.new()
+	add_child(heartbeat)
 	hud = Hud.new()
 	add_child(hud)
 	add_child(PostFx.new())
@@ -133,6 +136,7 @@ func _process(frame_delta: float) -> void:
 	sub.tick(delta)
 	level.tick(delta)
 	_distant_calls(delta)
+	heartbeat.tick(level, sub, delta)
 	if objective:
 		objective.tick()
 	# Pull the camera back while the Choir sings so its whole body is in view.

@@ -42,7 +42,8 @@ itself. Every zone is a procedurally generated cave cross-section. Find the
   creatures through the dark. Everything with ears hears it.
 * **Every movement makes noise.** The faint ring around the sub shows how far
   you can be heard. Lancers dash at sound, gulper eels feel vibration through
-  the rock, and the Stalker hears everything.
+  the rock, and the Stalker hears everything. When it starts hunting you,
+  you will hear your own heartbeat.
 * **Salvage** comes from caches (ram them or drag them in with the harpoon),
   debris and creatures. **Glow bulbs** on the walls recharge your battery.
 * Between zones you dock at a **decompression stop**: install one of three

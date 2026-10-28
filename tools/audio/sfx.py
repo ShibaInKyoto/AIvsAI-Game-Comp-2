@@ -446,6 +446,21 @@ def engine_loop():
 
 
 
+def heartbeat_loop():
+    """Two muffled lub-dub beats at 72 bpm; exact length, so it loops cleanly.
+    Played under a hunting Stalker and sped up as it closes in."""
+    beat = 60.0 / 72.0
+    d = beat * 2
+    out = np.zeros(seconds(d))
+    for k in range(2):
+        for offset, f0, f1, gain in ((0.0, 62, 34, 1.0), (0.17, 74, 40, 0.6)):
+            thud = _thud(f0, f1, 0.32, 0.07) * gain
+            thud = thud + lowpass(noise(0.32, "pink"), 180) * env_exp(0.32, 0.04, 0.001) * 0.3 * gain
+            i = seconds(k * beat + offset)
+            out[i:i + len(thud)] += thud[: len(out) - i]
+    return normalize(lowpass(out, 300), 0.8)
+
+
 # --- The Choir ------------------------------------------------------------------------
 
 def _choir_voice(f0: float, d: float, vowel: str = "o", vib: float = 5.0) -> np.ndarray:
