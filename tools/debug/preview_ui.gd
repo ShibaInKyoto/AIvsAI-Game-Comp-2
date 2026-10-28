@@ -1,8 +1,8 @@
 extends Node
 ## Debug helper: shows one UI panel over the menu backdrop and saves a PNG.
 ## Usage: xvfb-run godot --path . res://tools/debug/preview_ui.tscn -- <out.png> <panel>
-## Panels: howto, settings, controls, stop, summary, records, credits, prologue,
-## ending (every log found, epilogue shown at once).
+## Panels: howto, settings, erase (armed), controls, stop, summary, records, credits,
+## prologue, ending (every log found, epilogue shown at once).
 ## (summary banks a fake dive into the local save).
 
 
@@ -24,7 +24,14 @@ func _ready() -> void:
 	add_child(MenuBackdrop.new())
 	match which:
 		"settings":
-			add_child(SettingsPanel.new())
+			var panel := SettingsPanel.new()
+			panel.allow_erase = true
+			add_child(panel)
+		"erase":
+			var armed := SettingsPanel.new()
+			armed.allow_erase = true
+			add_child(armed)
+			armed._on_erase()
 		"credits":
 			add_child(CreditsPanel.new())
 		"records":

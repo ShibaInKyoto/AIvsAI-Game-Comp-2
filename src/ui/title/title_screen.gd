@@ -66,7 +66,10 @@ func _ready() -> void:
 	_menu.add_child(UiUtil.button("Hangar", func() -> void: Router.go_to(Router.HANGAR), 360))
 	_menu.add_child(UiUtil.button("Records", func() -> void: add_child(RecordsPanel.new()), 360))
 	_menu.add_child(UiUtil.button("How to dive", func() -> void: add_child(HowToPlayPanel.new()), 360))
-	_menu.add_child(UiUtil.button("Settings", func() -> void: add_child(SettingsPanel.new()), 360))
+	_menu.add_child(UiUtil.button("Settings", func() -> void:
+		var panel := SettingsPanel.new()
+		panel.allow_erase = true
+		add_child(panel), 360))
 	_menu.add_child(UiUtil.button("Credits", func() -> void: add_child(CreditsPanel.new()), 360))
 	_menu.add_child(UiUtil.button("Quit", func() -> void: Router.quit(), 360))
 	for b in _menu.get_children():

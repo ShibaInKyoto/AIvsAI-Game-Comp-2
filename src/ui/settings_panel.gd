@@ -3,6 +3,14 @@ extends CanvasLayer
 ## Audio, video and gameplay settings. Changes apply immediately and are
 ## saved when the panel closes.
 
+## Seconds the erase button stays armed after the first press.
+const ERASE_ARM_TIME := 4.0
+
+## Offer to erase all progress (only from the title screen, never mid-dive).
+var allow_erase := false
+var _erase_armed := 0.0
+var _erase: Button
+
 
 func _ready() -> void:
 	layer = 60
@@ -43,10 +51,52 @@ func _ready() -> void:
 		func(on: bool) -> void: Settings.sound_cues = on)
 
 	column.add_child(UiUtil.label("Quality changes to terrain detail apply from the next zone.", &"DimLabel"))
-	column.add_child(UiUtil.button("Controls...", func() -> void: add_child(ControlsPanel.new())))
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override(&"separation", 16)
+	column.add_child(row)
+	var controls := UiUtil.button("Controls...", func() -> void: add_child(ControlsPanel.new()))
+	controls.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(controls)
+	if allow_erase:
+		_erase = UiUtil.button("Erase progress...", _on_erase)
+		_erase.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_erase.clip_text = true
+		row.add_child(_erase)
 	var close := UiUtil.button("Back", _close)
 	column.add_child(close)
 	close.grab_focus()
+
+
+func _process(delta: float) -> void:
+	if _erase_armed > 0.0:
+		_erase_armed -= delta
+		if _erase_armed <= 0.0:
+			_disarm()
+
+
+## First press arms the button; a second within a few seconds erases every
+## upgrade, frame, record and log (settings and key bindings are kept).
+func _on_erase() -> void:
+	if _erase_armed <= 0.0:
+		_erase_armed = ERASE_ARM_TIME
+		_erase.text = "Press again to erase ALL progress"
+		_erase.tooltip_text = "Upgrades, frames, records, logs and milestones. Settings are kept."
+		_erase.add_theme_color_override(&"font_color", UiTheme.DANGER)
+		_erase.add_theme_color_override(&"font_focus_color", UiTheme.DANGER)
+		_erase.add_theme_color_override(&"font_hover_color", UiTheme.DANGER)
+		return
+	Game.clear_saved_run()
+	Game.reset_progress()
+	Settings.save_settings()
+	Router.go_to(Router.TITLE)
+	queue_free()
+
+
+func _disarm() -> void:
+	_erase_armed = 0.0
+	_erase.text = "Erase progress..."
+	for c: StringName in [&"font_color", &"font_focus_color", &"font_hover_color"]:
+		_erase.remove_theme_color_override(c)
 
 
 func _unhandled_input(event: InputEvent) -> void:
