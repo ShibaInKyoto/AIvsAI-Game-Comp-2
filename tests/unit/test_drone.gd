@@ -109,3 +109,38 @@ func test_extras_stay_out_of_the_count() -> void:
 	check_eq(SignalLogs.found_count(all), SignalLogs.count(), "extras do not")
 	check_eq(SignalLogs.get_log(VasquezDrone.LOG_ID).author, "T. Vasquez", "the recorder can be read")
 	check_eq(SignalLogs.get_log(&"log_final").id, "log_final", "and so can the Choir's message")
+
+
+## Sign of each triangle's winding against its first vertex's normal.
+func _windings(mesh: ArrayMesh) -> Array[float]:
+	var out: Array[float] = []
+	var arrays := mesh.surface_get_arrays(0)
+	var verts: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+	var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
+	var idx: PackedInt32Array = arrays[Mesh.ARRAY_INDEX] if arrays[Mesh.ARRAY_INDEX] != null else PackedInt32Array()
+	if idx.is_empty():
+		for i in verts.size():
+			idx.append(i)
+	for k in range(0, idx.size() - 2, 3):
+		var a := verts[idx[k]]
+		var face := (verts[idx[k + 1]] - a).cross(verts[idx[k + 2]] - a)
+		if face.length_squared() > 1e-10:
+			out.append(signf(face.dot(normals[idx[k]])))
+	return out
+
+
+func test_mirrored_model_still_faces_out() -> void:
+	var ball := MeshKit.ball(1.0)
+	var mirrored := VasquezDrone._facing(MeshKit.transformed(ball, Transform3D(Basis(), Vector3(2.0, 0.0, 0.0))), -1.0)
+	var verts: PackedVector3Array = mirrored.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
+	var centre := Vector3.ZERO
+	for v in verts:
+		centre += v
+	check(centre.x / verts.size() < -1.9, "mirrored to the other side")
+	check_eq(_windings(mirrored), _windings(ball), "every triangle keeps its winding against its normal")
+	var normals: PackedVector3Array = mirrored.surface_get_arrays(0)[Mesh.ARRAY_NORMAL]
+	var outward := 0
+	for i in verts.size():
+		if normals[i].dot(verts[i] - Vector3(-2.0, 0.0, 0.0)) > 0.0:
+			outward += 1
+	check(outward > verts.size() * 0.95, "normals still point out of the ball")

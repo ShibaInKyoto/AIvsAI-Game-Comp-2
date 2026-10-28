@@ -84,8 +84,8 @@ func setup() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash(wall)
 	var facing := 1.0 if normal.x >= 0.0 else -1.0
-	# Local +X points out of the wall; the model is mirrored for walls that
-	# face left so its arm and markings stay on the near side.
+	# Local +X points out of the wall; for walls that face left the meshes
+	# are mirrored so the arm and markings stay on the near side.
 	var rig := Node3D.new()
 	rig.top_level = true
 	add_child(rig)
@@ -94,11 +94,10 @@ func setup() -> void:
 	rig.rotation.z = facing * (atan2(normal.y, absf(normal.x)) + rng.randf_range(-0.12, 0.22))
 	rig.scale = Vector3.ONE * SCALE
 	var model := Node3D.new()
-	model.scale = Vector3(facing, 1.0, 1.0)
 	model.rotation.x = rng.randf_range(-0.15, 0.1)
 	rig.add_child(model)
 	var hull := MeshInstance3D.new()
-	hull.mesh = _build_drone()
+	hull.mesh = _facing(_build_drone(), facing)
 	_mat = ShaderMaterial.new()
 	_mat.shader = preload("res://src/fx/shaders/station.gdshader")
 	_mat.set_shader_parameter(&"sediment_tint", level.biome.sediment_tint)
@@ -111,7 +110,7 @@ func setup() -> void:
 	var mm := MultiMesh.new()
 	mm.transform_format = MultiMesh.TRANSFORM_3D
 	mm.use_custom_data = true
-	mm.mesh = _build_rock(rng)
+	mm.mesh = _facing(_build_rock(rng), facing)
 	mm.instance_count = 1
 	mm.set_instance_transform(0, Transform3D.IDENTITY)
 	mm.set_instance_custom_data(0, Color(0.0, 0.45, 0.95, 0.0))
@@ -123,7 +122,7 @@ func setup() -> void:
 	lamp.mesh = MeshKit.sphere(0.07, 8, 4)
 	_lamp_mat = MeshKit.emissive_material(LAMP, 6.0)
 	lamp.material_override = _lamp_mat
-	lamp.position = Vector3(0.95, 0.72, 0.42)
+	lamp.position = Vector3(facing * 0.95, 0.72, 0.42)
 	model.add_child(lamp)
 	var plate := Label3D.new()
 	plate.text = "MD-02"
@@ -133,9 +132,7 @@ func setup() -> void:
 	plate.pixel_size = 0.006
 	plate.modulate = Color(0.1, 0.08, 0.05, 0.85)
 	plate.shaded = true
-	# Mirrored back so the lettering reads the right way round.
-	plate.scale = Vector3(facing, 1.0, 1.0)
-	plate.position = Vector3(0.55, 0.42, 0.59)
+	plate.position = Vector3(facing * 0.55, 0.42, 0.59)
 	model.add_child(plate)
 	_light = OmniLight3D.new()
 	_light.light_color = LAMP
@@ -229,6 +226,50 @@ func _set_work_light(k: float) -> void:
 	_work.light_energy = 2.2 * k
 	_beam_mat.set_shader_parameter(&"intensity", 0.04 * k)
 	_mat.set_shader_parameter(&"failing_energy", 3.0 * k)
+
+
+## [param mesh] as is for [param facing] +1, or mirrored left to right for -1
+## (positions and normals flipped, triangles rewound so they still face out;
+## a negative node scale would turn the double-sided shading inside out).
+static func _facing(mesh: ArrayMesh, facing: float) -> ArrayMesh:
+	if facing > 0.0:
+		return mesh
+	var out := ArrayMesh.new()
+	for s in mesh.get_surface_count():
+		var arrays := mesh.surface_get_arrays(s)
+		var verts: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+		var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
+		for i in verts.size():
+			verts[i].x = -verts[i].x
+		for i in normals.size():
+			normals[i].x = -normals[i].x
+		arrays[Mesh.ARRAY_VERTEX] = verts
+		arrays[Mesh.ARRAY_NORMAL] = normals
+		arrays[Mesh.ARRAY_TANGENT] = null
+		var indices: Variant = arrays[Mesh.ARRAY_INDEX]
+		if indices is PackedInt32Array and not (indices as PackedInt32Array).is_empty():
+			var idx: PackedInt32Array = indices
+			for i in range(0, idx.size() - 2, 3):
+				var tmp := idx[i + 1]
+				idx[i + 1] = idx[i + 2]
+				idx[i + 2] = tmp
+			arrays[Mesh.ARRAY_INDEX] = idx
+		else:
+			for key in [Mesh.ARRAY_VERTEX, Mesh.ARRAY_NORMAL, Mesh.ARRAY_COLOR, Mesh.ARRAY_TEX_UV]:
+				arrays[key] = _rewound(arrays[key])
+		out.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	return out
+
+
+## Copy of a per-vertex array with the 2nd and 3rd vertex of each triangle swapped.
+static func _rewound(values: Variant) -> Variant:
+	if values == null:
+		return null
+	var out: Variant = values.duplicate()
+	for i in range(0, out.size() - 2, 3):
+		out[i + 1] = values[i + 2]
+		out[i + 2] = values[i + 1]
+	return out
 
 
 ## Uniformly coloured copy of [param mesh] at [param xf], for the station
