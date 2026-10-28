@@ -111,6 +111,7 @@ has not noticed the sub can be **ambushed** (harpoon hits deal double), and
   at the decompression stop.
 * Optional zone objectives for bonus salvage or research.
 * 17 milestones, each unlocking a hull paint.
+* Optional dive contracts (a handicap for one dive for a bigger score and payout).
 * A dive score (depth, kills, ambushes, scans, logs, salvage, outcome, x pressure)
   and a top-five records table on the title screen.
 

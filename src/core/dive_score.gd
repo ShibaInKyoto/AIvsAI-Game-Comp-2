@@ -33,7 +33,7 @@ static func breakdown(run: RunState) -> Array:
 
 
 static func multiplier(run: RunState) -> float:
-	return 1.0 + PRESSURE_STEP * run.pressure
+	return (1.0 + PRESSURE_STEP * run.pressure) * Contracts.score_mult(run.contract)
 
 
 static func total(run: RunState) -> int:
@@ -49,8 +49,14 @@ static func describe(run: RunState) -> String:
 	for p: Array in breakdown(run):
 		bits.append("%s %s" % [p[0], UiUtil.thousands(int(p[1]))])
 	var text := " + ".join(bits)
+	var why := PackedStringArray()
 	if run.pressure > 0:
-		text += ",  x%.2f pressure" % multiplier(run)
+		why.append("pressure %d" % run.pressure)
+	var terms := Contracts.find(run.contract)
+	if terms:
+		why.append(terms.name)
+	if not why.is_empty():
+		text += ",  x%.2f %s" % [multiplier(run), " + ".join(why)]
 	return text
 
 
@@ -69,4 +75,5 @@ static func record(run: RunState, date: String) -> Dictionary:
 	return {
 		"score": total(run), "frame": String(run.frame_id), "depth": run.deepest_depth, "zone": run.zone,
 		"outcome": outcome_label(run), "pressure": run.pressure, "daily": run.daily, "date": date,
+		"contract": String(run.contract),
 	}

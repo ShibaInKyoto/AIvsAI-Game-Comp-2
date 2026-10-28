@@ -24,6 +24,8 @@ var logs := 0
 var time := 0.0
 var pressure := 0
 var daily := false
+## The contract taken for this dive (see [Contracts]), or &"".
+var contract: StringName = &""
 ## The daily dive's condition of the day (see [method ZoneEvents.for_zone]).
 var daily_event: StringName = &""
 var deepest_depth := 0
@@ -45,7 +47,7 @@ func rebuild_stats(upgrades: Dictionary) -> void:
 	var old_torpedo_cap := stats.torpedo_capacity if stats else 0
 	var old_flare_cap := stats.flare_capacity if stats else 0
 	var old_decoy_cap := stats.decoy_capacity if stats else 0
-	stats = SubStats.build(frame_id, upgrades, modules)
+	stats = SubStats.build(frame_id, upgrades, modules, contract)
 	if old_max_hull > 0.0:
 		hull += maxf(stats.max_hull - old_max_hull, 0.0)
 		battery += maxf(stats.max_battery - old_max_battery, 0.0)
@@ -75,7 +77,7 @@ func to_dict() -> Dictionary:
 		"run_seed": run_seed, "frame_id": frame_id, "zone": zone, "modules": modules,
 		"hull": hull, "battery": battery, "torpedoes": torpedoes, "flares": flares, "decoys": decoys,
 		"salvage": salvage, "research": research, "kills": kills, "ambushes": ambushes, "scans": scans, "logs": logs,
-		"time": time, "pressure": pressure, "daily": daily, "daily_event": daily_event,
+		"time": time, "pressure": pressure, "daily": daily, "daily_event": daily_event, "contract": contract,
 		"deepest_depth": deepest_depth, "last_hit_by": last_hit_by,
 	}
 
@@ -87,6 +89,9 @@ static func from_dict(d: Dictionary, upgrades: Dictionary) -> RunState:
 	if Catalog.frame(r.frame_id) == null:
 		r.frame_id = &"lantern"
 	r.zone = clampi(int(d.get("zone", 0)), 0, BiomeLibrary.TOTAL_ZONES - 1)
+	r.contract = StringName(d.get("contract", ""))
+	if Contracts.find(r.contract) == null:
+		r.contract = &""
 	for m in d.get("modules", []):
 		if Catalog.module(StringName(m)) != null:
 			r.modules.append(StringName(m))

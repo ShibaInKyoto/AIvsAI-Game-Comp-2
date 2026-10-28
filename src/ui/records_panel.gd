@@ -31,6 +31,9 @@ func _ready() -> void:
 				result += "  (P%d)" % int(r.pressure)
 			if r.daily:
 				result += "  daily"
+			var terms := Contracts.find(StringName(r.get("contract", "")))
+			if terms:
+				result += "  " + terms.name
 			for cell: String in ["#%d" % (i + 1), UiUtil.thousands(int(r.score)), frame.name if frame else "?",
 					"%s m" % UiUtil.thousands(int(r.depth)), result, r.date]:
 				grid.add_child(UiUtil.label(cell, &"MonoLabel", 22, color))

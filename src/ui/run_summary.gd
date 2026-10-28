@@ -57,6 +57,9 @@ func show_result(run: RunState, outcome: RunState.Outcome) -> void:
 	for r: Array in rows:
 		grid.add_child(UiUtil.label(r[0], &"DimLabel", 22))
 		grid.add_child(UiUtil.label(r[1], &"MonoLabel", 24))
+	var terms := Contracts.find(run.contract)
+	if terms:
+		column.add_child(UiUtil.label("Contract: %s  (%s)" % [terms.name, terms.rewards()], &"", 20, UiTheme.WARN))
 	if run.daily:
 		column.add_child(UiUtil.label("Daily dive %s  -  %s" % [Game.meta.daily_date,
 				Game.meta.daily_summary(Game.meta.daily_date)], &"", 22, UiTheme.ACCENT))

@@ -1,6 +1,6 @@
 extends Node3D
 ## The hangar: spend salvage on upgrades, research on new frames, browse the
-## codex and recovered logs, pick a pressure level and start a dive.
+## codex and recovered logs, pick a pressure level and a contract, and start a dive.
 
 enum Tab { UPGRADES, FRAMES, CODEX, LOGS, MILESTONES }
 
@@ -10,6 +10,8 @@ var _currency: Label
 var _tab := Tab.UPGRADES
 var _tab_buttons: Array[Button] = []
 var _pressure_label: Label
+var _contract_button: Button
+var _contract_desc: Label
 
 
 func _ready() -> void:
@@ -79,6 +81,19 @@ func _ready() -> void:
 	_content.add_theme_constant_override(&"separation", 10)
 	scroll.add_child(_content)
 
+	var contract_row := HBoxContainer.new()
+	contract_row.add_theme_constant_override(&"separation", 14)
+	left.add_child(contract_row)
+	contract_row.add_child(UiUtil.label("CONTRACT", &"HeaderLabel", 22))
+	_contract_button = UiUtil.button("", _cycle_contract, 250)
+	contract_row.add_child(_contract_button)
+	_contract_desc = UiUtil.label("", &"DimLabel", 17)
+	_contract_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_contract_desc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_contract_desc.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	contract_row.add_child(_contract_desc)
+	_refresh_contract()
+
 	var footer := HBoxContainer.new()
 	footer.add_theme_constant_override(&"separation", 14)
 	left.add_child(footer)
@@ -117,6 +132,27 @@ func _refresh_header() -> void:
 		var p := Game.meta.pressure_selected
 		_pressure_label.text = "PRESSURE %d" % p if p > 0 else "PRESSURE 0 (standard)"
 		_pressure_label.tooltip_text = "\n".join(Pressure.DESCRIPTIONS.slice(1, p + 1))
+
+
+## Steps through the contracts (and none) for the next dive.
+func _cycle_contract() -> void:
+	var ids: Array[String] = [""]
+	for c in Contracts.all():
+		ids.append(String(c.id))
+	var next := (ids.find(Game.meta.contract_selected) + 1) % ids.size()
+	Game.meta.contract_selected = ids[next]
+	Game.save_game()
+	_refresh_contract()
+
+
+func _refresh_contract() -> void:
+	var terms := Contracts.find(StringName(Game.meta.contract_selected))
+	if terms:
+		_contract_button.text = terms.name
+		_contract_desc.text = "%s  Reward: %s. Covers the next dive only." % [terms.description, terms.rewards()]
+	else:
+		_contract_button.text = "None"
+		_contract_desc.text = "Optional: take on a handicap for the next dive in exchange for a bigger score and payout."
 
 
 func _change_pressure(delta: int) -> void:

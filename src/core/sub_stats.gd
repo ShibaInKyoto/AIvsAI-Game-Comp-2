@@ -64,8 +64,10 @@ func add_tool(tool: StringName) -> void:
 		tools.append(tool)
 
 
-## Builds the stats for a frame with hangar upgrade levels and run modules.
-static func build(frame_id: StringName, upgrades: Dictionary, modules: Array[StringName]) -> SubStats:
+## Builds the stats for a frame with hangar upgrade levels, run modules and
+## the dive's contract (see [Contracts]), if any.
+static func build(frame_id: StringName, upgrades: Dictionary, modules: Array[StringName],
+		contract: StringName = &"") -> SubStats:
 	var stats := SubStats.new()
 	var frame := Catalog.frame(frame_id)
 	if frame:
@@ -78,5 +80,8 @@ static func build(frame_id: StringName, upgrades: Dictionary, modules: Array[Str
 		var mod := Catalog.module(id)
 		if mod:
 			mod.apply.call(stats)
+	var terms := Contracts.find(contract)
+	if terms:
+		terms.apply.call(stats)
 	stats.max_hull = maxf(stats.max_hull, 20.0)
 	return stats

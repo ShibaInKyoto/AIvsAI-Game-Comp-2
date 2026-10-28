@@ -112,6 +112,9 @@ rumble and four graphics presets.
 * Every dive ends with a **score** (depth, kills, ambushes, scans, logs and
   salvage, multiplied by pressure), and the title screen keeps your five best
   in **Records**.
+* **Contracts** in the hangar: take a handicap for one dive (Glass Hull,
+  Silent Running, Failing Lamp, Infested Waters, No Insurance) in exchange for
+  a bigger score and payout.
 * 32 modules to draft into a build. Their stats stack.
 * 4 submarine frames: **Lantern** (balanced, flares), **Mako** (fast, torpedoes,
   fragile), **Bathysphere** (armored, long sonar, shock pulse), **Whisper**
@@ -183,7 +186,7 @@ Requires Godot 4.5.1 with export templates installed.
 
 ```sh
 godot --headless --import                                       # first-time import
-godot --headless --path . -s res://tests/run_tests.gd           # 65 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
+godot --headless --path . -s res://tests/run_tests.gd           # 68 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
 godot --headless --path . res://tests/flow_test.tscn            # end-to-end menu and dive flow
 godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
 python3 tools/audio/generate.py                                 # regenerate all audio (numpy + ffmpeg)

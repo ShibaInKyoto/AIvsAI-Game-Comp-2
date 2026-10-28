@@ -48,7 +48,7 @@ static func populate(level: Level, run: RunState) -> void:
 static func _spawn_creatures(level: Level, run: RunState, used: PackedVector2Array) -> void:
 	var biome := level.biome
 	var rng := level.rng
-	var budget := biome.creature_budget * Pressure.creature_budget(run.pressure)
+	var budget := biome.creature_budget * Pressure.creature_budget(run.pressure) * Contracts.creature_mult(run.contract)
 	# The very first zone eases players in; the arena keeps the focus on the Choir.
 	if level.zone == 0:
 		budget *= 0.7

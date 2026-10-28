@@ -35,8 +35,12 @@ func _ready() -> void:
 			add_child(RunSummary.new())
 			(get_child(get_child_count() - 1) as RunSummary).show_result(Game.run, RunState.Outcome.IMPLODED)
 		"stop":
+			# The busiest stop: the Lamplighter ahead, a wreck to recover and an event forecast.
 			Game.start_run()
-			Game.run.zone = 3
+			Game.run.zone = BiomeLibrary.ANGLER_ZONE
+			Game.run.daily = true
+			Game.run.daily_event = &"blackout"
+			Game.meta.record_wreck(BiomeLibrary.ANGLER_ZONE, &"mako", 84)
 			var stop := DecompressionStop.new()
 			add_child(stop)
 			stop.open(Game.run)

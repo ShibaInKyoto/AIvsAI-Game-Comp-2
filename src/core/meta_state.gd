@@ -44,6 +44,8 @@ var records: Array[Dictionary] = []
 var wreck_zone := -1
 var wreck_frame := ""
 var wreck_cargo := 0
+## Contract taken in the hangar for the next dive ("" = none); used up when it starts.
+var contract_selected := ""
 
 
 func upgrade_level(id: StringName) -> int:
@@ -179,6 +181,7 @@ func to_dict() -> Dictionary:
 		"wreck_zone": wreck_zone,
 		"wreck_frame": wreck_frame,
 		"wreck_cargo": wreck_cargo,
+		"contract_selected": contract_selected,
 	}
 
 
@@ -230,6 +233,9 @@ static func from_dict(d: Dictionary) -> MetaState:
 	m.wreck_zone = clampi(int(d.get("wreck_zone", -1)), -1, BiomeLibrary.TOTAL_ZONES - 1)
 	m.wreck_frame = String(d.get("wreck_frame", ""))
 	m.wreck_cargo = maxi(int(d.get("wreck_cargo", 0)), 0)
+	m.contract_selected = String(d.get("contract_selected", ""))
+	if Contracts.find(StringName(m.contract_selected)) == null:
+		m.contract_selected = ""
 	if Catalog.frame(StringName(m.wreck_frame)) == null:
 		m.clear_wreck()
 	m.records.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a.score > b.score)
@@ -244,5 +250,5 @@ static func _clean_record(r: Dictionary) -> Dictionary:
 		"score": int(r.get("score", 0)), "frame": String(r.get("frame", "lantern")),
 		"depth": int(r.get("depth", 0)), "zone": int(r.get("zone", 0)), "outcome": String(r.get("outcome", "")),
 		"pressure": int(r.get("pressure", 0)), "daily": bool(r.get("daily", false)),
-		"date": String(r.get("date", "")),
+		"date": String(r.get("date", "")), "contract": String(r.get("contract", "")),
 	}

@@ -143,6 +143,9 @@ func start_run(daily := false) -> void:
 	run.frame_id = StringName(meta.selected_frame)
 	run.daily = daily
 	run.pressure = meta.pressure_selected if not daily else 0
+	# A contract covers one dive; daily dives never carry one.
+	run.contract = StringName(meta.contract_selected) if not daily else &""
+	meta.contract_selected = ""
 	if daily:
 		run.run_seed = hash(today()) & 0x7fffffff
 		run.daily_event = ZoneEvents.daily(today())
@@ -187,6 +190,8 @@ func end_run(outcome: RunState.Outcome) -> int:
 		meta.pressure_unlocked = maxi(meta.pressure_unlocked, mini(run.pressure + 1, Pressure.MAX_LEVEL))
 	# Expedition pay: every zone reached is worth something, even in defeat.
 	kept += expedition_pay(run)
+	kept = roundi(kept * Contracts.salvage_mult(run.contract))
+	run.research = roundi(run.research * Contracts.research_mult(run.contract))
 	meta.salvage += kept
 	meta.total_salvage += kept
 	meta.research += run.research

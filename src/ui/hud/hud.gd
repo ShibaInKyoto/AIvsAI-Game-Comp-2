@@ -173,6 +173,9 @@ func bind(p_sub: Submarine, p_level: Level, p_camera: Camera3D) -> void:
 		_zone_label.text = "THE HADAL FLOOR"
 	if level.event != ZoneEvents.NONE:
 		_zone_label.text += "  -  " + ZoneEvents.display_name(level.event).to_upper()
+	var terms := Contracts.find(sub.run.contract)
+	if terms:
+		_zone_label.text += "  -  CONTRACT: " + terms.name.to_upper()
 	_shown_salvage = sub.run.salvage
 	_map.bind(level, sub)
 	_layout_map()
