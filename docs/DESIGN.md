@@ -117,3 +117,49 @@ impacts). Creatures with hearing investigate noise sources.
   `tools/audio/` and committed as OGG files.
 * **Art**: all meshes are procedurally built at runtime; rock textures are
   CC0 from Poly Haven.
+
+## Architecture
+
+**Scene flow.** `main.tscn` installs the theme and hands over to the
+`Router` autoload, which owns every scene change (with a fade): title,
+hangar, dive and ending. The dive scene (`src/dive/dive.gd`) runs one zone
+at a time: it generates the layout on a worker thread, builds a `Level`,
+populates it, spawns the `Submarine`, and between zones shows the
+`DecompressionStop` before loading the next.
+
+**Autoloads** hold the cross-cutting services, each with one job:
+
+| Autoload   | Responsibility                                                       |
+|------------|----------------------------------------------------------------------|
+| `Settings` | Preferences, the input map (registered in code), video quality       |
+| `Events`   | Signal bus for decoupled notifications (toasts, noise, kills, scans) |
+| `Audio`    | Bus layout, pooled 2D/3D players, music crossfades, lazy stream cache|
+| `Game`     | The persistent `MetaState`, the current `RunState`, save and banking |
+| `Router`   | Scene transitions, clean quit, debug screenshot capture              |
+
+**Per-frame order.** Everything on the gameplay plane updates from
+`Dive._process` in a fixed order with a clamped delta, rather than from
+scattered `_physics_process` callbacks: autopilot (tests only) -> submarine
+-> level (every awake entity, then deferred removals and noise expiry) ->
+heartbeat -> zone objective -> camera. Hitstop freezes the simulation but
+not the camera.
+
+**Entities.** `Entity` (`src/world/entity.gd`) is the base for creatures,
+pickups, caches and projectiles: a 2D position and velocity on the play
+plane, a radius, `setup()`/`tick()` hooks and `sync_transform()` into 3D.
+Creatures add senses (hearing via `Level.loudest_noise_at`, light via the
+sub's lamp cone, line of sight via the SDF), steering and a per-species
+`think()`/`behave()` state machine.
+
+**Data.** Static game data lives in `src/data/` as typed definitions
+(frames, upgrades, modules, biomes, codex, logs, events, milestones, tips),
+separate from the mutable state in `src/core/` (`RunState` for one dive,
+`MetaState` for the save, `SubStats` derived from frame + upgrades +
+modules). Saves are JSON, written to a temp file and renamed into place.
+
+**Testing.** `tests/run_tests.gd` loads every `tests/unit/test_*.gd` suite
+headlessly: data integrity, generator invariants (reachability, sealed
+pockets, corridor width), a physical traversal of every zone, creature and
+boss simulations, save round trips and asset references.
+`tests/flow_test.tscn` clicks through the menus and a dive end to end.
+CI fails on any test failure and on any runtime script or shader error.
