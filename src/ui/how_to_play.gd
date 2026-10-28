@@ -5,6 +5,7 @@ extends CanvasLayer
 const TIPS: PackedStringArray = [
 	"Descend through eleven zones to the Hadal Trench and silence what sings there.",
 	"Your lamp lights the way and scans creatures held in its beam - but it drains the battery.",
+	"Glow bulbs on the walls recharge the battery. Running dark (lamp off) trickle-charges an empty one.",
 	"Sonar pings chart the cave and reveal the way down. Every ping is loud: things below will hear it.",
 	"Boosting and collisions make noise too. Drift quietly past what you cannot fight.",
 	"Fire the harpoon to spear creatures, drag caches open or pull salvage in. Hold to winch.",

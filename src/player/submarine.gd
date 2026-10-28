@@ -8,6 +8,9 @@ signal died
 const RADIUS := 1.15
 const COLLISION_DAMAGE_SPEED := 7.5
 const SCAN_TIME := 1.6
+## Trickle charge (per second) with the lamp off, up to this share of capacity.
+const EMERGENCY_CHARGE_RATE := 0.8
+const EMERGENCY_CHARGE_CAP := 0.15
 
 var level: Level
 var run: RunState
@@ -255,10 +258,15 @@ func _update_battery(delta: float, move: Vector2) -> void:
 	if boosting:
 		drain += stats.boost_drain
 	run.battery = maxf(run.battery - drain * drain_mult * delta, 0.0)
+	# Emergency cells: running dark slowly restores enough charge for the odd
+	# ping, so an empty battery is never a dead end.
+	if drain == 0.0 and run.battery < stats.max_battery * EMERGENCY_CHARGE_CAP:
+		run.battery = minf(run.battery + EMERGENCY_CHARGE_RATE * delta, stats.max_battery * EMERGENCY_CHARGE_CAP)
 	if run.battery <= 0.0:
 		if lamp_on:
 			lamp_on = false
-			Events.toast.emit("Battery depleted - lamp offline", Color(1.0, 0.4, 0.3))
+			Events.toast.emit("Battery depleted - lamp offline. Emergency cells recharge while running dark.",
+					Color(1.0, 0.4, 0.3))
 			Audio.play(&"power_down")
 		boosting = false
 	var low := run.battery < stats.max_battery * 0.2
