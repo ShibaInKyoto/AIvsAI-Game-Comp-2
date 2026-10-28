@@ -1,6 +1,6 @@
 extends TestCase
 ## Every sound the code asks for by name exists on disk (a typo would just be
-## silent at runtime), and every biome's music track is present.
+## silent at runtime), and every biome's music and ambience tracks are present.
 
 const CALL := "Audio\\.(play|play_ui|play_at|play_music|play_ambience|get_stream)\\(&\"([a-z0-9_]+)\""
 
@@ -20,6 +20,7 @@ func test_biome_music_exists() -> void:
 	for zone in BiomeLibrary.TOTAL_ZONES:
 		var biome := BiomeLibrary.biome_for_zone(zone)
 		check(_sound_exists(String(biome.music)), "music for %s" % biome.id)
+		check(_sound_exists(String(biome.ambience)), "ambience for %s" % biome.id)
 
 
 static func _sound_exists(sound: String) -> bool:

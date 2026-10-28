@@ -4,7 +4,7 @@ extends Node
 ## pings and fires at threats. Used by the smoke test and screenshot tooling.
 ##
 ## Enabled with user args:  -- --autopilot [--shots=<dir>] [--time=<seconds>]
-## [--zone=<n>] [--frame=<id>]. Exits the game when time runs out and prints a summary.
+## [--zone=<n>] [--frame=<id>] [--seed=<n>]. Exits the game when time runs out and prints a summary.
 
 var sub: Submarine
 var level: Level
@@ -61,6 +61,9 @@ func _ready() -> void:
 	var zone := int(arg("zone", "-1"))
 	if zone >= 0 and Game.run:
 		Game.run.zone = zone
+	var run_seed := int(arg("seed", "-1"))
+	if run_seed >= 0 and Game.run:
+		Game.run.run_seed = run_seed
 	var frame := StringName(arg("frame", ""))
 	if Catalog.frame(frame) and Game.run:
 		Game.run.frame_id = frame
@@ -288,9 +291,9 @@ func _process(delta: float) -> void:
 
 func _report_and_quit() -> void:
 	var run := Game.run
-	print("AUTOPILOT: time=%.1f zone=%d zones_cleared=%d hull=%.0f battery=%.0f salvage=%d kills=%d fps=%d" % [
+	print("AUTOPILOT: time=%.1f zone=%d zones_cleared=%d hull=%.0f battery=%.0f salvage=%d kills=%d fps=%d seed=%d" % [
 		_elapsed, run.zone if run else -1, _zones_cleared, run.hull if run else 0.0, run.battery if run else 0.0,
-		run.salvage if run else 0, run.kills if run else 0, Engine.get_frames_per_second()])
+		run.salvage if run else 0, run.kills if run else 0, Engine.get_frames_per_second(), run.run_seed if run else 0])
 	print("RENDER: max_draw_calls=%d max_primitives=%d avg_frame=%.1fms worst_frame=%.1fms entities=%d" % [
 		_max_draw_calls, _max_primitives, _frame_ms_sum / maxi(_frames, 1), _max_frame_ms,
 		level.entities.size() if level else 0])

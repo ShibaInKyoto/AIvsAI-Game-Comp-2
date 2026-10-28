@@ -108,6 +108,7 @@ static func _reef() -> BiomeDef:
 	b.props = {&"coral": 1.2, &"fan": 1.0, &"rock": 0.8, &"anemone": 0.8, &"kelp": 0.3}
 	b.bulb_count = 5
 	b.music = &"reef"
+	b.ambience = &"ambience_reef"
 	return b
 
 
@@ -144,6 +145,7 @@ static func _midnight() -> BiomeDef:
 	b.props = {&"crystal": 1.0, &"mushroom": 1.0, &"rock": 1.0, &"spine": 0.5}
 	b.bulb_count = 6
 	b.music = &"midnight"
+	b.ambience = &"ambience_caverns"
 	return b
 
 
@@ -179,6 +181,7 @@ static func _vents() -> BiomeDef:
 	b.vent_count = 5
 	b.stalactite_count = 2
 	b.music = &"vents"
+	b.ambience = &"ambience_vents"
 	return b
 
 
@@ -216,4 +219,5 @@ static func _hadal() -> BiomeDef:
 	b.vent_count = 2
 	b.stalactite_count = 4
 	b.music = &"hadal"
+	b.ambience = &"ambience_hadal"
 	return b

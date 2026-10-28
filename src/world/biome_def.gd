@@ -53,3 +53,5 @@ extends Resource
 @export var stalactite_count := 0
 @export var cache_count := 3
 @export var music: StringName = &"shelf"
+## Ambient bed under the music (rumble, reef crackle, drips, hissing seeps...).
+@export var ambience: StringName = &"ambience"

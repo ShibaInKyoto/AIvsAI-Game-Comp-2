@@ -368,16 +368,19 @@ def ending() -> np.ndarray:
     return normalize(fade(render_once(length + 6.0, ev, HALL, 0.5), 2.0, 6.0), 0.8)
 
 
-def ambience() -> np.ndarray:
-    """Seamless underwater bed: deep rumble, slow swells, distant bubbles."""
-    rng = np.random.default_rng(9)
+def _ambience_bed(seed: int, events: list[tuple[float, np.ndarray]], rumble: float = 1.0,
+                  cutoff: float = 220.0, gain_db: float = 0.0) -> np.ndarray:
+    """A seamless 60 s underwater bed: brown-noise rumble under slow swells,
+    distant bubbles and whatever extra [events] a biome adds. [gain_db] trims
+    the busier beds so every biome sits at about the same loudness (-31 LUFS)."""
+    rng = np.random.default_rng(seed)
     length = 60.0
     n = seconds(length)
-    base = lowpass(noise(length, "brown"), 220) * 0.8
+    base = lowpass(noise(length, "brown"), cutoff) * 0.8 * rumble
     t = t_axis(length)
     swell = 0.6 + 0.4 * np.sin(2 * np.pi * t / length * 3) * np.sin(2 * np.pi * t / length * 2 + 1)
     bed = to_stereo(base * swell)
-    ev = []
+    ev = list(events)
     for _ in range(14):
         start = float(rng.uniform(0, length))
         f = float(rng.uniform(250, 900))
@@ -388,12 +391,84 @@ def ambience() -> np.ndarray:
     # Crossfade the bed against itself so it loops cleanly.
     k = seconds(3.0)
     bed[:k] = bed[:k] * np.linspace(0, 1, k)[:, None] + bed[-k:] * np.linspace(1, 0, k)[:, None]
-    bed = bed[:n - k]
-    loop = loop[:n - k]
-    return normalize(bed + loop, 0.6)
+    return normalize(bed[:n - k] + loop[:n - k], 0.6 * 10 ** (gain_db / 20))
+
+
+def ambience() -> np.ndarray:
+    """The open shelf: rumble, slow swells and distant bubbles."""
+    return _ambience_bed(9, [])
+
+
+def ambience_reef() -> np.ndarray:
+    """The reef crackles: snapping shrimp fire tiny broadband clicks all around."""
+    rng = np.random.default_rng(31)
+    ev = []
+    for _ in range(420):
+        d = 0.012
+        click = lowpass(noise(d), float(rng.uniform(3000, 7000))) * env_exp(d, 0.002, 0.0005)
+        ev.append((float(rng.uniform(0, 60.0)), to_stereo(click * float(rng.uniform(0.05, 0.22)),
+                                                           float(rng.uniform(-1, 1)))))
+    return _ambience_bed(10, ev, gain_db=-0.5)
+
+
+def ambience_caverns() -> np.ndarray:
+    """Enclosed rock: slow drips plinking into still water and stone settling."""
+    rng = np.random.default_rng(32)
+    ev = []
+    for _ in range(26):
+        f = float(rng.uniform(900, 1700))
+        d = 0.35
+        drip = sine(f * (1 + 0.5 * np.exp(-t_axis(d) * 30))) * env_exp(d, 0.05, 0.001)
+        ev.append((float(rng.uniform(0, 58.0)), to_stereo(drip * 0.18, float(rng.uniform(-0.8, 0.8)))))
+    for _ in range(4):
+        d = 2.5
+        f = 70 + 30 * np.sin(2 * np.pi * 0.5 * t_axis(d)) + float(rng.uniform(-8, 8))
+        grind = lowpass(np.sign(np.sin(phase_from_freq(f))) * noise(d, "pink") * 0.5, 500)
+        ev.append((float(rng.uniform(0, 55.0)), to_stereo(grind * env_adsr(d, 0.6, 0.3, 0.6, 1.2) * 0.25,
+                                                           float(rng.uniform(-0.6, 0.6)))))
+    return _ambience_bed(11, ev, 0.8, gain_db=-7.6)
+
+
+def ambience_vents() -> np.ndarray:
+    """Hot rock: a heavier rumble, hissing seeps and rushes of bubbles."""
+    rng = np.random.default_rng(33)
+    ev = []
+    for _ in range(9):
+        d = float(rng.uniform(2.0, 4.0))
+        hiss = lowpass(noise(d), float(rng.uniform(2500, 5000))) - lowpass(noise(d), 600)
+        ev.append((float(rng.uniform(0, 56.0)), to_stereo(hiss * env_adsr(d, d * 0.3, 0.2, 0.7, d * 0.4) * 0.06,
+                                                           float(rng.uniform(-0.8, 0.8)))))
+    for _ in range(6):
+        start = float(rng.uniform(0, 58.0))
+        for _j in range(18):
+            f = float(rng.uniform(300, 1100))
+            d = float(rng.uniform(0.03, 0.07))
+            blip = sine(f * (1 + 0.8 * np.linspace(0, 1, seconds(d)))) * env_exp(d, d * 0.4)
+            ev.append((start + float(rng.uniform(0, 0.8)), to_stereo(blip * 0.1, float(rng.uniform(-1, 1)))))
+    return _ambience_bed(12, ev, 1.35, 160.0, -2.4)
+
+
+def ambience_hadal() -> np.ndarray:
+    """The bottom of the world: a near-silent drone, far-off moans and the
+    metal of the station groaning somewhere in the dark."""
+    rng = np.random.default_rng(34)
+    ev = []
+    for _ in range(5):
+        d = float(rng.uniform(4.0, 7.0))
+        ev.append((float(rng.uniform(0, 52.0)), to_stereo(whale(float(rng.uniform(70, 120)), d) * 0.3,
+                                                           float(rng.uniform(-0.9, 0.9)))))
+    for _ in range(3):
+        d = 3.0
+        f = 140 * (1 + 0.15 * np.sin(2 * np.pi * 0.3 * t_axis(d)))
+        groan = lowpass(np.sin(phase_from_freq(f)) * (1 + noise(d, "pink") * 0.6), 900)
+        ev.append((float(rng.uniform(0, 55.0)), to_stereo(groan * env_adsr(d, 1.0, 0.4, 0.5, 1.2) * 0.08,
+                                                           float(rng.uniform(-0.7, 0.7)))))
+    return _ambience_bed(13, ev, 0.75, 140.0, -10.2)
 
 
 TRACKS = {
     "title": title, "shelf": shelf, "reef": reef, "midnight": midnight, "vents": vents,
     "hadal": hadal, "boss": boss, "lair": lair, "angler": angler, "loss": loss, "ending": ending, "ambience": ambience,
+    "ambience_reef": ambience_reef, "ambience_caverns": ambience_caverns, "ambience_vents": ambience_vents,
+    "ambience_hadal": ambience_hadal,
 }

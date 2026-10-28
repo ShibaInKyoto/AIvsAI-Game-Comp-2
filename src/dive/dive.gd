@@ -99,7 +99,7 @@ func load_zone(zone: int) -> void:
 		tutorial.bind(sub, level)
 
 	Audio.play_music(biome.music)
-	Audio.play_ambience(&"ambience")
+	Audio.play_ambience(biome.ambience)
 	Game.check_milestones()
 	# On a first dive the prologue plays while the zone loads; start when it ends.
 	if is_instance_valid(_prologue) and not _prologue.done:
