@@ -30,6 +30,7 @@ var _max_primitives := 0
 var _max_frame_ms := 0.0
 var _frame_ms_sum := 0.0
 var _frames := 0
+var _reported := false
 
 
 static func requested() -> bool:
@@ -165,7 +166,8 @@ func _process(delta: float) -> void:
 	if _force_exit_at > 0.0 and _elapsed >= _force_exit_at and level:
 		_force_exit_at = -1.0
 		level.exit_reached.emit()
-	if _elapsed >= time_limit:
+	if _elapsed >= time_limit and not _reported:
+		_reported = true
 		_report_and_quit()
 
 

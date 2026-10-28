@@ -9,6 +9,7 @@ const ENDING := "res://src/ui/ending/ending.tscn"
 var _layer: CanvasLayer
 var _fade: ColorRect
 var _busy := false
+var _quitting := false
 
 
 func _ready() -> void:
@@ -49,6 +50,9 @@ func _setup_capture() -> void:
 ## Quits cleanly: silences audio and gives the audio server a few frames to
 ## release its playbacks before the engine shuts down.
 func quit(exit_code := 0) -> void:
+	if _quitting:
+		return
+	_quitting = true
 	Audio.stop_all()
 	for i in 3:
 		await get_tree().process_frame
