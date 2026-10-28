@@ -61,7 +61,8 @@ static func entries() -> Array[Entry]:
 					"its spell. A lamp in her eyes up close, or a flare fed to her, dazzles her."),
 			Entry.new(&"mother", "The Blind Mother", "Mater caeca", "Extreme",
 				"Thirty metres of eyeless eel coiled at the bottom of the Midnight Caverns. She hears a sub drift past " +
-					"from across her lair and strikes at the sound - straight through anything in the way."),
+					"from across her lair and strikes at the sound - straight through anything in the way. A strike " +
+					"that ends in rock wedges her head there and lays her glowing gills open."),
 			Entry.new(&"ironclad", "The Ironclad", "Bathynomus ferreus", "Extreme",
 				"An isopod the size of a bus, walking the floor of the hottest vent field in the trench. Its plates " +
 					"turn harpoons and torpedoes, but not the vents: caught in an eruption, the shell splits and glows. " +
