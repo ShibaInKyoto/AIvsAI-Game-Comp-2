@@ -87,6 +87,8 @@ impacts). Creatures with hearing investigate noise sources.
 | Vent isopod     | 4-5    | touch        | Crawls on walls, latches onto the hull, drains power.  |
 | Siphonophore    | 2,3,5  | touch        | A drifting chain of bells that stings along its length.|
 | Mimic           | 3-5    | touch        | Disguised as a salvage cache; wakes, lunges and chases.|
+| Blind Mother    | 3      | hearing only | Mid-run boss sealing the exit of zone 6. Lunges at     |
+|                 |        |              | sound; stuck in rock, her gills are open to attack.    |
 | The Choir       | 5      | everything   | Final encounter.                                       |
 
 ## Replayability
@@ -100,7 +102,7 @@ impacts). Creatures with hearing investigate noise sources.
 * Zone events (currents, blackout, frenzy, wrecks, dead calm, bloom) forecast
   at the decompression stop.
 * Optional zone objectives for bonus salvage or research.
-* 14 milestones, each unlocking a hull paint.
+* 15 milestones, each unlocking a hull paint.
 
 ## Technical approach
 
