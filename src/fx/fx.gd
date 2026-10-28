@@ -122,6 +122,31 @@ static func bubble_emitter() -> GPUParticles3D:
 	return p
 
 
+## A roaring column of scalding water and steam for an erupting thermal vent
+## (local +Y is up the column). Toggle [member GPUParticles3D.emitting].
+static func vent_plume(height: float) -> GPUParticles3D:
+	var pm := ParticleProcessMaterial.new()
+	pm.direction = Vector3(0, 1, 0)
+	pm.spread = 7.0
+	pm.initial_velocity_min = height * 0.9
+	pm.initial_velocity_max = height * 1.3
+	pm.damping_min = height * 0.3
+	pm.damping_max = height * 0.5
+	pm.scale_min = 1.2
+	pm.scale_max = 3.2
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	pm.emission_sphere_radius = 0.6
+	pm.turbulence_enabled = true
+	pm.turbulence_noise_strength = 1.2
+	pm.turbulence_noise_scale = 3.0
+	pm.color_ramp = _color_ramp(PackedColorArray([Color(1.0, 0.85, 0.6, 0.9), Color(1.0, 0.45, 0.15, 0.6),
+		Color(0.55, 0.5, 0.5, 0.25), Color(0.4, 0.4, 0.42, 0.0)]), PackedFloat32Array([0.0, 0.2, 0.6, 1.0]))
+	var p := _emitter(70, 1.1, pm, _quad(1.0, particle_material(soft_texture(), false, 1.6)), false)
+	p.local_coords = true
+	p.emitting = false
+	return p
+
+
 # --- One-shot effects ------------------------------------------------------------
 
 static func sparks(level: Node3D, at: Vector2) -> void:

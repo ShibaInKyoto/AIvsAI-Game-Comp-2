@@ -31,6 +31,7 @@ static func populate(level: Level, run: RunState) -> void:
 		_spawn_boss(level, used)
 	_spawn_creatures(level, run, used)
 	_spawn_bulbs(level, used)
+	_spawn_vents(level, used)
 	_spawn_caches(level, used)
 	_spawn_debris(level)
 	PropScatter.scatter(level)
@@ -130,6 +131,29 @@ static func _spawn_bulbs(level: Level, used: PackedVector2Array) -> void:
 		level.add_entity(bulb)
 		used.append(bulb.pos)
 		placed += 1
+
+
+## Thermal vents on open floor, spaced apart and clear of the entry and exit.
+static func _spawn_vents(level: Level, used: PackedVector2Array) -> void:
+	var layout := level.layout
+	var rng := level.rng
+	var placed: Array[Vector2] = []
+	var guard := 0
+	while placed.size() < level.biome.vent_count and guard < 400 and not layout.anchors.is_empty():
+		guard += 1
+		var a: LevelLayout.Anchor = layout.anchors[rng.randi() % layout.anchors.size()]
+		if a.normal.y < 0.75 or a.pos.distance_to(layout.start) < 25.0 or a.pos.distance_to(layout.exit) < 18.0:
+			continue
+		if not layout.is_reachable(a.pos + a.normal * 3.0) or not _far_from(a.pos, used, 8.0):
+			continue
+		if placed.any(func(q: Vector2) -> bool: return q.distance_to(a.pos) < 25.0):
+			continue
+		var vent := ThermalVent.new()
+		vent.pos = a.pos + a.normal * 0.3
+		vent.normal = a.normal
+		level.add_entity(vent)
+		placed.append(a.pos)
+		used.append(vent.pos)
 
 
 static func _spawn_caches(level: Level, used: PackedVector2Array) -> void:

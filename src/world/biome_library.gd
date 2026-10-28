@@ -166,6 +166,7 @@ static func _vents() -> BiomeDef:
 	b.creature_budget = 14
 	b.props = {&"tubeworm": 1.2, &"chimney": 0.6, &"rock": 1.0, &"crystal": 0.3}
 	b.bulb_count = 6
+	b.vent_count = 5
 	b.music = &"vents"
 	return b
 
@@ -201,5 +202,6 @@ static func _hadal() -> BiomeDef:
 	b.creature_budget = 15
 	b.props = {&"crystal": 1.2, &"spine": 1.0, &"rock": 0.8, &"mushroom": 0.4}
 	b.bulb_count = 6
+	b.vent_count = 2
 	b.music = &"hadal"
 	return b

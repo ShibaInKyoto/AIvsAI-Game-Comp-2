@@ -15,6 +15,7 @@ const TIPS: Dictionary[StringName, String] = {
 	&"choir": "Answer each wave with a ping just as it reaches you. The ring around your sub shows when.",
 	&"rock": "Ramming rock at speed cracks the hull. Ease off the boost in tight tunnels.",
 	&"torpedo": "Torpedoes do not care who fired them. Keep your distance from the blast.",
+	&"vent": "Thermal vents rumble and glow before they erupt. Wait it out beside the column, not in it.",
 }
 const FALLBACK := "Hangar upgrades carry over between dives, and Settings has an Assist mode."
 
@@ -27,6 +28,8 @@ static func cause_of(source: Node) -> StringName:
 		return &"choir"
 	if source is Torpedo:
 		return &"torpedo"
+	if source is ThermalVent:
+		return &"vent"
 	return &"rock"
 
 
@@ -41,6 +44,8 @@ static func describe(cause: StringName) -> String:
 			return "the Choir's song"
 		&"stalker":
 			return "the Stalker"
+		&"vent":
+			return "a thermal vent"
 	var entry := CreatureCodex.entry(cause)
 	return "a " + entry.name if entry else "something in the dark"
 

@@ -446,6 +446,26 @@ def engine_loop():
 
 
 
+def vent_rumble():
+    """A thermal vent building up: a deep, swelling rumble with rising bubbles."""
+    d = 1.4
+    t = t_axis(d)
+    rumble = lowpass(noise(d, "brown"), 120) * (t / d) ** 1.5 * 2.0
+    groan = sine(_sweep(32, 46, d)) * (t / d) * 0.6
+    return normalize(trim_silence(mix(rumble, groan, _bubbles(d, 25, 200, 700) * 0.35)), 0.8)
+
+
+def vent_erupt():
+    """The eruption: a roaring, hissing column of boiling water."""
+    d = 2.8
+    roar = lowpass(noise(d, "pink"), 900) * env_adsr(d, 0.05, 0.3, 0.8, 1.2)
+    hiss = highpass(noise(d, "white"), 3000) * env_adsr(d, 0.02, 0.4, 0.35, 1.0) * 0.25
+    boom = _thud(70, 30, 0.8, 0.25) * 1.2
+    sig = mix(roar, hiss, _bubbles(d, 90, 250, 1600) * 0.5)
+    sig[: len(boom)] += boom
+    return normalize(trim_silence(wet_dry(sig, BIG_WATER, 0.4)), 0.9)
+
+
 def heartbeat_loop():
     """Two muffled lub-dub beats at 72 bpm; exact length, so it loops cleanly.
     Played under a hunting Stalker and sped up as it closes in."""

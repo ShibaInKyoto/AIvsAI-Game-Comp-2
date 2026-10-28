@@ -47,5 +47,7 @@ extends Resource
 ## Prop id -> density multiplier.
 @export var props: Dictionary[StringName, float] = {}
 @export var bulb_count := 5
+## Erupting thermal vents per zone (see [ThermalVent]).
+@export var vent_count := 0
 @export var cache_count := 3
 @export var music: StringName = &"shelf"
