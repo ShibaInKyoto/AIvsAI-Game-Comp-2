@@ -49,6 +49,10 @@ func _build() -> void:
 	elif _run.zone == BiomeLibrary.ANGLER_ZONE:
 		_column.add_child(UiUtil.label("A light is burning at the bottom of the next zone, far brighter than any " +
 			"reef glow. Something down there is watching for yours.", &"", 22, UiTheme.DANGER))
+	if Game.meta.has_wreck() and Game.meta.wreck_zone == _run.zone:
+		var frame := Catalog.frame(StringName(Game.meta.wreck_frame))
+		_column.add_child(UiUtil.label("Your lost %s lies in the next zone with %d salvage still aboard." %
+			[frame.name if frame else "submarine", Game.meta.wreck_cargo], &"", 22, UiTheme.WARN))
 	var event := ZoneEvents.for_zone(_run, _run.zone)
 	if event != ZoneEvents.NONE:
 		_column.add_child(UiUtil.label("Sensor forecast: %s - %s" % [ZoneEvents.display_name(event),

@@ -66,6 +66,10 @@ func show_result(run: RunState, outcome: RunState.Outcome) -> void:
 	if outcome == RunState.Outcome.IMPLODED:
 		column.add_child(UiUtil.label("Insurance recovered %d%% of your salvage." % int(run.stats.insurance * 100),
 				&"DimLabel"))
+		if run.hull <= 0.0 and Game.meta.has_wreck() and Game.meta.wreck_zone == run.zone:
+			column.add_child(UiUtil.label("The rest went down with the %s: %d salvage in its wreck in zone %d. " %
+					[Catalog.frame(run.frame_id).name, Game.meta.wreck_cargo, run.zone + 1] +
+					"Recover it on your next dive.", &"", 20, UiTheme.WARN))
 		if run.hull <= 0.0:
 			var tip := UiUtil.label("TIP  " + DeathTips.tip(run.last_hit_by), &"", 20, UiTheme.ACCENT)
 			tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

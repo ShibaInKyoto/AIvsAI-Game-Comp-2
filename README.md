@@ -12,7 +12,8 @@ singing at the bottom of the world.
 
 | | |
 |---|---|
-| ![Sunlit Shelf](docs/screenshots/shelf.jpg) | ![Twilight Reef](docs/screenshots/reef.jpg) |
+| ![Sunlit Shelf](docs/screenshots/shelf.jpg) | ![Spined puffers swelling up](docs/screenshots/puffers.jpg) |
+| ![Twilight Reef](docs/screenshots/reef.jpg) | ![The Lamplighter](docs/screenshots/lamplighter.jpg) |
 | ![Abyssal Vents](docs/screenshots/vents.jpg) | ![The Blind Mother](docs/screenshots/mother.jpg) |
 | ![The Choir](docs/screenshots/choir.jpg) | ![Decompression stop](docs/screenshots/stop.jpg) |
 | ![Title screen](docs/screenshots/title.jpg) | ![Hangar](docs/screenshots/hangar.jpg) |
@@ -55,6 +56,8 @@ itself. Every zone is a procedurally generated cave cross-section. Find the
   to bring down its neighbours. Harpoon one to drop it on purpose.
 * **Salvage** comes from caches (ram them or drag them in with the harpoon),
   debris and creatures. **Glow bulbs** on the walls recharge your battery.
+* If you implode, what insurance does not cover goes down with the sub. On
+  your next dive its **wreck** lies in the zone where it sank, cargo aboard.
 * Between zones you dock at a **decompression stop**: install one of three
   modules, repair the hull, then *descend*, or *surface* and bank your salvage
   with a depth bonus. If you implode, insurance keeps only part of it, and
@@ -174,7 +177,7 @@ Requires Godot 4.5.1 with export templates installed.
 
 ```sh
 godot --headless --import                                       # first-time import
-godot --headless --path . -s res://tests/run_tests.gd           # 61 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
+godot --headless --path . -s res://tests/run_tests.gd           # 63 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
 godot --headless --path . res://tests/flow_test.tscn            # end-to-end menu and dive flow
 godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
 python3 tools/audio/generate.py                                 # regenerate all audio (numpy + ffmpeg)

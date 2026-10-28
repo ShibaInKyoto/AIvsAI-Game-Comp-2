@@ -75,6 +75,7 @@ func bind(p_sub: Submarine, p_level: Level) -> void:
 	sub = p_sub
 	level = p_level
 	sub.input_enabled = false
+	_guardian_seen = false
 	_path_index = 0
 	_last_pos = sub.pos
 	_route = level.layout.find_path(sub.pos, level.layout.exit)

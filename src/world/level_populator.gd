@@ -37,6 +37,8 @@ static func populate(level: Level, run: RunState) -> void:
 	_spawn_vents(level, used)
 	_spawn_stalactites(level, used)
 	_spawn_caches(level, used)
+	if Game.meta.has_wreck() and Game.meta.wreck_zone == level.zone:
+		_spawn_lost_wreck(level, used)
 	_spawn_debris(level)
 	PropScatter.scatter(level)
 	if rng.randf() < 0.8:
@@ -184,6 +186,28 @@ static func _spawn_stalactites(level: Level, used: PackedVector2Array) -> void:
 		s.pos = center
 		level.add_entity(s)
 		placed.append(a.pos)
+
+
+## The pilot's last sub lies on the floor somewhere away from the start.
+static func _spawn_lost_wreck(level: Level, used: PackedVector2Array) -> void:
+	var layout := level.layout
+	var rng := level.rng
+	for _i in 300:
+		if layout.anchors.is_empty():
+			return
+		var a: LevelLayout.Anchor = layout.anchors[rng.randi() % layout.anchors.size()]
+		if a.normal.y < 0.7 or a.pos.distance_to(layout.start) < 30.0 or not _far_from(a.pos, used, 8.0):
+			continue
+		var p := a.pos + a.normal * 1.8
+		if level.field.sample(p) < 1.6 or not layout.is_reachable(p):
+			continue
+		var wreck := LostWreck.new()
+		wreck.frame_id = StringName(Game.meta.wreck_frame)
+		wreck.cargo = Game.meta.wreck_cargo
+		wreck.pos = p
+		level.add_entity(wreck)
+		used.append(p)
+		return
 
 
 static func _spawn_vents(level: Level, used: PackedVector2Array) -> void:

@@ -161,7 +161,14 @@ pickups, caches and projectiles: a 2D position and velocity on the play
 plane, a radius, `setup()`/`tick()` hooks and `sync_transform()` into 3D.
 Creatures add senses (hearing via `Level.loudest_noise_at`, light via the
 sub's lamp cone, line of sight via the SDF), steering and a per-species
-`think()`/`behave()` state machine.
+`think()`/`behave()` state machine. The two lair guardians (the Lamplighter
+and the Blind Mother) extend `Guardian`, which owns the lair geometry, the
+waking fanfare, the shared rewards and unsealing the way down.
+
+**Hazards.** Thermal vents and loose stalactites are entities too, and they
+plug into the same noise system as everything else: a vent's eruption is a
+noise creatures hear, and a stalactite falls when it hears a loud enough
+one, so pings, boosts, decoys and explosions all have consequences.
 
 **Data.** Static game data lives in `src/data/` as typed definitions
 (frames, upgrades, modules, biomes, codex, logs, events, milestones, tips),

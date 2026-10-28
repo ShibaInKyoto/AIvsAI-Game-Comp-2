@@ -39,6 +39,11 @@ var daily_attempts := 0
 var daily_won := false
 ## Best dives, highest score first (see [method DiveScore.record]).
 var records: Array[Dictionary] = []
+## The wreck of the last sub to implode: its zone (-1 = none), frame and the
+## cargo insurance did not cover, waiting to be recovered (see [LostWreck]).
+var wreck_zone := -1
+var wreck_frame := ""
+var wreck_cargo := 0
 
 
 func upgrade_level(id: StringName) -> int:
@@ -81,6 +86,22 @@ func record_dive(entry: Dictionary) -> int:
 	if records.size() > MAX_RECORDS:
 		records.resize(MAX_RECORDS)
 	return rank
+
+
+func record_wreck(zone: int, frame: StringName, cargo: int) -> void:
+	wreck_zone = zone
+	wreck_frame = String(frame)
+	wreck_cargo = cargo
+
+
+func clear_wreck() -> void:
+	wreck_zone = -1
+	wreck_frame = ""
+	wreck_cargo = 0
+
+
+func has_wreck() -> bool:
+	return wreck_zone >= 0 and wreck_cargo > 0
 
 
 func best_score() -> int:
@@ -155,6 +176,9 @@ func to_dict() -> Dictionary:
 		"daily_attempts": daily_attempts,
 		"daily_won": daily_won,
 		"records": records,
+		"wreck_zone": wreck_zone,
+		"wreck_frame": wreck_frame,
+		"wreck_cargo": wreck_cargo,
 	}
 
 
@@ -203,6 +227,11 @@ static func from_dict(d: Dictionary) -> MetaState:
 	for r: Variant in d.get("records", []):
 		if r is Dictionary:
 			m.records.append(_clean_record(r))
+	m.wreck_zone = clampi(int(d.get("wreck_zone", -1)), -1, BiomeLibrary.TOTAL_ZONES - 1)
+	m.wreck_frame = String(d.get("wreck_frame", ""))
+	m.wreck_cargo = maxi(int(d.get("wreck_cargo", 0)), 0)
+	if Catalog.frame(StringName(m.wreck_frame)) == null:
+		m.clear_wreck()
 	m.records.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a.score > b.score)
 	if m.records.size() > MAX_RECORDS:
 		m.records.resize(MAX_RECORDS)

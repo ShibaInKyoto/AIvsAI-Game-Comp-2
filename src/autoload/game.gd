@@ -7,6 +7,8 @@ const SAVE_PATH := "user://save.json"
 ## The dive in progress, snapshotted at the start of each zone so quitting
 ## mid-dive is not the end of it.
 const RUN_PATH := "user://run.json"
+## Smallest uninsured loss worth leaving a wreck for.
+const WRECK_MIN_CARGO := 10
 
 var meta := MetaState.new()
 var run: RunState
@@ -175,6 +177,9 @@ func end_run(outcome: RunState.Outcome) -> int:
 		kept = int(run.salvage * Pressure.depth_bonus(run.zone))
 	elif outcome == RunState.Outcome.IMPLODED:
 		kept = int(run.salvage * clampf(run.stats.insurance, 0.0, 1.0))
+		# What insurance does not cover sinks with the sub, to be recovered next dive.
+		if run.hull <= 0.0 and run.salvage - kept >= WRECK_MIN_CARGO:
+			meta.record_wreck(run.zone, run.frame_id, run.salvage - kept)
 	elif outcome == RunState.Outcome.VICTORY:
 		kept = int(run.salvage * Pressure.depth_bonus(run.zone + 2))
 		meta.wins += 1
