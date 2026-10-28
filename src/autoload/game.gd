@@ -77,6 +77,7 @@ func start_run(daily := false) -> void:
 	run.pressure = meta.pressure_selected if not daily else 0
 	if daily:
 		run.run_seed = hash(today()) & 0x7fffffff
+		run.daily_event = ZoneEvents.daily(today())
 		meta.begin_daily(today())
 	else:
 		run.run_seed = randi() & 0x7fffffff

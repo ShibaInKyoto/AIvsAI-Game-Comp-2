@@ -42,7 +42,7 @@ func _build() -> void:
 	if BiomeLibrary.is_final_zone(_run.zone):
 		next_text = "Next: the hadal floor. The signal is directly below you."
 	_column.add_child(UiUtil.label(next_text, &"HeaderLabel"))
-	var event := ZoneEvents.roll(_run.run_seed, _run.zone)
+	var event := ZoneEvents.for_zone(_run, _run.zone)
 	if event != ZoneEvents.NONE:
 		_column.add_child(UiUtil.label("Sensor forecast: %s - %s" % [ZoneEvents.display_name(event),
 				ZoneEvents.description(event)],

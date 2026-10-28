@@ -76,7 +76,9 @@ gamepad rumble and four graphics presets.
 
 ## Replayability
 
-* A new trench every dive, plus a **daily dive** with a shared, date-based seed.
+* A new trench every dive, plus a **daily dive** with a shared, date-based seed
+  and a condition of the day (blackout, frenzy, currents...) in every zone.
+  The title screen tracks your best result for today.
 * 30 modules to draft into a build. Their stats stack.
 * 4 submarine frames: **Lantern** (balanced, flares), **Mako** (fast, torpedoes,
   fragile), **Bathysphere** (armored, long sonar, shock pulse), **Whisper**
@@ -144,7 +146,7 @@ Requires Godot 4.5.1 with export templates installed.
 
 ```sh
 godot --headless --import                                       # first-time import
-godot --headless --path . -s res://tests/run_tests.gd           # 37 tests: generation, traversal, assets, biome and boss sims
+godot --headless --path . -s res://tests/run_tests.gd           # 38 tests: generation, traversal, assets, biome and boss sims
 godot --headless --path . res://tests/flow_test.tscn            # end-to-end menu and dive flow
 godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
 python3 tools/audio/generate.py                                 # regenerate all audio (numpy + ffmpeg)

@@ -58,7 +58,7 @@ func load_zone(zone: int) -> void:
 		level = null
 	level = Level.new()
 	add_child(level)
-	var event := ZoneEvents.roll(run.run_seed, zone)
+	var event := ZoneEvents.for_zone(run, zone)
 	level.build(layout, Settings.quality, run.pressure, event)
 	LevelPopulator.populate(level, run)
 	# Deferred so zone objectives see the exit before the stop screen opens.

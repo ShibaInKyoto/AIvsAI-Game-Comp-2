@@ -21,6 +21,8 @@ var logs := 0
 var time := 0.0
 var pressure := 0
 var daily := false
+## The daily dive's condition of the day (see [method ZoneEvents.for_zone]).
+var daily_event: StringName = &""
 var deepest_depth := 0
 var outcome := Outcome.NONE
 

@@ -49,7 +49,7 @@ func _ready() -> void:
 	column.add_child(_menu)
 	var dive := UiUtil.button("Dive", _on_dive, 360)
 	_menu.add_child(dive)
-	var daily := "Daily dive"
+	var daily := "Daily dive: %s" % ZoneEvents.display_name(ZoneEvents.daily(Game.today()))
 	var record := Game.meta.daily_summary(Game.today())
 	if record != "":
 		daily += "   (%s)" % record
