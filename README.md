@@ -104,7 +104,8 @@ gamepad rumble and four graphics presets.
 ## Under the hood
 
 FATHOM is built with **Godot 4.5** (Forward+ renderer) in statically typed
-GDScript. All 3D art is generated at runtime from code.
+GDScript. All 3D art is generated at runtime from code. The design document
+and an architecture overview are in [docs/DESIGN.md](docs/DESIGN.md).
 
 * **Caves** (`src/world/level_generator.gd`). The generator carves tunnels,
   chambers and shafts into a signed distance field with smooth-min SDF
