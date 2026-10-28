@@ -70,6 +70,10 @@ func _ready() -> void:
 		Game.run.rebuild_stats(Game.meta.upgrades)
 		Game.run.refill()
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	Events.terrain_changed.connect(func(rect: Rect2) -> void:
+		if sub:
+			print("AUTOPILOT: rock moved at %.1f s, %.0f m from the sub, zone %d" % [_elapsed,
+				rect.get_center().distance_to(sub.pos), Game.run.zone if Game.run else -1]))
 
 
 func bind(p_sub: Submarine, p_level: Level) -> void:
