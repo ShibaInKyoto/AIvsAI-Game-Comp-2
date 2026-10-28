@@ -157,6 +157,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
+func _notification(what: int) -> void:
+	# Alt-tabbing away mid-dive pauses instead of leaving the sub to the Stalker.
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and state == State.PLAYING and not Autopilot.requested():
+		_pause_menu.open()
+
+
 func _on_settings_changed() -> void:
 	if level and level.environment_rig:
 		level.environment_rig.apply_quality(Settings.quality)
