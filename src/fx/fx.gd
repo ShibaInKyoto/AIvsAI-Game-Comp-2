@@ -273,7 +273,7 @@ static func float_label(color: Color) -> Label3D:
 	l.font = UiTheme.BOLD_FONT
 	l.font_size = 56
 	l.outline_size = 14
-	l.pixel_size = 0.012
+	l.pixel_size = 0.015
 	l.modulate = color
 	l.outline_modulate = Color(0.0, 0.03, 0.06, 0.85)
 	l.billboard = BaseMaterial3D.BILLBOARD_ENABLED
