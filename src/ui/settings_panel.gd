@@ -36,7 +36,8 @@ func _ready() -> void:
 	_check(grid, "Fullscreen", Settings.fullscreen, func(on: bool) -> void: Settings.fullscreen = on)
 	_check(grid, "V-Sync", Settings.vsync, func(on: bool) -> void: Settings.vsync = on)
 	_check(grid, "Show FPS", Settings.show_fps, func(on: bool) -> void: Settings.show_fps = on)
-	_check(grid, "Assist mode (take 40% less damage)", Settings.assist, func(on: bool) -> void: Settings.assist = on)
+	_check(grid, "Assist mode (40% less damage, wider timing)", Settings.assist,
+		func(on: bool) -> void: Settings.assist = on)
 	_check(grid, "Gamepad rumble", Settings.rumble, func(on: bool) -> void: Settings.rumble = on)
 
 	column.add_child(UiUtil.label("Quality changes to terrain detail apply from the next zone.", &"DimLabel"))

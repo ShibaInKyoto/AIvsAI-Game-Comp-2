@@ -199,11 +199,11 @@ func _update_waves(delta: float) -> void:
 		if not w.resolved and sub and sub.alive and not _done:
 			if w.deadline < 0.0 and w.radius >= sub.pos.distance_to(pos):
 				# The wave arrives: a ping just before it counts as an answer...
-				if now - _last_ping <= ANSWER_EARLY:
+				if now - _last_ping <= ANSWER_EARLY * Settings.timing_window_mult():
 					_answer(w)
 				else:
 					w.arrived = now
-					w.deadline = now + ANSWER_LATE
+					w.deadline = now + ANSWER_LATE * Settings.timing_window_mult()
 			elif w.deadline >= 0.0:
 				# ...and so does one shortly after.
 				if _last_ping >= w.arrived:

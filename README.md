@@ -73,7 +73,8 @@ itself. Every zone is a procedurally generated cave cross-section. Find the
 | Fullscreen | `F11` | |
 
 **How to dive** on the title screen sums up the rules and controls. Settings
-include an **Assist mode** (40% less hull damage), screen-shake strength,
+include an **Assist mode** (40% less hull damage and wider timing windows
+against the Choir), screen-shake strength,
 gamepad rumble and four graphics presets.
 
 ## Replayability

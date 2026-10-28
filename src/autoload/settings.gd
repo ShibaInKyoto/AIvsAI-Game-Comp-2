@@ -19,7 +19,7 @@ var fullscreen := true
 var vsync := true
 var screen_shake := 1.0
 var show_fps := false
-## Assist mode: the submarine takes much less damage.
+## Assist mode: the submarine takes much less damage and timing windows widen.
 var assist := false
 ## Gamepad rumble on impacts.
 var rumble := true
@@ -112,6 +112,11 @@ func apply() -> void:
 ## Damage multiplier applied to the player's submarine.
 func damage_taken_mult() -> float:
 	return 0.6 if assist else 1.0
+
+
+## Scale for rhythm timing windows (the Choir's waves).
+func timing_window_mult() -> float:
+	return 1.6 if assist else 1.0
 
 
 ## Short gamepad rumble scaled by [param strength] (0..1).
