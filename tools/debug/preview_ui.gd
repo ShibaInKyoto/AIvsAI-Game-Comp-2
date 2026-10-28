@@ -2,7 +2,8 @@ extends Node
 ## Debug helper: shows one UI panel over the menu backdrop and saves a PNG.
 ## Usage: xvfb-run godot --path . res://tools/debug/preview_ui.tscn -- <out.png> <panel> [zone]
 ## Panels: howto, settings, erase (armed), controls, stop, summary, records, credits,
-## prologue, ending (every log found, epilogue shown at once).
+## prologue, ending (every log found, epilogue shown at once), logs (the hangar's
+## archive scrolled to the recordings outside the Meridian set; nothing is saved).
 ## (summary banks a fake dive into the local save).
 
 
@@ -18,6 +19,21 @@ func _ready() -> void:
 		ending.set(&"_fast", true)
 		add_child(ending)
 		await get_tree().create_timer(9.0).timeout
+		get_viewport().get_texture().get_image().save_png(out)
+		Router.quit()
+		return
+	if which == "logs":
+		for id in ["log_01", "log_02", "log_03", "log_04", "log_drone", "log_final"]:
+			if not Game.meta.logs_found.has(id):
+				Game.meta.logs_found.append(id)
+		var hangar: Node = load(Router.HANGAR).instantiate()
+		add_child(hangar)
+		await get_tree().process_frame
+		hangar.call(&"_show_tab", 3)
+		await get_tree().create_timer(1.5).timeout
+		var scroll: ScrollContainer = hangar.find_children("*", "ScrollContainer", true, false)[0]
+		scroll.scroll_vertical = int(scroll.get_v_scroll_bar().max_value)
+		await get_tree().create_timer(1.5).timeout
 		get_viewport().get_texture().get_image().save_png(out)
 		Router.quit()
 		return
