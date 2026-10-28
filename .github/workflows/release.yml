@@ -65,10 +65,22 @@ jobs:
           name: FATHOM ${{ steps.tag.outputs.tag }}
           target_commitish: ${{ github.sha }}
           files: build/FATHOM-windows-x64.zip
+          make_latest: true
           body: |
-            FATHOM - a submarine descent roguelite for Windows 10/11.
+            ## FATHOM - a submarine descent roguelite. Light reveals. Sound betrays.
 
-            1. Download FATHOM-windows-x64.zip and extract it.
-            2. Run FATHOM.exe (if SmartScreen warns, choose More info > Run anyway).
+            ![FATHOM](https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/docs/screenshots/sonar.jpg)
 
-            See README.md for controls.
+            Pilot a small salvage sub down eleven procedurally generated cave zones,
+            through five biomes, to the thing that is singing at the bottom of the trench.
+
+            ### Play (Windows 10/11)
+            1. Download **FATHOM-windows-x64.zip** below and extract it anywhere.
+            2. Run **FATHOM.exe**. If SmartScreen warns, choose *More info > Run anyway*.
+
+            Needs a GPU with Vulkan or Direct3D 12 (any dedicated GPU from the last decade).
+
+            ### Controls
+            WASD move - mouse aim the lamp - left mouse harpoon (hold to winch) - right mouse tool -
+            Q cycle tool - Space sonar ping - Shift boost - F lamp - Tab chart - Esc pause.
+            Gamepads are fully supported. *How to dive* on the title screen explains the rest.
