@@ -4,6 +4,7 @@ extends RefCounted
 ## Each prop type becomes one MultiMeshInstance3D (one draw call).
 
 const SHADER := preload("res://src/fx/shaders/prop.gdshader")
+const ROCK_SHADER := preload("res://src/fx/shaders/rock_prop.gdshader")
 
 ## placement: floor / ceiling / wall / any. density: chance per anchor.
 const DEFS: Dictionary[StringName, Dictionary] = {
@@ -141,6 +142,9 @@ static func _material(id: StringName, biome: BiomeDef) -> ShaderMaterial:
 	var key := StringName("%s/%s" % [id, biome.id])
 	if _materials.has(key):
 		return _materials[key]
+	if id == &"rock":
+		_materials[key] = _rock_material(biome)
+		return _materials[key]
 	var def: Dictionary = DEFS[id]
 	var m := ShaderMaterial.new()
 	m.shader = SHADER
@@ -152,9 +156,6 @@ static func _material(id: StringName, biome: BiomeDef) -> ShaderMaterial:
 	var tint_a := Color(1, 1, 1)
 	var tint_b := Color(1, 1, 1)
 	match id:
-		&"rock":
-			tint_a = biome.rock_tint
-			tint_b = biome.rock_tint_deep
 		&"kelp":
 			tint_a = Color(0.85, 0.95, 0.6)
 			tint_b = Color(1.0, 0.8, 0.55)
@@ -264,19 +265,34 @@ static func _kelp() -> ArrayMesh:
 		return Color(0.25 + t * 0.15, 0.32 + t * 0.12, 0.12, 0.0))
 
 
+static func _rock_material(biome: BiomeDef) -> ShaderMaterial:
+	var m := ShaderMaterial.new()
+	m.shader = ROCK_SHADER
+	m.set_shader_parameter(&"rock_albedo", TerrainRenderer.ROCK_ALBEDO)
+	m.set_shader_parameter(&"rock_rough", TerrainRenderer.ROCK_ROUGH)
+	m.set_shader_parameter(&"tint_a", biome.rock_tint)
+	m.set_shader_parameter(&"tint_b", biome.rock_tint_deep)
+	m.set_shader_parameter(&"sediment_tint", biome.sediment_tint)
+	return m
+
+
 static func _rock() -> ArrayMesh:
 	var sphere := SphereMesh.new()
 	sphere.radius = 1.0
 	sphere.height = 1.6
-	sphere.radial_segments = 14
-	sphere.rings = 8
+	sphere.radial_segments = 18
+	sphere.rings = 10
 	var arrays := sphere.get_mesh_arrays()
 	var verts: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
 	var noise := FastNoiseLite.new()
 	noise.frequency = 0.9
+	noise.fractal_octaves = 3
 	for i in verts.size():
 		var v := verts[i]
-		verts[i] = v * (1.0 + noise.get_noise_3dv(v * 1.3) * 0.35)
+		v *= 1.0 + noise.get_noise_3dv(v * 1.3) * 0.45
+		# Flatten the underside so boulders sit on the floor.
+		v.y = maxf(v.y, -0.6)
+		verts[i] = v
 	arrays[Mesh.ARRAY_VERTEX] = verts
 	arrays[Mesh.ARRAY_NORMAL] = null
 	arrays[Mesh.ARRAY_TANGENT] = null
