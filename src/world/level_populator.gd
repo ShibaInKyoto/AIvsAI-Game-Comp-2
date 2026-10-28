@@ -43,6 +43,8 @@ static func populate(level: Level, run: RunState) -> void:
 	_spawn_vents(level, used)
 	_spawn_stalactites(level, used)
 	_spawn_caches(level, used)
+	if level.event == &"whalefall":
+		_spawn_whale_fall(level, used)
 	if Game.meta.has_wreck() and Game.meta.wreck_zone == level.zone:
 		_spawn_lost_wreck(level, used)
 	_spawn_debris(level)
@@ -173,6 +175,34 @@ static func _spawn_station(level: Level, used: PackedVector2Array) -> void:
 	station.pos = Vector2(room.center.x, floors[floors.size() / 2])
 	level.add_entity(station)
 	used.append(station.pos + Vector2(0.0, 3.0))
+
+
+## A whale fall gathers life: shoals feeding over the carcass and the
+## worms' glow on the floor beside it, harvestable like any glow bulb.
+static func _spawn_whale_fall(level: Level, used: PackedVector2Array) -> void:
+	var rng := level.rng
+	var fall := WhaleFall.place(level, rng, used)
+	if fall == null:
+		return
+	used.append(fall.pos)
+	for _k in 2:
+		var p := fall.pos + Vector2(rng.randf_range(-7.0, 7.0), rng.randf_range(3.0, 6.0))
+		if level.field.sample(p) > 2.0 and level.layout.is_reachable(p):
+			var shoal: Creature = SPECIES[&"shoal"].new()
+			shoal.pos = p
+			level.add_entity(shoal)
+	var placed := 0
+	for a: LevelLayout.Anchor in level.layout.anchors:
+		if placed >= 2:
+			break
+		if a.normal.y > 0.6 and a.pos.distance_to(fall.pos) < 10.0 and _far_from(a.pos, used, 4.0):
+			var bulb := GlowBulb.new()
+			bulb.pos = a.pos + a.normal * 0.5
+			bulb.normal = a.normal
+			bulb.color = WhaleFall.WORM
+			level.add_entity(bulb)
+			used.append(bulb.pos)
+			placed += 1
 
 
 static func _spawn_bulbs(level: Level, used: PackedVector2Array) -> void:

@@ -35,7 +35,7 @@ func test_station_stands_on_the_final_floor() -> void:
 		var station := _station(level)
 		check(station != null, "seed %d: the final zone has the station" % run_seed)
 		if station:
-			check(level.field.sample(station.pos + Vector2(0.0, 0.3)) < 1.0, "seed %d: it stands on the floor" % run_seed)
+			check(absf(level.field.sample(station.pos)) < 0.6, "seed %d: it stands on the floor" % run_seed)
 			check(level.field.sample(station.pos + Vector2(0.0, 4.0)) > 1.0, "seed %d: in open water" % run_seed)
 			check(station.pos.distance_to(level.layout.exit) > 40.0, "seed %d: well above the arena" % run_seed)
 		level.free()

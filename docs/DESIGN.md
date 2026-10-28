@@ -113,7 +113,7 @@ has not noticed the sub can be **ambushed** (harpoon hits deal double), and
 * Codex: scan every creature, collect every signal log.
 * **Pressure** levels after the first win (stacking difficulty modifiers).
 * Daily dive (date-seeded), with today's best depth on the title screen.
-* Zone events (currents, blackout, frenzy, wrecks, dead calm, bloom) forecast
+* Zone events (currents, blackout, frenzy, wrecks, whale fall, dead calm, bloom) forecast
   at the decompression stop.
 * Optional zone objectives for bonus salvage or research.
 * 17 milestones, each unlocking a hull paint.

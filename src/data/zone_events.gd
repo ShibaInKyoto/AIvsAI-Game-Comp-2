@@ -12,6 +12,7 @@ const EVENTS: Dictionary[StringName, Dictionary] = {
 	&"wrecks": {"name": "Wreck field", "desc": "An expedition died here. Their salvage didn't."},
 	&"quiet": {"name": "Dead calm", "desc": "Sound carries twice as far in still water."},
 	&"bloom": {"name": "Bioluminescent bloom", "desc": "Everything is glowing - and so are the glow bulbs."},
+	&"whalefall": {"name": "Whale fall", "desc": "A whale sank here. Everything nearby has come to feed."},
 }
 const CHANCE := 0.45
 

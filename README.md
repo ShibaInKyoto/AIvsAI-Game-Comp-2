@@ -148,7 +148,8 @@ settings and key bindings are kept).
   species, stay silent, harvest bulbs, recover a log.
 * **Zone events**: strong currents, blackouts, feeding frenzies, wreck
   fields (the broken hulls of an earlier expedition, salvage spilled around
-  them), dead calm and bioluminescent blooms.
+  them), whale falls (a great skeleton on the floor, glowing with bone worms
+  and crowded with feeding fish), dead calm and bioluminescent blooms.
 * **Pressure levels** unlock after you beat the Choir. Each level stacks a new
   modifier on top of the ones below it.
 
@@ -204,7 +205,7 @@ Requires Godot 4.5.1 with export templates installed.
 
 ```sh
 godot --headless --import                                       # first-time import
-godot --headless --path . -s res://tests/run_tests.gd           # 86 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
+godot --headless --path . -s res://tests/run_tests.gd           # 88 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
 godot --headless --path . res://tests/flow_test.tscn            # end-to-end menu and dive flow
 godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
 python3 tools/audio/generate.py                                 # regenerate all audio (numpy + ffmpeg)

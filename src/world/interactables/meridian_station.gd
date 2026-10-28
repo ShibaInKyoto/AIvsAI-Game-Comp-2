@@ -41,7 +41,16 @@ static func floor_below(field: TerrainField, p: Vector2, max_drop := 30.0) -> fl
 	var q := p
 	while p.y - q.y < max_drop:
 		if field.sample(q) < 0.05:
-			return q.y
+			# The field is steep near rock: home in on the surface itself.
+			var above := q.y + 0.25
+			var below := q.y
+			for _i in 6:
+				var mid := (above + below) * 0.5
+				if field.sample(Vector2(q.x, mid)) < 0.0:
+					below = mid
+				else:
+					above = mid
+			return (above + below) * 0.5
 		q.y -= 0.25
 	return -INF
 
