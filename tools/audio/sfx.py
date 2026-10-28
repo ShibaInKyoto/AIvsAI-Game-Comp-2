@@ -500,6 +500,32 @@ def engine_loop():
 
 
 
+def station_hum():
+    """Meridian Deep's failing power: a 4 s seamless transformer drone (50 Hz with
+    buzzy odd harmonics), a relay ticking, metal ticking as it cools, all dulled
+    by the water. Ducked at runtime whenever the circuit drops out (MeridianStation)."""
+    d = 4.0
+    t = t_axis(d)
+    drone = additive(50.0, [1.0, 0.45, 0.6, 0.2, 0.35, 0.1, 0.18, 0.05, 0.1], d)
+    # A slow beat between two near-identical mains tones keeps it alive.
+    beat = 1.0 + 0.18 * np.sin(2 * np.pi * 0.5 * t)
+    buzz = lowpass(square(100.0, d) * 0.12, 900) * (1.0 + 0.3 * np.sin(2 * np.pi * 0.25 * t))
+    out = mix(drone * beat * 0.7, buzz)
+    for k in range(4):
+        tick = highpass(noise(0.02, "white"), 1500) * env_exp(0.02, 0.004, 0.001) * 0.35
+        i = seconds(0.3 + k * 1.0)
+        out[i:i + len(tick)] += tick
+    for start in (1.35, 3.1):
+        ping = _clang(RNG.uniform(900, 1400), 0.5, 0.08) * 0.06
+        i = seconds(start)
+        out[i:i + len(ping)] += ping[: len(out) - i]
+    out = lowpass(out, 1400) + lowpass(noise(d, "pink"), 400) * 0.08
+    k = seconds(0.3)
+    out[:k] = out[:k] * np.linspace(0, 1, k) + out[-k:] * np.linspace(1, 0, k)
+    out = out[: len(out) - k]
+    return normalize(out, 0.55)
+
+
 def vent_rumble():
     """A thermal vent building up: a deep, swelling rumble with rising bubbles."""
     d = 1.4

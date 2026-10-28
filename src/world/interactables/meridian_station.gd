@@ -31,6 +31,7 @@ var _flicker_timer := 0.0
 var _mat: ShaderMaterial
 var _warm: OmniLight3D
 var _beacon_light: OmniLight3D
+var _hum: AudioStreamPlayer3D
 
 
 ## The y of the floor straight below [param p] (which must be in open water),
@@ -97,6 +98,20 @@ func setup() -> void:
 	_beacon_light.light_energy = 0.0
 	_beacon_light.position = Vector3(0.6, 9.0, 1.5)
 	rig.add_child(_beacon_light)
+	# The failing power hums, and stutters with the lights.
+	_hum = AudioStreamPlayer3D.new()
+	var hum := Audio.get_stream(&"station_hum")
+	if hum is AudioStreamOggVorbis:
+		(hum as AudioStreamOggVorbis).loop = true
+	_hum.stream = hum
+	_hum.bus = &"SFX"
+	_hum.unit_size = 8.0
+	_hum.max_distance = 45.0
+	_hum.volume_db = -10.0
+	_hum.position = Vector3(0.0, 3.2, 1.0)
+	rig.add_child(_hum)
+	if hum:
+		_hum.play()
 	_t = BEACON_PERIOD - 1.5
 
 
@@ -120,6 +135,7 @@ func tick(delta: float) -> void:
 		_flicker_timer = level.rng.randf_range(0.04, 0.16) if out else level.rng.randf_range(0.3, 2.2)
 	_mat.set_shader_parameter(&"failing_energy", 1.6 * _flicker)
 	_warm.light_energy = 0.55 + 0.35 * _flicker
+	_hum.volume_db = -10.0 + linear_to_db(clampf(_flicker, 0.1, 1.0))
 	var sub := level.player
 	if not greeted and sub and sub.alive and sub.pos.distance_to(pos + Vector2(0.0, 3.0)) < ARRIVE_RANGE:
 		_greet(sub)
