@@ -49,6 +49,7 @@ func _build() -> void:
 	var resume := UiUtil.button("Resume", close)
 	column.add_child(resume)
 	column.add_child(UiUtil.button("Settings", _open_settings))
+	column.add_child(UiUtil.button("How to dive", func() -> void: add_child(HowToPlayPanel.new())))
 	# Abandoning mid-zone counts as losing the sub: only insurance pays out.
 	var abandon := "Abandon dive"
 	if Game.run:
