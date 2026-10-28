@@ -11,6 +11,8 @@ func _ready() -> void:
 	_level = Level.new()
 	add_child(_level)
 	_level.build(layout, 1)
+	# A clean tank: hide the cave so the lineup never ends up inside rock.
+	_level.terrain.visible = false
 	_level.environment_rig.environment.ambient_light_energy = 2.5
 	var origin := Vector2(layout.size().x * 0.5, -60)
 	var species: Array = [Lancer, Jelly, Lurelight, Gulper, Stalker, Isopod, Siphonophore, Mimic, Shoal]
