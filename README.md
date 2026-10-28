@@ -119,11 +119,13 @@ rumble and four graphics presets.
 * 4 submarine frames: **Lantern** (balanced, flares), **Mako** (fast, torpedoes,
   fragile), **Bathysphere** (armored, long sonar, shock pulse), **Whisper**
   (near silent, quick scanner, sonar decoys).
-* 12 hangar upgrades, a creature codex and 11 story logs to recover.
+* 12 hangar upgrades, a creature codex and 13 story logs to recover.
 * Ten creature species with their own senses and tells: drifting jellies,
-  dashing lancers, spined puffers that swell into living mines when rushed, angler-like lurelights, burrowing gulper eels, wall-crawling
-  isopods, stinging siphonophore chains, caches that turn out to be mimics,
-  shoals, and the Stalker, which hunts by sound across the whole zone.
+  dashing lancers that hunt the shoals, spined puffers that swell into living
+  mines when rushed, angler-like lurelights, burrowing gulper eels,
+  wall-crawling isopods, stinging siphonophore chains, caches that turn out to
+  be mimics, shoals, and the Stalker, which hunts by sound across the whole
+  zone.
 * 17 milestones (silence the Choir, scan every species, kill a Stalker...), each
   unlocking a hull paint.
 * **Zone objectives** for bonus salvage or research: open caches, hunt, scan

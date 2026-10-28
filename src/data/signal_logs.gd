@@ -24,6 +24,11 @@ const LOGS: Array[Dictionary] = [
 		"text": "The fauna gathers around the station at night. Lancers, jellies, things I have " +
 			"no names for, all facing the floor, perfectly still. Like an audience. Every " +
 			"time the tone changes pitch, they turn together."},
+	{"id": "log_12", "title": "The light on the reef", "author": "Dr. I. Okafor",
+		"text": "There is a light at the bottom of the reef, brighter than anything I have " +
+			"catalogued. Vasquez flew the drone at it with its lamps on full. The light went " +
+			"out a second before the drone did. Whatever holds it sees by light alone. We fly " +
+			"dark past the reef now, and I have started calling her the Lamplighter."},
 	{"id": "log_06", "title": "Resonance hypothesis", "author": "Dr. L. Sato",
 		"text": "Rock has resonant frequencies. Sing the right note at a wine glass and it " +
 			"shatters; sing the right chord at a cave and perhaps it flows. Whatever is down " +
@@ -37,6 +42,11 @@ const LOGS: Array[Dictionary] = [
 		"text": "I broke Hale's order tonight. I played it a melody through the hull speakers - " +
 			"the first thing I could think of, a lullaby my mother sang. It sang it back. " +
 			"Perfectly. And then it sang our voices. All four of us. Talking about it."},
+	{"id": "log_13", "title": "Hydrophone log", "author": "Dr. L. Sato",
+		"text": "Something enormous lives in the caverns under the reef. It has no eyes. I watched " +
+			"it on sonar strike the exact spot where Vasquez dropped a wrench, so hard it was " +
+			"stuck in the rock for a minute. The Choir's song does not move it. It listens to " +
+			"us instead. Okafor wants to call it the Mother."},
 	{"id": "log_09", "title": "Emergency log", "author": "Cmdr. R. Hale",
 		"text": "The trench closed around the escape lock at 0300. Vasquez went out in the drone " +
 			"to cut us a path. We heard him on comms for six minutes. Then the Choir sang, " +
