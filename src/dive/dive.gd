@@ -36,7 +36,7 @@ func _ready() -> void:
 	if Autopilot.requested():
 		autopilot = Autopilot.new()
 		add_child(autopilot)
-	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
+	Input.mouse_mode = Input.MOUSE_MODE_CONFINED_HIDDEN
 	await load_zone(Game.run.zone)
 
 

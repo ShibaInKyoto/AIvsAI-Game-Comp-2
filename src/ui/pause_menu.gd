@@ -29,7 +29,7 @@ func close() -> void:
 		_root.queue_free()
 		_root = null
 	get_tree().paused = false
-	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
+	Input.mouse_mode = Input.MOUSE_MODE_CONFINED_HIDDEN
 
 
 func _unhandled_input(event: InputEvent) -> void:

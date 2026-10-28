@@ -173,6 +173,6 @@ func _refresh() -> void:
 
 
 func _finish(choice: StringName) -> void:
-	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
+	Input.mouse_mode = Input.MOUSE_MODE_CONFINED_HIDDEN
 	finished.emit(choice)
 	queue_free()
