@@ -12,6 +12,7 @@ var state := State.LOADING
 var autopilot: Autopilot
 var heartbeat: Heartbeat
 var objective: ZoneObjective
+var _prologue: Prologue
 var _pause_menu: PauseMenu
 var _layout_result: LevelLayout
 var _call_timer := 45.0
@@ -40,6 +41,9 @@ func _ready() -> void:
 		autopilot = Autopilot.new()
 		add_child(autopilot)
 	Input.mouse_mode = Input.MOUSE_MODE_CONFINED_HIDDEN
+	if Prologue.wanted():
+		_prologue = Prologue.new()
+		add_child(_prologue)
 	await load_zone(Game.run.zone)
 
 
@@ -97,6 +101,9 @@ func load_zone(zone: int) -> void:
 	Audio.play_music(biome.music)
 	Audio.play_ambience(&"ambience")
 	Game.check_milestones()
+	# On a first dive the prologue plays while the zone loads; start when it ends.
+	if is_instance_valid(_prologue) and not _prologue.done:
+		await _prologue.finished
 	var depth := BiomeLibrary.zone_depth_range(zone)
 	if BiomeLibrary.is_final_zone(zone):
 		Events.banner.emit("THE HADAL FLOOR", "%d m  -  the signal is close" % int(depth.x))
