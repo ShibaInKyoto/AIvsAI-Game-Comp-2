@@ -64,8 +64,13 @@ itself. Every zone is a procedurally generated cave cross-section. Find the
 | Boost (loud) | `Shift` | LT |
 | Toggle lamp | `F` | Y |
 | Sonar chart | `Tab` | Back |
+| Pick a module at a stop | `1` `2` `3` | D-pad + A |
 | Pause | `Esc` | Start |
 | Fullscreen | `F11` | |
+
+**How to dive** on the title screen sums up the rules and controls. Settings
+include an **Assist mode** (40% less hull damage), screen-shake strength,
+gamepad rumble and four graphics presets.
 
 ## Replayability
 
@@ -75,6 +80,14 @@ itself. Every zone is a procedurally generated cave cross-section. Find the
   fragile), **Bathysphere** (armored, long sonar, shock pulse), **Whisper**
   (near silent, quick scanner).
 * 11 hangar upgrades, a creature codex and 11 story logs to recover.
+* Nine creature species with their own senses and tells: drifting jellies,
+  dashing lancers, angler-like lurelights, burrowing gulper eels, wall-crawling
+  isopods, stinging siphonophore chains, caches that turn out to be mimics,
+  shoals, and the Stalker, which hunts by sound across the whole zone.
+* 14 milestones (silence the Choir, scan every species, kill a Stalker...), each
+  unlocking a hull paint.
+* **Zone objectives** for bonus salvage or research: open caches, hunt, scan
+  species, stay silent, harvest bulbs, recover a log.
 * **Zone events**: strong currents, blackouts, feeding frenzies, wreck
   fields, dead calm and bioluminescent blooms.
 * **Pressure levels** unlock after you beat the Choir. Each level stacks a new
@@ -114,7 +127,7 @@ src/
   core/       run state, meta progression, submarine stats
   data/       biomes, modules/upgrades/frames, codex, logs, zone events, pressure
   world/      generator, terrain field + renderer, level, props, pickups, interactables
-  creatures/  creature base, seven species, the Choir boss
+  creatures/  creature base, nine species, the Choir boss
   player/     submarine, model, harpoon, tool belt, projectiles
   dive/       dive controller, camera, tutorial, test autopilot
   ui/         theme, HUD, sonar chart, menus, hangar, decompression stop, ending
@@ -129,7 +142,8 @@ Requires Godot 4.5.1 with export templates installed.
 
 ```sh
 godot --headless --import                                       # first-time import
-godot --headless --path . -s res://tests/run_tests.gd           # 27 tests, includes biome and boss simulations
+godot --headless --path . -s res://tests/run_tests.gd           # 33 tests: generation, traversal, biome and boss simulations
+godot --headless --path . res://tests/flow_test.tscn            # end-to-end menu and dive flow
 godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
 python3 tools/audio/generate.py                                 # regenerate all audio (numpy + ffmpeg)
 ```
