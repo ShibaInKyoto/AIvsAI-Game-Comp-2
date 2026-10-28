@@ -46,7 +46,8 @@ func reward_defeat(epitaph: String) -> void:
 		sub.run.research += 15
 		sub.show_gain(15, " research", UiTheme.ACCENT)
 	Pickup.scatter(level, pos, &"salvage", salvage_drop, 3.0)
-	Pickup.scatter(level, pos, &"repair", 2, 2.0)
+	# Enough hull back to make the next zone after a hard fight.
+	Pickup.scatter(level, pos, &"repair", 35, 2.0)
 	level.unseal_exit()
 	Audio.play_music(level.biome.music, 3.0)
 	Events.banner.emit("THE WAY DOWN IS OPEN", epitaph)

@@ -37,12 +37,17 @@ func _ready() -> void:
 	_anchor = _pick_spot(layout)
 	sub.setup(level, _run, _anchor)
 	sub.input_enabled = false
+	sub.invulnerable = true
 	sub.external_move = Vector2.ZERO
 	level.player = sub
-	# A shoal for life.
+	# A shoal for life, and in the shallows a puffer that swells at each ping.
 	var shoal := Shoal.new()
 	shoal.pos = _anchor + Vector2(8, 3)
 	level.add_entity(shoal)
+	if layout.biome.creatures.has(&"puffer"):
+		var puffer := Puffer.new()
+		puffer.pos = layout.field.resolve_circle(_anchor + Vector2(-5.5, -1.5), 1.2)
+		level.add_entity(puffer)
 	camera = Camera3D.new()
 	camera.fov = 40.0
 	camera.far = 140.0
@@ -84,6 +89,7 @@ func _show_frame(frame_id: StringName) -> void:
 	level.add_child(sub)
 	sub.setup(level, _run, pos)
 	sub.input_enabled = false
+	sub.invulnerable = true
 	sub.external_move = Vector2.ZERO
 	level.player = sub
 
@@ -100,6 +106,7 @@ func _process(frame_delta: float) -> void:
 	if _ping_timer <= 0.0:
 		_ping_timer = 7.0
 		level.ping(sub.pos, 60.0, 3.0)
+		level.emit_noise(sub.pos, 17.0, sub)
 		Audio.play(&"sonar_ping", -12.0)
 	sub.tick(delta)
 	level.tick(delta)

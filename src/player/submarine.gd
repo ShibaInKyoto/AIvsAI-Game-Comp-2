@@ -24,6 +24,8 @@ var lamp_on := true
 var boosting := false
 var alive := true
 var input_enabled := true
+## Takes no damage at all (the menu backdrop's idling sub).
+var invulnerable := false
 ## When set (not INF), overrides player movement input (autopilot, cutscenes).
 var external_move := Vector2.INF
 ## Current continuous noise radius in meters (shown on the HUD).
@@ -425,7 +427,7 @@ func _update_visuals(delta: float, move: Vector2) -> void:
 
 
 func take_damage(amount: float, from: Vector2, source: Node = null, knockback := true) -> void:
-	if not alive or _invulnerable > 0.0:
+	if not alive or invulnerable or _invulnerable > 0.0:
 		return
 	if source is Creature:
 		amount *= Pressure.creature_damage(run.pressure)
