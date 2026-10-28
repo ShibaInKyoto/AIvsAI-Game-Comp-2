@@ -46,7 +46,7 @@ func build_model() -> void:
 		m.set_shader_parameter(&"swim_amp", 0.05))
 	var bell := MeshKit.lathe(PackedVector2Array([Vector2(0, 0.1), Vector2(0.4, 0.45), Vector2(0.8, 0.4), Vector2(1,
 			0.0)]),
-		1.0, 10, 6, 0.8, 1.0, func(t: float, _a: float) -> float: return 0.3 + 0.7 * (1.0 - smoothstep(0.0, 0.5, t)))
+		1.0, 16, 6, 0.8, 1.0, func(t: float, _a: float) -> float: return 0.3 + 0.7 * (1.0 - smoothstep(0.0, 0.5, t)))
 	var frond := MeshKit.lathe(PackedVector2Array([Vector2(0, 0.01), Vector2(1, 0.04)]), 1.2, 4, 3, 1.0, 1.0,
 		func(_t: float, _a: float) -> float: return 0.6)
 	_multimesh = MultiMesh.new()
@@ -89,7 +89,10 @@ func tick(delta: float) -> void:
 		var heading := (b - a).normalized()
 		var s := lerpf(1.0, 0.55, float(i) / SEGMENTS) * (1.0 + 0.08 * sin(_t * 3.0 - i * 0.6))
 		var basis := Basis(Vector3.BACK, heading.angle() - PI * 0.5).scaled(Vector3.ONE * s)
-		_multimesh.set_instance_transform(i, Transform3D(basis, Vector3(a.x, a.y, sin(i * 0.9 + _t) * 0.4)))
+		# A slow wave travels down the colony so it undulates instead of trailing rigidly.
+		var sway := Vector2(-heading.y, heading.x) * sin(_t * 1.3 - i * 0.55) * 0.5 * float(i) / SEGMENTS
+		var p := a + sway
+		_multimesh.set_instance_transform(i, Transform3D(basis, Vector3(p.x, p.y, sin(i * 0.9 + _t) * 0.4)))
 	_sting_along_body()
 
 
