@@ -3,6 +3,9 @@ extends CanvasLayer
 ## In-dive heads-up display: gauges, tool slot, currencies, message feed and
 ## the world-space overlay (crosshair, scan reticle, exit compass).
 
+## Whether this session has already suggested sound cues to a muted player.
+static var _cues_hinted := false
+
 var sub: Submarine
 var level: Level
 var camera: Camera3D
@@ -186,6 +189,16 @@ func bind(p_sub: Submarine, p_level: Level, p_camera: Camera3D) -> void:
 	_shown_salvage = sub.run.salvage
 	_map.bind(level, sub)
 	_layout_map()
+	# Hunters announce themselves by sound: a pilot diving muted is pointed
+	# at the setting that shows it instead (once per session).
+	var muted := Settings.master_volume < 0.05 or Settings.sfx_volume < 0.05
+	if muted and not Settings.sound_cues and not _cues_hinted and not Autopilot.requested():
+		_cues_hinted = true
+		get_tree().create_timer(2.0).timeout.connect(_hint_sound_cues)
+
+
+func _hint_sound_cues() -> void:
+	toast("Playing without sound? Settings > Sound cues shows where threats are heard.", UiTheme.ACCENT, 6.0)
 
 
 ## Small chart in the corner; Tab shows it large in the middle of the screen.
