@@ -78,3 +78,20 @@ func test_beacon_pings_and_the_survey_pays_once() -> void:
 	station.tick(DT)
 	check_eq(run.research, research + MeridianStation.SURVEY_RESEARCH, "only once")
 	level.free()
+
+
+func test_the_next_log_waits_at_the_station() -> void:
+	var found := Game.meta.logs_found.duplicate()
+	Game.meta.logs_found.clear()
+	var parts := _final_level(99)
+	var level: Level = parts[0]
+	var station := _station(level)
+	var beacon: LogBeacon = null
+	for e in level.entities:
+		if e is LogBeacon:
+			beacon = e
+	check(beacon != null, "the final zone always holds a log")
+	if beacon and station:
+		check(beacon.pos.distance_to(station.pos) < 22.0, "in the station's gallery")
+	Game.meta.logs_found = found
+	level.free()

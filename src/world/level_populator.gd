@@ -47,7 +47,8 @@ static func populate(level: Level, run: RunState) -> void:
 		_spawn_lost_wreck(level, used)
 	_spawn_debris(level)
 	PropScatter.scatter(level)
-	if rng.randf() < 0.8:
+	# The hadal floor always keeps a log, at the station it came from.
+	if rng.randf() < 0.8 or not layout.has_exit:
 		_spawn_log(level, used)
 
 
@@ -347,7 +348,9 @@ static func _spawn_log(level: Level, used: PackedVector2Array) -> void:
 	if id == &"":
 		return
 	var layout := level.layout
-	var rooms := layout.chambers_of_kind(&"loot")
+	var rooms := layout.chambers_of_kind(&"station")
+	if rooms.is_empty():
+		rooms = layout.chambers_of_kind(&"loot")
 	var p: Vector2
 	if rooms.is_empty():
 		p = layout.random_open_point(level.rng, 2.0, used, 10.0)
