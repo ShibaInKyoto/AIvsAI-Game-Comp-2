@@ -361,5 +361,6 @@ func _enrage() -> void:
 		var p := level.field.resolve_circle(pos + Vector2(side * 2.5, -0.8), 0.6)
 		var brood: Creature = LevelPopulator.SPECIES[&"isopod"].new()
 		brood.pos = p
-		brood.set(&"wall_normal", Vector2.UP)
+		# World +y is up: they land on the lair floor.
+		brood.set(&"wall_normal", Vector2(0.0, 1.0))
 		level.add_entity(brood)
