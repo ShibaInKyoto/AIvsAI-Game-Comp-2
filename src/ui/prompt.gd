@@ -22,7 +22,7 @@ const CONTROLS := [
 	["Sonar chart", &"map", "Back"],
 	["Pick a module at stops", "1 / 2 / 3", "D-pad + A"],
 	["Pause", "Esc", "Start"],
-	["Fullscreen", "F11", "-"],
+	["Fullscreen / screenshot", "F11 / F12", "-"],
 ]
 
 

@@ -165,6 +165,7 @@ static func default_inputs() -> Dictionary[StringName, Array]:
 		&"map": [_key(KEY_TAB), _joy(JOY_BUTTON_BACK)],
 		&"pause": [_key(KEY_ESCAPE), _key(KEY_P), _joy(JOY_BUTTON_START)],
 		&"fullscreen": [_key(KEY_F11)],
+		&"screenshot": [_key(KEY_F12)],
 		&"pick_1": [_key(KEY_1)],
 		&"pick_2": [_key(KEY_2)],
 		&"pick_3": [_key(KEY_3)],

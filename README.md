@@ -92,7 +92,11 @@ itself. Every zone is a procedurally generated cave cross-section. Find the
 | Pick a module at a stop | `1` `2` `3` | D-pad + A |
 | Pause | `Esc` | Start |
 | Fullscreen | `F11` | |
+| Screenshot | `F12` | |
 
+**Photo mode** (in the pause menu) freezes the dive, hides the HUD and lets you
+pan, zoom and swing the camera round the cave before taking a picture.
+Screenshots and photos are saved to `%APPDATA%\FATHOM\screenshots`.
 Every keyboard and mouse control can be rebound under **Settings > Controls**
 (prompts follow your keyboard layout, so WASD reads ZQSD on AZERTY).
 **How to dive** on the title screen (and in the pause menu) sums up the rules

@@ -8,6 +8,7 @@ const ENDING := "res://src/ui/ending/ending.tscn"
 
 var _layer: CanvasLayer
 var _fade: ColorRect
+var _note: Label
 var _busy := false
 var _quitting := false
 
@@ -22,6 +23,10 @@ func _ready() -> void:
 	_fade.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_layer.add_child(_fade)
+	_note = UiUtil.label("", &"DimLabel", 18)
+	_note.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
+	_note.position += Vector2(24.0, -40.0)
+	_layer.add_child(_note)
 	_setup_capture()
 
 
@@ -59,9 +64,16 @@ func quit(exit_code := 0) -> void:
 	get_tree().quit(exit_code)
 
 
+## F11 toggles fullscreen and F12 saves a screenshot, anywhere in the game.
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed(&"fullscreen"):
 		Settings.toggle_fullscreen()
+	elif event.is_action_pressed(&"screenshot"):
+		var path := PhotoMode.shoot(get_viewport())
+		_note.text = "Screenshot saved: %s" % path
+		_note.modulate.a = 1.0
+		create_tween().tween_property(_note, ^"modulate:a", 0.0, 1.0).set_delay(2.5)
+		get_viewport().set_input_as_handled()
 
 
 ## True while a transition is fading; [method go_to] calls are ignored then.

@@ -34,6 +34,10 @@ func _ready() -> void:
 	_pause_menu = PauseMenu.new()
 	add_child(_pause_menu)
 	_pause_menu.surface_requested.connect(_on_abandon)
+	_pause_menu.photo_requested.connect(func() -> void:
+		var photo := PhotoMode.new()
+		add_child(photo)
+		photo.open(camera))
 	Settings.changed.connect(_on_settings_changed)
 	Events.hitstop.connect(func(d: float) -> void: _freeze = maxf(_freeze, d))
 	Events.creature_scanned.connect(func(_id: StringName, _first: bool) -> void: Game.check_milestones())

@@ -3,6 +3,7 @@ extends CanvasLayer
 ## In-dive pause menu with controls reference and settings.
 
 signal surface_requested
+signal photo_requested
 
 var _root: Control
 var _settings: SettingsPanel
@@ -50,6 +51,7 @@ func _build() -> void:
 	column.add_child(resume)
 	column.add_child(UiUtil.button("Settings", _open_settings))
 	column.add_child(UiUtil.button("How to dive", func() -> void: add_child(HowToPlayPanel.new())))
+	column.add_child(UiUtil.button("Photo mode", func() -> void: photo_requested.emit()))
 	# Abandoning mid-zone counts as losing the sub: only insurance pays out.
 	var abandon := "Abandon dive"
 	if Game.run:
