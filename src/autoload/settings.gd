@@ -10,6 +10,10 @@ enum Quality { LOW, MEDIUM, HIGH, ULTRA }
 
 const PATH := "user://settings.cfg"
 const QUALITY_NAMES: PackedStringArray = ["Low", "Medium", "High", "Ultra"]
+## Actions whose primary keyboard or mouse binding the player can change.
+## Gamepad bindings, the arrow keys and pause stay fixed.
+const REBINDABLE: Array[StringName] = [&"move_up", &"move_left", &"move_down", &"move_right", &"fire", &"tool",
+	&"cycle_tool", &"ping", &"boost", &"lamp", &"map"]
 
 var master_volume := 0.8
 var music_volume := 0.65
@@ -27,6 +31,8 @@ var rumble := true
 var quality_probed := false
 ## Last input device used; prompts and aiming adapt to it.
 var using_gamepad := false
+## The player's rebinds: action -> {"key": physical keycode} or {"mouse": button}.
+var bindings: Dictionary = {}
 
 
 func _ready() -> void:
@@ -58,6 +64,9 @@ func load_settings() -> void:
 	screen_shake = cfg.get_value("game", "screen_shake", screen_shake)
 	assist = cfg.get_value("game", "assist", assist)
 	rumble = cfg.get_value("game", "rumble", rumble)
+	var saved: Variant = cfg.get_value("input", "bindings", {})
+	bindings = saved if saved is Dictionary else {}
+	_apply_bindings()
 
 
 func save_settings() -> void:
@@ -73,6 +82,7 @@ func save_settings() -> void:
 	cfg.set_value("game", "screen_shake", screen_shake)
 	cfg.set_value("game", "assist", assist)
 	cfg.set_value("game", "rumble", rumble)
+	cfg.set_value("input", "bindings", bindings)
 	cfg.save(PATH)
 
 
@@ -134,34 +144,151 @@ func toggle_fullscreen() -> void:
 
 # --- Input map ---------------------------------------------------------------
 
+## The default events of every action, in priority order: the first key or
+## mouse button is an action's primary (rebindable) binding.
+static func default_inputs() -> Dictionary[StringName, Array]:
+	return {
+		&"move_left": [_key(KEY_A), _key(KEY_LEFT), _axis(JOY_AXIS_LEFT_X, -1.0)],
+		&"move_right": [_key(KEY_D), _key(KEY_RIGHT), _axis(JOY_AXIS_LEFT_X, 1.0)],
+		&"move_up": [_key(KEY_W), _key(KEY_UP), _axis(JOY_AXIS_LEFT_Y, -1.0)],
+		&"move_down": [_key(KEY_S), _key(KEY_DOWN), _axis(JOY_AXIS_LEFT_Y, 1.0)],
+		&"aim_left": [_axis(JOY_AXIS_RIGHT_X, -1.0)],
+		&"aim_right": [_axis(JOY_AXIS_RIGHT_X, 1.0)],
+		&"aim_up": [_axis(JOY_AXIS_RIGHT_Y, -1.0)],
+		&"aim_down": [_axis(JOY_AXIS_RIGHT_Y, 1.0)],
+		&"fire": [_mouse(MOUSE_BUTTON_LEFT), _axis(JOY_AXIS_TRIGGER_RIGHT, 1.0)],
+		&"tool": [_mouse(MOUSE_BUTTON_RIGHT), _joy(JOY_BUTTON_RIGHT_SHOULDER)],
+		&"cycle_tool": [_key(KEY_Q), _joy(JOY_BUTTON_LEFT_SHOULDER)],
+		&"ping": [_key(KEY_SPACE), _joy(JOY_BUTTON_A)],
+		&"boost": [_key(KEY_SHIFT), _axis(JOY_AXIS_TRIGGER_LEFT, 1.0)],
+		&"lamp": [_key(KEY_F), _joy(JOY_BUTTON_Y)],
+		&"map": [_key(KEY_TAB), _joy(JOY_BUTTON_BACK)],
+		&"pause": [_key(KEY_ESCAPE), _key(KEY_P), _joy(JOY_BUTTON_START)],
+		&"fullscreen": [_key(KEY_F11)],
+		&"pick_1": [_key(KEY_1)],
+		&"pick_2": [_key(KEY_2)],
+		&"pick_3": [_key(KEY_3)],
+	}
+
+
 func _register_inputs() -> void:
-	_action(&"move_left", [_key(KEY_A), _key(KEY_LEFT), _axis(JOY_AXIS_LEFT_X, -1.0)])
-	_action(&"move_right", [_key(KEY_D), _key(KEY_RIGHT), _axis(JOY_AXIS_LEFT_X, 1.0)])
-	_action(&"move_up", [_key(KEY_W), _key(KEY_UP), _axis(JOY_AXIS_LEFT_Y, -1.0)])
-	_action(&"move_down", [_key(KEY_S), _key(KEY_DOWN), _axis(JOY_AXIS_LEFT_Y, 1.0)])
-	_action(&"aim_left", [_axis(JOY_AXIS_RIGHT_X, -1.0)])
-	_action(&"aim_right", [_axis(JOY_AXIS_RIGHT_X, 1.0)])
-	_action(&"aim_up", [_axis(JOY_AXIS_RIGHT_Y, -1.0)])
-	_action(&"aim_down", [_axis(JOY_AXIS_RIGHT_Y, 1.0)])
-	_action(&"fire", [_mouse(MOUSE_BUTTON_LEFT), _axis(JOY_AXIS_TRIGGER_RIGHT, 1.0)])
-	_action(&"tool", [_mouse(MOUSE_BUTTON_RIGHT), _joy(JOY_BUTTON_RIGHT_SHOULDER)])
-	_action(&"cycle_tool", [_key(KEY_Q), _joy(JOY_BUTTON_LEFT_SHOULDER)])
-	_action(&"ping", [_key(KEY_SPACE), _joy(JOY_BUTTON_A)])
-	_action(&"boost", [_key(KEY_SHIFT), _axis(JOY_AXIS_TRIGGER_LEFT, 1.0)])
-	_action(&"lamp", [_key(KEY_F), _joy(JOY_BUTTON_Y)])
-	_action(&"map", [_key(KEY_TAB), _joy(JOY_BUTTON_BACK)])
-	_action(&"pause", [_key(KEY_ESCAPE), _key(KEY_P), _joy(JOY_BUTTON_START)])
-	_action(&"fullscreen", [_key(KEY_F11)])
-	_action(&"pick_1", [_key(KEY_1)])
-	_action(&"pick_2", [_key(KEY_2)])
-	_action(&"pick_3", [_key(KEY_3)])
+	var defaults := default_inputs()
+	for action in defaults:
+		_set_events(action, defaults[action])
 
 
-func _action(action: StringName, events: Array) -> void:
+func _set_events(action: StringName, events: Array) -> void:
 	if not InputMap.has_action(action):
 		InputMap.add_action(action, 0.25)
+	InputMap.action_erase_events(action)
 	for e: InputEvent in events:
 		InputMap.action_add_event(action, e)
+
+
+## The action's primary keyboard or mouse event: the one the player can rebind.
+func primary_event(action: StringName) -> InputEvent:
+	for e in InputMap.action_get_events(action):
+		if e is InputEventKey or e is InputEventMouseButton:
+			return e
+	return null
+
+
+## Readable name of an action's primary binding, in the player's keyboard layout.
+func binding_name(action: StringName) -> String:
+	return event_name(primary_event(action))
+
+
+## Makes [param event] (a key or mouse button) the primary binding of
+## [param action]. Another action that was using it takes over the old one,
+## so nothing is ever left unbound.
+func rebind(action: StringName, event: InputEvent) -> void:
+	var wanted := _decode(_encode(event))
+	if wanted == null or not REBINDABLE.has(action):
+		return
+	var old := primary_event(action)
+	for other in REBINDABLE:
+		if other != action and _same(primary_event(other), wanted) and old:
+			_set_primary(other, old)
+			bindings[String(other)] = _encode(old)
+	_set_primary(action, wanted)
+	bindings[String(action)] = _encode(wanted)
+	save_settings()
+
+
+func reset_bindings() -> void:
+	bindings.clear()
+	var defaults := default_inputs()
+	for action in REBINDABLE:
+		_set_events(action, defaults[action])
+	save_settings()
+
+
+func _set_primary(action: StringName, event: InputEvent) -> void:
+	var events := InputMap.action_get_events(action)
+	var replaced := false
+	for i in events.size():
+		if events[i] is InputEventKey or events[i] is InputEventMouseButton:
+			events[i] = event
+			replaced = true
+			break
+	if not replaced:
+		events.push_front(event)
+	_set_events(action, events)
+
+
+func _apply_bindings() -> void:
+	for key: Variant in bindings.keys():
+		var action := StringName(str(key))
+		var event := _decode(bindings[key])
+		if REBINDABLE.has(action) and event:
+			_set_primary(action, event)
+		else:
+			bindings.erase(key)
+
+
+static func _encode(e: InputEvent) -> Dictionary:
+	if e is InputEventKey:
+		var k := e as InputEventKey
+		return {"key": int(k.physical_keycode if k.physical_keycode != KEY_NONE else k.keycode)}
+	if e is InputEventMouseButton:
+		return {"mouse": int((e as InputEventMouseButton).button_index)}
+	return {}
+
+
+static func _decode(d: Variant) -> InputEvent:
+	if not d is Dictionary:
+		return null
+	if d.has("key") and int(d.key) != KEY_NONE:
+		return _key(int(d.key) as Key)
+	if d.has("mouse") and int(d.mouse) > 0:
+		return _mouse(int(d.mouse) as MouseButton)
+	return null
+
+
+static func _same(a: InputEvent, b: InputEvent) -> bool:
+	return a != null and b != null and _encode(a) == _encode(b)
+
+
+## A readable name for a key or mouse button, in the player's keyboard layout
+## (the physical W key reads "Z" on an AZERTY keyboard).
+static func event_name(e: InputEvent) -> String:
+	if e is InputEventKey:
+		var physical := (e as InputEventKey).physical_keycode
+		# The headless server (tests, CI) has no keyboard layout to ask.
+		var code := physical
+		if DisplayServer.get_name() != "headless":
+			code = DisplayServer.keyboard_get_keycode_from_physical(physical)
+		return OS.get_keycode_string(code if code != KEY_NONE else physical)
+	if e is InputEventMouseButton:
+		match (e as InputEventMouseButton).button_index:
+			MOUSE_BUTTON_LEFT:
+				return "LMB"
+			MOUSE_BUTTON_RIGHT:
+				return "RMB"
+			MOUSE_BUTTON_MIDDLE:
+				return "MMB"
+		return "Mouse %d" % (e as InputEventMouseButton).button_index
+	return "-"
 
 
 static func _key(code: Key) -> InputEventKey:

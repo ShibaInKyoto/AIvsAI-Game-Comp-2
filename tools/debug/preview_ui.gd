@@ -1,7 +1,7 @@
 extends Node
 ## Debug helper: shows one UI panel over the menu backdrop and saves a PNG.
 ## Usage: xvfb-run godot --path . res://tools/debug/preview_ui.tscn -- <out.png> <panel>
-## Panels: howto, settings, stop, summary, records, credits, prologue.
+## Panels: howto, settings, controls, stop, summary, records, credits, prologue.
 ## (summary banks a fake dive into the local save).
 
 
@@ -17,6 +17,8 @@ func _ready() -> void:
 			add_child(CreditsPanel.new())
 		"records":
 			add_child(RecordsPanel.new())
+		"controls":
+			add_child(ControlsPanel.new())
 		"prologue":
 			add_child(Prologue.new())
 			await get_tree().create_timer(9.0).timeout

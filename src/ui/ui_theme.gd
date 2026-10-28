@@ -145,6 +145,9 @@ static func _build() -> Theme:
 	t.set_stylebox(&"pressed", &"CheckBox", StyleBoxEmpty.new())
 	t.set_stylebox(&"focus", &"CheckBox", focus)
 	t.set_color(&"font_color", &"CheckBox", TEXT)
+	# The engine's default boxes are tiny and an empty one vanishes on the dark panels.
+	t.set_icon(&"checked", &"CheckBox", _box_icon(true))
+	t.set_icon(&"unchecked", &"CheckBox", _box_icon(false))
 
 	var scroll := StyleBoxFlat.new()
 	scroll.bg_color = Color(0.3, 0.9, 1.0, 0.4)
@@ -160,3 +163,15 @@ static func _build() -> Theme:
 	t.set_font_size(&"normal_font_size", &"RichTextLabel", 20)
 	t.set_font_size(&"bold_font_size", &"RichTextLabel", 20)
 	return t
+
+
+## A square outline in the accent color, filled when [param checked].
+static func _box_icon(checked: bool) -> ImageTexture:
+	var size := 26
+	var img := Image.create(size, size, false, Image.FORMAT_RGBA8)
+	for y in size:
+		for x in size:
+			var edge := x < 2 or y < 2 or x >= size - 2 or y >= size - 2
+			var inner := x >= 6 and y >= 6 and x < size - 6 and y < size - 6
+			img.set_pixel(x, y, ACCENT if edge or (checked and inner) else Color(0.0, 0.0, 0.0, 0.0))
+	return ImageTexture.create_from_image(img)

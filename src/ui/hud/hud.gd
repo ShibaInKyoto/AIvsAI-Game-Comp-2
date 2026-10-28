@@ -240,14 +240,14 @@ func _process(delta: float) -> void:
 	var tool := sub.tools.current()
 	if tool == &"":
 		_tool_label.text = "HARPOON"
-		_tool_hint.text = "[LMB] fire   [Space] sonar"
+		_tool_hint.text = "%s fire   %s sonar" % [Prompt.key(&"fire"), Prompt.key(&"ping")]
 	else:
 		var ammo := sub.tools.ammo(tool)
 		var ammo_text := " x%d" % ammo if ammo >= 0 else "  %d power" % int(sub.stats.shock_cost)
 		_tool_label.text = Catalog.TOOL_NAMES.get(tool, String(tool)).to_upper() + ammo_text
-		_tool_hint.text = "[RMB] use   [Q] cycle" if sub.stats.tools.size() > 1 else "[RMB] use"
-		if Settings.using_gamepad:
-			_tool_hint.text = "[RB] use   [LB] cycle" if sub.stats.tools.size() > 1 else "[RB] use"
+		_tool_hint.text = "%s use" % Prompt.key(&"tool")
+		if sub.stats.tools.size() > 1:
+			_tool_hint.text += "   %s cycle" % Prompt.key(&"cycle_tool")
 
 	var guardian := level.guardian
 	_boss_box.visible = is_instance_valid(guardian) and guardian.active

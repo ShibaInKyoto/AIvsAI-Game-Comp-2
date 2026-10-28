@@ -41,6 +41,7 @@ func _ready() -> void:
 	_check(grid, "Gamepad rumble", Settings.rumble, func(on: bool) -> void: Settings.rumble = on)
 
 	column.add_child(UiUtil.label("Quality changes to terrain detail apply from the next zone.", &"DimLabel"))
+	column.add_child(UiUtil.button("Controls...", func() -> void: add_child(ControlsPanel.new())))
 	var close := UiUtil.button("Back", _close)
 	column.add_child(close)
 	close.grab_focus()

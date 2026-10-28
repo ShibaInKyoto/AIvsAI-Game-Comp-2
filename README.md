@@ -93,6 +93,8 @@ itself. Every zone is a procedurally generated cave cross-section. Find the
 | Pause | `Esc` | Start |
 | Fullscreen | `F11` | |
 
+Every keyboard and mouse control can be rebound under **Settings > Controls**
+(prompts follow your keyboard layout, so WASD reads ZQSD on AZERTY).
 **How to dive** on the title screen (and in the pause menu) sums up the rules
 and controls. Settings include an **Assist mode** (40% less hull damage and
 wider timing windows against the Choir), screen-shake strength, gamepad
@@ -177,7 +179,7 @@ Requires Godot 4.5.1 with export templates installed.
 
 ```sh
 godot --headless --import                                       # first-time import
-godot --headless --path . -s res://tests/run_tests.gd           # 63 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
+godot --headless --path . -s res://tests/run_tests.gd           # 65 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
 godot --headless --path . res://tests/flow_test.tscn            # end-to-end menu and dive flow
 godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
 python3 tools/audio/generate.py                                 # regenerate all audio (numpy + ffmpeg)
