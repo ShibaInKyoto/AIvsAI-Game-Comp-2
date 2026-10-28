@@ -133,7 +133,7 @@ src/
   ui/         theme, HUD, sonar chart, menus, hangar, decompression stop, ending
   fx/         shaders, particle factory, procedural mesh kit
 tests/        headless unit and simulation tests (run in CI)
-tools/        audio synthesis, script checker, debug renderers
+tools/        audio synthesis, script checker, CI helpers, debug renderers
 ```
 
 ### Building from source
@@ -152,7 +152,8 @@ Debugging helpers: `-- --autopilot --zone=4 --shots=<dir>` flies a bot through
 a zone and saves screenshots. `-- --capture=<dir> --capture-at=5` screenshots
 any screen.
 
-CI (`.github/workflows/ci.yml`) checks every script, runs the tests and
+CI (`.github/workflows/ci.yml`) lints and checks every script, runs the tests
+(failing on any runtime script or shader error, via `tools/ci/godot_strict.sh`) and
 exports the Windows build on every push. `release.yml` publishes a GitHub
 release.
 

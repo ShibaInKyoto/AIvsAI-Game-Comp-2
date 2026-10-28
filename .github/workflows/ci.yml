@@ -51,10 +51,10 @@ jobs:
         run: ~/godot/godot --headless --path . -s res://tools/check_scripts.gd
 
       - name: Unit and simulation tests
-        run: ~/godot/godot --headless --path . -s res://tests/run_tests.gd
+        run: GODOT=~/godot/godot tools/ci/godot_strict.sh --headless --path . -s res://tests/run_tests.gd
 
       - name: End-to-end menu and dive flow
-        run: ~/godot/godot --headless --path . res://tests/flow_test.tscn
+        run: GODOT=~/godot/godot tools/ci/godot_strict.sh --headless --path . res://tests/flow_test.tscn
 
       - name: Export Windows build
         run: |

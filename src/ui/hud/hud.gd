@@ -114,13 +114,14 @@ func _ready() -> void:
 	_map = SonarMap.new()
 	root.add_child(_map)
 	_feed = VBoxContainer.new()
-	_place(_feed, Control.PRESET_TOP_RIGHT, Vector2(-760, 130), Vector2(540, 300))
+	# Kept narrow (long messages wrap) so it never runs into the zone banner.
+	_place(_feed, Control.PRESET_TOP_RIGHT, Vector2(-660, 130), Vector2(440, 340))
 	_feed.alignment = BoxContainer.ALIGNMENT_BEGIN
 	root.add_child(_feed)
 
 	# Center banner.
 	_banner = VBoxContainer.new()
-	_place(_banner, Control.PRESET_CENTER_TOP, Vector2(-600, 170), Vector2(1200, 140))
+	_place(_banner, Control.PRESET_CENTER_TOP, Vector2(-600, 220), Vector2(1200, 140))
 	_banner.modulate.a = 0.0
 	root.add_child(_banner)
 	_banner_title = Label.new()
