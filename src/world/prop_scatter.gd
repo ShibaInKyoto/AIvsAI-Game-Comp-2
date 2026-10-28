@@ -178,6 +178,7 @@ static func _material(id: StringName, biome: BiomeDef) -> ShaderMaterial:
 			tint_b = biome.glow_color
 			glow = 3.0
 			m.set_shader_parameter(&"metallic", 0.3)
+			m.set_shader_parameter(&"facet", 1.0)
 		&"mushroom":
 			tint_a = Color(0.7, 0.75, 0.8)
 			tint_b = Color(0.6, 0.65, 0.9)

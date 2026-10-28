@@ -50,7 +50,9 @@ func _ready() -> void:
 		level.layout = layout
 		level.field = layout.field
 		level.biome = layout.biome.duplicate()
-		level.biome.props = {StringName(only): 3.0}
+		# PROPS=biome keeps the biome's own mix; otherwise show one prop densely.
+		if only != "biome":
+			level.biome.props = {StringName(only): 3.0}
 		PropScatter.scatter(level)
 	_cam = Camera3D.new()
 	_cam.fov = 45.0
