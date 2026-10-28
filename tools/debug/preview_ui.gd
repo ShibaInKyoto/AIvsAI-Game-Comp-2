@@ -1,6 +1,6 @@
 extends Node
 ## Debug helper: shows one UI panel over the menu backdrop and saves a PNG.
-## Usage: xvfb-run godot --path . res://tools/debug/preview_ui.tscn -- <out.png> <panel>
+## Usage: xvfb-run godot --path . res://tools/debug/preview_ui.tscn -- <out.png> <panel> [zone]
 ## Panels: howto, settings, erase (armed), controls, stop, summary, records, credits,
 ## prologue, ending (every log found, epilogue shown at once).
 ## (summary banks a fake dive into the local save).
@@ -55,11 +55,12 @@ func _ready() -> void:
 			(get_child(get_child_count() - 1) as RunSummary).show_result(Game.run, RunState.Outcome.IMPLODED)
 		"stop":
 			# The busiest stop: the Lamplighter ahead, a wreck to recover and an event forecast.
+			var zone := int(args[2]) if args.size() > 2 else BiomeLibrary.ANGLER_ZONE
 			Game.start_run()
-			Game.run.zone = BiomeLibrary.ANGLER_ZONE
+			Game.run.zone = zone
 			Game.run.daily = true
 			Game.run.daily_event = &"blackout"
-			Game.meta.record_wreck(BiomeLibrary.ANGLER_ZONE, &"mako", 84)
+			Game.meta.record_wreck(zone, &"mako", 84)
 			var stop := DecompressionStop.new()
 			add_child(stop)
 			stop.open(Game.run)
