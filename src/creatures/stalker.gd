@@ -9,6 +9,11 @@ const PATROL_SPEED := 3.5
 const INVESTIGATE_SPEED := 7.0
 const HUNT_SPEED := 11.0
 const SIGHT := 24.0
+## Body radius along its length (t from tail 0 to head 1), for the lathe and
+## for seating the spines on its back.
+const BODY_PROFILE: PackedVector2Array = [Vector2(0.0, 0.1), Vector2(0.15, 0.35), Vector2(0.45, 1.05),
+	Vector2(0.7, 1.15), Vector2(0.88, 0.95), Vector2(1.0, 0.35)]
+const BODY_LENGTH := 7.0
 
 var state := State.PATROL
 var _target := Vector2.ZERO
@@ -62,19 +67,24 @@ func build_model() -> void:
 		m.set_shader_parameter(&"swim_amp", 0.35)
 		m.set_shader_parameter(&"swim_freq", 3.2)
 		m.set_shader_parameter(&"swim_wave", 0.9))
-	var body := MeshKit.lathe(PackedVector2Array([
-			Vector2(0.0, 0.1), Vector2(0.15, 0.35), Vector2(0.45, 1.05), Vector2(0.7, 1.15),
-			Vector2(0.88, 0.95), Vector2(1.0, 0.35)]), 7.0, 18, 24, 0.95, 0.75,
+	var body := MeshKit.lathe(BODY_PROFILE, BODY_LENGTH, 18, 24, 0.95, 0.75,
 		func(t: float, a: float) -> float:
 			var eye := 1.0 if (t > 0.9 and t < 0.94 and cos(a) > 0.15 and cos(a) < 0.6) else 0.0
 			var flank := 0.7 if (absf(cos(a)) < 0.12 and t > 0.25 and t < 0.85 and fmod(t * 14.0, 1.0) < 0.55) else 0.0
 			return maxf(eye * 2.0, flank))
 	var tail := MeshKit.fin(PackedVector2Array([Vector2(0, 0), Vector2(-1.6, 1.5), Vector2(-1.1, 0), Vector2(-1.6,
-			-1.5)]), 0.08, 0.2)
+			-1.5)]), 0.08, 0.07)
 	var dorsal := MeshKit.fin(PackedVector2Array([Vector2(0.8, 0), Vector2(-0.6, 1.1), Vector2(-1.2, 0)]), 0.08)
 	var pectoral := MeshKit.fin(PackedVector2Array([Vector2(0.3, 0), Vector2(-0.8, -0.2), Vector2(-0.4, -0.9)]), 0.06)
+	# A ridge of faintly glowing spines raked back along the spine.
+	var spines := []
+	for i in 9:
+		var x := lerpf(-2.7, 2.1, i / 8.0)
+		var t := x / BODY_LENGTH + 0.5
+		var spine := MeshKit.spike(0.09, lerpf(0.4, 0.95, sin(t * PI)), 0.08, 4)
+		spines.append([spine, Transform3D(Basis(Vector3.BACK, PI * 0.5 + 0.4), Vector3(x, _radius_at(t) * 0.9, 0.0))])
 	add_visual(MeshKit.merge([
-		[body], [tail, Transform3D(Basis(), Vector3(-3.4, 0, 0))],
+		[body], [MeshKit.merge(spines)], [tail, Transform3D(Basis(), Vector3(-3.4, 0, 0))],
 		[dorsal, Transform3D(Basis(), Vector3(0.0, 1.0, 0))],
 		[pectoral, Transform3D(Basis(), Vector3(1.2, -0.5, 0.6))],
 		[pectoral, Transform3D(Basis(), Vector3(1.2, -0.5, -0.6))]]), mat)
@@ -86,6 +96,15 @@ func build_model() -> void:
 				Vector3(-0.3 + i * 0.22, 0.12, 0.0))])
 	_jaw = add_visual(MeshKit.merge([[jaw], [MeshKit.merge(teeth)]]), mat, Transform3D(Basis(), Vector3(2.6, -0.45, 0)))
 	add_eyes(Vector3(2.75, 0.45, 0.55), 0.17, Color(1.0, 0.85, 0.75), 4.0)
+
+
+static func _radius_at(t: float) -> float:
+	for i in range(1, BODY_PROFILE.size()):
+		var a := BODY_PROFILE[i - 1]
+		var b := BODY_PROFILE[i]
+		if t <= b.x:
+			return lerpf(a.y, b.y, (t - a.x) / maxf(b.x - a.x, 0.0001))
+	return BODY_PROFILE[BODY_PROFILE.size() - 1].y
 
 
 func _patrol_point() -> Vector2:
