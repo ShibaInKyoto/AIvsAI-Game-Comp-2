@@ -17,7 +17,7 @@ func show_result(run: RunState, outcome: RunState.Outcome) -> void:
 	match outcome:
 		RunState.Outcome.IMPLODED:
 			title = "SIGNAL LOST"
-			subtitle = "The Lantern imploded at %d m." % run.deepest_depth
+			subtitle = "The %s imploded at %d m." % [Catalog.frame(run.frame_id).name, run.deepest_depth]
 			color = UiTheme.DANGER
 			Audio.play_music(&"loss", 1.0)
 		RunState.Outcome.SURFACED:
@@ -52,6 +52,9 @@ func show_result(run: RunState, outcome: RunState.Outcome) -> void:
 	for r: Array in rows:
 		grid.add_child(UiUtil.label(r[0], &"DimLabel", 22))
 		grid.add_child(UiUtil.label(r[1], &"MonoLabel", 24))
+	if run.daily:
+		column.add_child(UiUtil.label("Daily dive %s  -  %s" % [Game.meta.daily_date,
+				Game.meta.daily_summary(Game.meta.daily_date)], &"", 22, UiTheme.ACCENT))
 	for m in Game.last_milestones:
 		column.add_child(UiUtil.label("Milestone: %s  -  %s paint unlocked in the hangar" % [m.name, m.paint_name],
 				&"", 22, UiTheme.WARN))

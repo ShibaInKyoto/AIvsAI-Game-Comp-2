@@ -29,6 +29,11 @@ var best_pressure_win := -1
 var milestones: Array[String] = []
 ## Milestone id whose paint is applied to the hull ("" = the frame's own colors).
 var paint := ""
+## Daily dive record for [member daily_date] (YYYY-MM-DD).
+var daily_date := ""
+var daily_best_depth := 0
+var daily_attempts := 0
+var daily_won := false
 
 
 func upgrade_level(id: StringName) -> int:
@@ -75,6 +80,24 @@ func record_scan(id: StringName) -> bool:
 	return first
 
 
+## Starts a daily attempt, resetting the record when the day has changed.
+func begin_daily(date: String) -> void:
+	if daily_date != date:
+		daily_date = date
+		daily_best_depth = 0
+		daily_attempts = 0
+		daily_won = false
+	daily_attempts += 1
+
+
+## Today's daily record, or an empty string if there is none yet.
+func daily_summary(date: String) -> String:
+	if daily_date != date or daily_attempts == 0:
+		return ""
+	var best := "Choir silenced" if daily_won else "best %s m" % UiUtil.thousands(daily_best_depth)
+	return "%s, %d attempt%s" % [best, daily_attempts, "" if daily_attempts == 1 else "s"]
+
+
 func to_dict() -> Dictionary:
 	return {
 		"version": VERSION,
@@ -98,6 +121,10 @@ func to_dict() -> Dictionary:
 		"best_pressure_win": best_pressure_win,
 		"milestones": milestones,
 		"paint": paint,
+		"daily_date": daily_date,
+		"daily_best_depth": daily_best_depth,
+		"daily_attempts": daily_attempts,
+		"daily_won": daily_won,
 	}
 
 
@@ -137,4 +164,8 @@ static func from_dict(d: Dictionary) -> MetaState:
 	m.paint = String(d.get("paint", ""))
 	if not m.milestones.has(m.paint):
 		m.paint = ""
+	m.daily_date = String(d.get("daily_date", ""))
+	m.daily_best_depth = int(d.get("daily_best_depth", 0))
+	m.daily_attempts = int(d.get("daily_attempts", 0))
+	m.daily_won = bool(d.get("daily_won", false))
 	return m

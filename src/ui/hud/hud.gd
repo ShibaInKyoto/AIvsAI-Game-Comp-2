@@ -206,7 +206,7 @@ func _process(delta: float) -> void:
 		return
 	var run := sub.run
 	var depth := level.depth_at(sub.pos.y)
-	_depth_label.text = "%s m" % _thousands(int(depth))
+	_depth_label.text = "%s m" % UiUtil.thousands(int(depth))
 	_hull_bar.max_value = sub.stats.max_hull
 	_hull_bar.value = run.hull
 	_hull_label.text = "%d" % ceili(run.hull)
@@ -291,15 +291,6 @@ static func _place(c: Control, preset: Control.LayoutPreset, offset: Vector2, si
 	c.offset_top = offset.y
 	c.offset_right = offset.x + size.x
 	c.offset_bottom = offset.y + size.y
-
-
-static func _thousands(n: int) -> String:
-	var s := str(absi(n))
-	var out := ""
-	while s.length() > 3:
-		out = "," + s.substr(s.length() - 3) + out
-		s = s.substr(0, s.length() - 3)
-	return ("-" if n < 0 else "") + s + out
 
 
 static func _vignette_material() -> ShaderMaterial:

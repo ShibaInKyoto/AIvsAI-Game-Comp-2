@@ -76,14 +76,20 @@ func start_run(daily := false) -> void:
 	run.daily = daily
 	run.pressure = meta.pressure_selected if not daily else 0
 	if daily:
-		var d := Time.get_date_dict_from_system()
-		run.run_seed = hash("%04d-%02d-%02d" % [d.year, d.month, d.day]) & 0x7fffffff
+		run.run_seed = hash(today()) & 0x7fffffff
+		meta.begin_daily(today())
 	else:
 		run.run_seed = randi() & 0x7fffffff
 	run.rebuild_stats(meta.upgrades)
 	run.refill()
 	meta.dives += 1
 	save_game()
+
+
+## Today's local date as YYYY-MM-DD (the daily dive key).
+static func today() -> String:
+	var d := Time.get_date_dict_from_system()
+	return "%04d-%02d-%02d" % [d.year, d.month, d.day]
 
 
 ## Guaranteed salvage for the depth reached, independent of the outcome.
@@ -115,6 +121,9 @@ func end_run(outcome: RunState.Outcome) -> int:
 	meta.total_kills += run.kills
 	meta.deepest_zone = maxi(meta.deepest_zone, run.zone)
 	meta.deepest_depth = maxi(meta.deepest_depth, run.deepest_depth)
+	if run.daily:
+		meta.daily_best_depth = maxi(meta.daily_best_depth, run.deepest_depth)
+		meta.daily_won = meta.daily_won or outcome == RunState.Outcome.VICTORY
 	last_milestones = Milestones.check(meta, run)
 	save_game()
 	return kept

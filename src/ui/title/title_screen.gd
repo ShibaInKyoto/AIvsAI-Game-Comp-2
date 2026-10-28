@@ -49,7 +49,11 @@ func _ready() -> void:
 	column.add_child(_menu)
 	var dive := UiUtil.button("Dive", _on_dive, 360)
 	_menu.add_child(dive)
-	_menu.add_child(UiUtil.button("Daily dive", _on_daily, 360))
+	var daily := "Daily dive"
+	var record := Game.meta.daily_summary(Game.today())
+	if record != "":
+		daily += "   (%s)" % record
+	_menu.add_child(UiUtil.button(daily, _on_daily, 360))
 	_menu.add_child(UiUtil.button("Hangar", func() -> void: Router.go_to(Router.HANGAR), 360))
 	_menu.add_child(UiUtil.button("How to dive", func() -> void: add_child(HowToPlayPanel.new()), 360))
 	_menu.add_child(UiUtil.button("Settings", func() -> void: add_child(SettingsPanel.new()), 360))
@@ -60,7 +64,7 @@ func _ready() -> void:
 	column.add_child(UiUtil.spacer(30))
 	var meta := Game.meta
 	var stats := "Dives %d   -   Deepest %s m   -   Salvage %d   -   Research %d" % [
-		meta.dives, Hud._thousands(meta.deepest_depth), meta.salvage, meta.research]
+		meta.dives, UiUtil.thousands(meta.deepest_depth), meta.salvage, meta.research]
 	column.add_child(UiUtil.label(stats, &"DimLabel"))
 	if meta.dives == 0:
 		column.add_child(UiUtil.label("New pilot: start with Dive. The first zone teaches the basics.", &"DimLabel",

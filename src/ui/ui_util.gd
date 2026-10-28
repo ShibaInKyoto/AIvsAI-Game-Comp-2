@@ -58,6 +58,16 @@ static func clear(node: Node) -> void:
 		c.queue_free()
 
 
+## Formats an integer with thousands separators: 12345 -> "12,345".
+static func thousands(n: int) -> String:
+	var s := str(absi(n))
+	var out := ""
+	while s.length() > 3:
+		out = "," + s.substr(s.length() - 3) + out
+		s = s.substr(0, s.length() - 3)
+	return ("-" if n < 0 else "") + s + out
+
+
 static func format_time(seconds: float) -> String:
 	var s := int(seconds)
 	@warning_ignore("integer_division")

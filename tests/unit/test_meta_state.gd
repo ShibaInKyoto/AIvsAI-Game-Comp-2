@@ -71,3 +71,19 @@ func test_milestones_award_once_and_persist() -> void:
 func test_paint_requires_milestone() -> void:
 	var copy := MetaState.from_dict({"paint": "answer", "milestones": []})
 	check_eq(copy.paint, "", "unearned paint is dropped")
+
+
+func test_daily_record_resets_each_day() -> void:
+	var m := MetaState.new()
+	check_eq(m.daily_summary("2026-10-28"), "")
+	m.begin_daily("2026-10-28")
+	m.daily_best_depth = 1500
+	m.begin_daily("2026-10-28")
+	check_eq(m.daily_attempts, 2)
+	check(m.daily_summary("2026-10-28").contains("1,500"), "summary shows the best depth")
+	var restored := MetaState.from_dict(JSON.parse_string(JSON.stringify(m.to_dict())))
+	check_eq(restored.daily_best_depth, 1500)
+	restored.begin_daily("2026-10-29")
+	check_eq(restored.daily_attempts, 1)
+	check_eq(restored.daily_best_depth, 0)
+	check_eq(m.daily_summary("2026-10-29"), "")
