@@ -28,6 +28,8 @@ uniform vec3 sediment_tint : source_color = vec3(0.7, 0.65, 0.5);
 uniform vec3 vein_color : source_color = vec3(0.0);
 uniform float vein_strength = 0.0;
 uniform float caustics = 0.0;
+// Rock moving to the Choir's song (Hadal Trench): centre xy, radius, strength.
+uniform vec4 shift_zones[2];
 uniform float tex_scale = 0.11;
 
 varying vec3 world_pos;
@@ -154,6 +156,20 @@ void fragment() {
 		float facing_cam = smoothstep(-1.5, 2.0, world_pos.z);
 		float pulse = 0.7 + 0.3 * sin(TIME * 0.6 + world_pos.x * 0.15 + world_pos.y * 0.1);
 		emission += vein_color * (crack + halo) * near_edge * facing_cam * vein_strength * pulse * 1.7;
+	}
+
+	// Rock moving to the Choir's song: violet light rippling through it.
+	for (int i = 0; i < 2; i++) {
+		vec4 zone = shift_zones[i];
+		if (zone.w > 0.0) {
+			float d = length(world_pos.xy - zone.xy);
+			float inside = 1.0 - smoothstep(zone.z * 0.55, zone.z, d);
+			float ripple = 0.5 + 0.5 * sin(d * 1.6 - TIME * 3.5);
+			// Brightest along the moving surface, seeping a little way into the rock.
+			float near_surface = 1.0 - smoothstep(0.5, 4.5, abs(sdf_value + 0.5));
+			float facing_cam = smoothstep(-2.0, 2.0, world_pos.z);
+			emission += vein_color * inside * (0.2 + ripple * 0.8) * near_surface * facing_cam * zone.w;
+		}
 	}
 
 	// Animated caustics from the surface, mostly on upward faces.

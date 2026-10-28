@@ -48,6 +48,9 @@ static func populate(level: Level, run: RunState) -> void:
 	_spawn_caches(level, used)
 	if level.event == &"whalefall":
 		_spawn_whale_fall(level, used)
+	# Above the hadal floor the trench is still moving.
+	if level.biome.id == &"hadal" and layout.has_exit:
+		level.add_entity(TrenchShift.new())
 	if level.zone == VasquezDrone.ZONE:
 		var drone := VasquezDrone.place(level, rng, used)
 		if drone:

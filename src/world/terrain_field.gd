@@ -120,6 +120,42 @@ func line_of_sight(a: Vector2, b: Vector2, radius := 0.0) -> bool:
 ## Converts the field into a half-float image for the GPU. Half floats are
 ## used because linear filtering of 32-bit float textures is optional on
 ## some hardware, and the relief depends on smooth interpolation.
+## The grid cells covering the world rectangle [param r], clamped to the grid.
+func cells_in(r: Rect2) -> Rect2i:
+	var x0 := clampi(floori(r.position.x / cell), 0, width)
+	var x1 := clampi(ceili(r.end.x / cell) + 1, 0, width)
+	var y0 := clampi(floori(-r.end.y / cell), 0, height)
+	var y1 := clampi(ceili(-r.position.y / cell) + 1, 0, height)
+	return Rect2i(x0, y0, x1 - x0, y1 - y0)
+
+
+## World position of grid cell ([param ix], [param iy]).
+func cell_pos(ix: int, iy: int) -> Vector2:
+	return Vector2(ix * cell, -iy * cell)
+
+
+## Values of the cells in [param cells], row by row.
+func read_cells(cells: Rect2i) -> PackedFloat32Array:
+	var out := PackedFloat32Array()
+	out.resize(cells.size.x * cells.size.y)
+	var i := 0
+	for iy in range(cells.position.y, cells.end.y):
+		for ix in range(cells.position.x, cells.end.x):
+			out[i] = data[iy * width + ix]
+			i += 1
+	return out
+
+
+## Overwrites the cells in [param cells] with [param values] (as read_cells
+## returns them). Edits the grid in place, so callers never copy it.
+func write_cells(cells: Rect2i, values: PackedFloat32Array) -> void:
+	var i := 0
+	for iy in range(cells.position.y, cells.end.y):
+		for ix in range(cells.position.x, cells.end.x):
+			data[iy * width + ix] = values[i]
+			i += 1
+
+
 func to_image() -> Image:
 	var img := Image.create_from_data(width, height, false, Image.FORMAT_RF, data.to_byte_array())
 	img.convert(Image.FORMAT_RH)

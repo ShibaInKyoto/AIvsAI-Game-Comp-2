@@ -10,6 +10,8 @@ signal sonar_pinged(pos: Vector2, range: float)
 signal shake_requested(strength: float)
 ## Short message shown in the HUD feed.
 signal toast(text: String, color: Color)
+## The rock inside [param rect] (world space) has moved.
+signal terrain_changed(rect: Rect2)
 ## Large centered banner (zone names, warnings).
 signal banner(title: String, subtitle: String)
 signal creature_scanned(id: StringName, first_time: bool)

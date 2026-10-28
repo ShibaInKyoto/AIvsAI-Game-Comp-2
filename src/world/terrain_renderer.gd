@@ -21,6 +21,7 @@ const SAND_NORMAL := preload("res://assets/textures/sand_nor.jpg")
 static var _shared_noise: NoiseTexture2D
 
 var material: ShaderMaterial
+var _sdf_tex: ImageTexture
 
 
 ## Grid spacing in meters; lower quality settings use a coarser grid.
@@ -31,11 +32,11 @@ static func grid_step_for_quality(quality: int) -> float:
 func build(layout: LevelLayout, quality := 2) -> void:
 	var field := layout.field
 	var biome := layout.biome
-	var tex := ImageTexture.create_from_image(field.to_image())
+	_sdf_tex = ImageTexture.create_from_image(field.to_image())
 
 	material = ShaderMaterial.new()
 	material.shader = SHADER
-	material.set_shader_parameter(&"sdf_tex", tex)
+	material.set_shader_parameter(&"sdf_tex", _sdf_tex)
 	material.set_shader_parameter(&"field_size", field.world_size())
 	material.set_shader_parameter(&"texel_count", Vector2(field.width, field.height))
 	material.set_shader_parameter(&"rock_height", ROCK_HEIGHT)
@@ -67,6 +68,20 @@ func build(layout: LevelLayout, quality := 2) -> void:
 			chunk.position = Vector3(cx * CHUNK, -cy * CHUNK, 0.0)
 			chunk.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 			add_child(chunk)
+
+
+## Re-uploads [param field] after the rock has moved (same size as built).
+func refresh(field: TerrainField) -> void:
+	if _sdf_tex:
+		_sdf_tex.update(field.to_image())
+
+
+## Lights up to two regions of moving rock (centre xy, radius, strength 0..1).
+func set_shift_glow(zones: Array[Vector4]) -> void:
+	var packed := PackedVector4Array()
+	for i in 2:
+		packed.append(zones[i] if i < zones.size() else Vector4.ZERO)
+	material.set_shader_parameter(&"shift_zones", packed)
 
 
 ## Seamless tiling noise shared by terrain and props.

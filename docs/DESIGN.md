@@ -51,7 +51,7 @@ Hangar (spend salvage & research) -> Dive -> Zone 1 -> Decompression stop
 | 2 | Twilight Reef    | 200–1000 m  | Bioluminescent coral, anglers, siphonophores          |
 | 3 | Midnight Caverns | 1–4 km      | Pitch dark, gulper eels, loose stalactites, Stalker   |
 | 4 | Abyssal Vents    | 4–6 km      | Hydrothermal vents, heat currents, latching isopods   |
-| 5 | Hadal Trench     | 6–11 km     | Alien geometry, Vasquez's drone, Meridian, the Choir  |
+| 5 | Hadal Trench     | 6–11 km     | Rock that moves to the song, Vasquez's drone, the Choir |
 
 ## Player kit
 
@@ -136,6 +136,12 @@ has not noticed the sub can be **ambushed** (harpoon hits deal double), and
   and rendering: it is uploaded as a float texture and a vertex shader extrudes
   a subdivided plane into a relief heightfield. No physics engine is used for
   gameplay, which keeps it deterministic and cheap.
+* **Moving rock**: because collision, AI and rendering all read the same field,
+  the Hadal Trench can reshape itself mid-dive. A shift blends a small region
+  of the field towards a capsule-shaped plug or cavity, re-uploads the texture
+  ten times a second, and pushes anything caught out of the rock. A seal is
+  only chosen where it buries nothing and the sub keeps a route to the exit
+  (re-checked, and undone if need be, if the sub slips past while it closes).
 * **Sonar**: global shader uniforms carry the last pings; terrain and creature
   shaders draw the expanding wavefront and a fading contour reveal.
 * **Audio**: all sound effects and music are synthesized by a Python script in

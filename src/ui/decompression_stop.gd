@@ -49,6 +49,9 @@ func _build() -> void:
 	elif _run.zone == BiomeLibrary.FURNACE_ZONE:
 		_column.add_child(UiUtil.label("The vents at the bottom of the next zone are crowded round something armoured " +
 			"and huge. It walks through the heat as if it owned it.", &"", 22, UiTheme.DANGER))
+	elif _run.zone == BiomeLibrary.ZONES_PER_BIOME * (BiomeLibrary.BIOME_COUNT - 1):
+		_column.add_child(UiUtil.label("Meridian's logs say the rock down here moves when the Choir sings. What you " +
+			"leave behind you may not be there to go back to.", &"", 22, UiTheme.WARN))
 	elif _run.zone == VasquezDrone.ZONE and not Game.meta.logs_found.has(String(VasquezDrone.LOG_ID)):
 		_column.add_child(UiUtil.label("A Meridian Deep transponder is chirping somewhere in the next zone, very " +
 			"faintly, from inside the rock.", &"", 22, UiTheme.ACCENT))

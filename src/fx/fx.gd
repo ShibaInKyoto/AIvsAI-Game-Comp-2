@@ -253,6 +253,25 @@ static func ink_cloud(level: Node3D, at: Vector2) -> void:
 	_spawn(level, _emitter(40, 3.5, pm, _quad(1.2, particle_material(soft_texture(), false))), at, 1.0)
 
 
+## A slow cloud of sediment shaken loose where rock moves.
+static func silt(level: Node3D, at: Vector2, radius: float, color: Color) -> void:
+	var pm := ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	pm.emission_sphere_radius = radius
+	pm.direction = Vector3(0, -1, 0)
+	pm.spread = 180.0
+	pm.initial_velocity_min = 0.3
+	pm.initial_velocity_max = 1.4
+	pm.gravity = Vector3(0, -0.25, 0)
+	pm.damping_min = 0.6
+	pm.damping_max = 1.2
+	pm.scale_min = 1.5
+	pm.scale_max = 3.5
+	pm.color_ramp = _color_ramp(PackedColorArray([Color(color, 0.0), Color(color, 0.45), Color(color, 0.0)]),
+		PackedFloat32Array([0.0, 0.25, 1.0]))
+	_spawn(level, _emitter(36, 4.5, pm, _quad(1.4, particle_material(soft_texture(), false))), at, -0.5)
+
+
 static func explosion(level: Node3D, at: Vector2, radius: float) -> void:
 	var pm := ParticleProcessMaterial.new()
 	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE

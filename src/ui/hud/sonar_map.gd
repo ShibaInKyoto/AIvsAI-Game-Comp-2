@@ -26,6 +26,7 @@ var sub: Submarine
 var expanded := false
 
 var _terrain_img: Image
+var _terrain_tex: ImageTexture
 var _reveal_img: Image
 var _reveal_tex: ImageTexture
 var _mat: ShaderMaterial
@@ -56,10 +57,7 @@ func bind(p_level: Level, p_sub: Submarine) -> void:
 	var w := maxi(int(_size_m.x), 8)
 	var h := maxi(int(_size_m.y), 8)
 	_terrain_img = Image.create(w, h, false, Image.FORMAT_L8)
-	for y in h:
-		for x in w:
-			var v := level.field.sample(Vector2(x + 0.5, -(y + 0.5)))
-			_terrain_img.set_pixel(x, y, Color.from_hsv(0, 0, clampf(0.5 + v * 0.25, 0.0, 1.0)))
+	_chart(Rect2i(0, 0, w, h))
 	_reveal_img = Image.create(w, h, false, Image.FORMAT_L8)
 	_reveal_img.fill(Color.BLACK)
 	_reveal_tex = ImageTexture.create_from_image(_reveal_img)
@@ -67,7 +65,8 @@ func bind(p_level: Level, p_sub: Submarine) -> void:
 	var shader := Shader.new()
 	shader.code = SHADER
 	_mat.shader = shader
-	_mat.set_shader_parameter(&"terrain_tex", ImageTexture.create_from_image(_terrain_img))
+	_terrain_tex = ImageTexture.create_from_image(_terrain_img)
+	_mat.set_shader_parameter(&"terrain_tex", _terrain_tex)
 	_mat.set_shader_parameter(&"reveal_tex", _reveal_tex)
 	_map_rect.texture = _reveal_tex
 	_map_rect.material = _mat
@@ -76,6 +75,28 @@ func bind(p_level: Level, p_sub: Submarine) -> void:
 	reveal(level.layout.start, 14.0)
 	if not Events.sonar_pinged.is_connected(_on_ping):
 		Events.sonar_pinged.connect(_on_ping)
+	if not Events.terrain_changed.is_connected(_on_terrain_changed):
+		Events.terrain_changed.connect(_on_terrain_changed)
+
+
+## Draws the rock of the pixels in [param px] (1 px per metre) into the chart.
+func _chart(px: Rect2i) -> void:
+	for y in range(px.position.y, px.end.y):
+		for x in range(px.position.x, px.end.x):
+			var v := level.field.sample(Vector2(x + 0.5, -(y + 0.5)))
+			_terrain_img.set_pixel(x, y, Color.from_hsv(0, 0, clampf(0.5 + v * 0.25, 0.0, 1.0)))
+
+
+## Redraws the part of the chart where the rock has moved.
+func _on_terrain_changed(rect: Rect2) -> void:
+	if _terrain_img == null or level == null:
+		return
+	var bounds := Rect2i(0, 0, _terrain_img.get_width(), _terrain_img.get_height())
+	var px := Rect2i(floori(rect.position.x), floori(-rect.end.y), ceili(rect.size.x) + 1, ceili(rect.size.y) + 1)
+	px = px.intersection(bounds)
+	if px.has_area():
+		_chart(px)
+		_terrain_tex.update(_terrain_img)
 
 
 func _on_ping(origin: Vector2, ping_range: float) -> void:

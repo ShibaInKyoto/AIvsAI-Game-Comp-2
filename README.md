@@ -79,6 +79,10 @@ itself. Every zone is a procedurally generated cave cross-section. Find the
   listen, wait for the eruption, and strike while the seams glow. It never
   goes looking for an eruption itself, and it rears up to slam anything that
   comes close.
+* In the Hadal Trench **the rock moves**. Twice a zone the Choir sings and the
+  trench rearranges itself around you: the tunnel behind you flows shut, and
+  a new chamber opens ahead where there was solid rock, with something
+  waiting in it. What you leave behind may not be there to go back to.
 * In the last stretch of the Hadal Trench, a work lamp gutters out of a wall:
   **Vasquez's drone**, lost the night the trench closed, sealed into rock that
   flowed over it like wax. Come alongside to play its flight recorder and
@@ -216,7 +220,7 @@ Requires Godot 4.5.1 with export templates installed.
 
 ```sh
 godot --headless --import                                       # first-time import
-godot --headless --path . -s res://tests/run_tests.gd           # 97 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
+godot --headless --path . -s res://tests/run_tests.gd           # 104 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
 godot --headless --path . res://tests/flow_test.tscn            # end-to-end menu and dive flow
 godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
 python3 tools/audio/generate.py                                 # regenerate all audio (numpy + ffmpeg)

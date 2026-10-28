@@ -619,6 +619,43 @@ def choir_call():
     return normalize(trim_silence(wet_dry(v * env_adsr(d, 0.6, 0.8, 0.7, 1.8), HUGE_WATER, 0.55)), 0.85)
 
 
+def trench_song():
+    """The Choir singing far below while the trench reshapes itself: low voices
+    gliding down a fifth and back, heard through a lot of water."""
+    d = 6.5
+    t = np.linspace(0, 1, seconds(d))
+    glide = 1 - 0.33 * np.sin(np.pi * t) ** 2
+    v = np.zeros(seconds(d))
+    for f, vw, a in [(98, "o", 0.9), (147, "u", 0.55), (196, "a", 0.3)]:
+        tt = t_axis(d)
+        ph = phase_from_freq(f * glide * (1 + 0.006 * np.sin(2 * np.pi * 4.3 * tt)))
+        for k, amp in enumerate(formant_amps(f, VOWELS[vw], 30)):
+            if amp > 0.003:
+                v += a * amp * np.sin(ph * (k + 1))
+    v = lowpass(v, 900) * env_adsr(d, 1.2, 1.0, 0.8, 2.6)
+    return normalize(trim_silence(wet_dry(v, HUGE_WATER, 0.65)), 0.75)
+
+
+def rock_flow():
+    """Rock moving like something alive: a slow grinding groan with creaks and
+    falling grit."""
+    d = 5.0
+    t = t_axis(d)
+    groan = lowpass(noise(d, "brown"), 220) * (0.6 + 0.4 * np.sin(2 * np.pi * 0.7 * t + 1.3 * np.sin(2 * np.pi * 0.23 * t)))
+    tone = sine(_sweep(52, 38, d, 0.8)) * 0.35
+    creaks = np.zeros(seconds(d))
+    for _ in range(7):
+        start = RNG.uniform(0.2, d - 0.8)
+        cd = RNG.uniform(0.25, 0.5)
+        c = bandpass(saw(_sweep(RNG.uniform(140, 260), RNG.uniform(90, 140), cd, 0.6)), 420, 1.2) \
+            * env_adsr(cd, 0.05, 0.1, 0.5, 0.15) * RNG.uniform(0.2, 0.45)
+        i = seconds(start)
+        creaks[i:i + len(c)] += c[: max(0, len(creaks) - i)]
+    grit = highpass(noise(d, "white"), 2500) * env_adsr(d, 0.8, 1.0, 0.25, 1.5) * 0.05
+    out = mix(groan, tone, creaks, grit) * env_adsr(d, 0.6, 0.8, 0.85, 1.4)
+    return normalize(trim_silence(wet_dry(soft_clip(out * 1.4), BIG_WATER, 0.4)), 0.8)
+
+
 def choir_death():
     d = 7.0
     t = np.linspace(0, 1, seconds(d))

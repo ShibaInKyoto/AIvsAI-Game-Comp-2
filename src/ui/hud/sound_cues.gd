@@ -34,6 +34,8 @@ const CUES: Dictionary[StringName, Array] = {
 	&"rock_shatter": ["ROCKFALL", UiTheme.WARN],
 	&"explosion": ["BLAST", UiTheme.WARN],
 	&"plate_step": ["FOOTSTEPS", UiTheme.WARN],
+	&"trench_song": ["SINGING", UiTheme.ACCENT],
+	&"rock_flow": ["ROCK MOVING", UiTheme.WARN],
 	&"decoy_ping": ["DECOY", UiTheme.ACCENT],
 	&"beacon_ping": ["BEACON", UiTheme.GOOD],
 }
