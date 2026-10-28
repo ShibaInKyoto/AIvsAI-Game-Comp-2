@@ -9,6 +9,7 @@ const TIPS: PackedStringArray = [
 	"Sonar pings chart the cave and reveal the way down. Every ping is loud: things below will hear it.",
 	"Boosting and collisions make noise too. Drift quietly past what you cannot fight.",
 	"Fire the harpoon to spear creatures, drag caches open or pull salvage in. Hold to winch.",
+	"Harpoon a creature before it notices you for an AMBUSH: double damage.",
 	"Find the descent marker to dive deeper. Between zones, pick a module and repair your hull.",
 	"Surface at a stop to bank salvage safely - implode and you keep only part of it.",
 	"Spend salvage in the hangar on upgrades; research from scans unlocks new submarines.",

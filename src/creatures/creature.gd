@@ -6,6 +6,10 @@ extends Entity
 
 const SHADER := preload("res://src/fx/shaders/creature.gdshader")
 const THINK_INTERVAL := 0.2
+## Harpoon damage multiplier against a creature that has not noticed the sub.
+const AMBUSH_MULT := 2.0
+## Seconds after noticing the sub before a creature counts as unaware again.
+const AWARE_TIME := 6.0
 
 static var _materials: Dictionary[StringName, ShaderMaterial] = {}
 
@@ -30,12 +34,15 @@ var facing := Vector2.RIGHT
 var upright := false
 ## When true, [member facing] is controlled by the subclass, not velocity.
 var lock_facing := false
+## Bosses cannot be caught unaware.
+var ambushable := true
 
 var _stun := 0.0
 var _blind := 0.0
 var _marked := 0.0
 var _mark_total := 1.0
 var _flash := 0.0
+var _noticed_at := -100.0
 var _alert := 0.0
 var _think_timer := 0.0
 var _touch_cooldown := 0.0
@@ -185,6 +192,13 @@ func alert() -> void:
 	if _alert <= 0.0:
 		Audio.play_at(&"alert", pos, -6.0)
 	_alert = 1.4
+	_noticed_at = level.time
+
+
+## True if this creature has not noticed the sub recently: harpooning it then
+## is an ambush.
+func is_unaware() -> bool:
+	return ambushable and level.time - _noticed_at > AWARE_TIME
 
 
 func alert_fraction() -> float:
@@ -216,6 +230,9 @@ func on_pinged(_origin: Vector2) -> void:
 
 
 func on_harpoon_hit(_harpoon: Node, damage: float) -> HarpoonReaction:
+	if is_unaware():
+		damage *= AMBUSH_MULT
+		Fx.float_text(level, pos + Vector2(0.0, radius + 1.0), "AMBUSH", UiTheme.WARN)
 	take_damage(damage, level.player.pos if level.player else pos, &"harpoon")
 	if not alive:
 		return HarpoonReaction.IGNORE

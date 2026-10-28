@@ -44,7 +44,8 @@ itself. Every zone is a procedurally generated cave cross-section. Find the
 * **Every movement makes noise.** The faint ring around the sub shows how far
   you can be heard. Lancers dash at sound, gulper eels feel vibration through
   the rock, and the Stalker hears everything. When it starts hunting you,
-  you will hear your own heartbeat.
+  you will hear your own heartbeat. Harpoon a creature before it notices you
+  for an **ambush** that deals double damage.
 * **Thermal vents** in the deep vent fields rumble and glow, then erupt in a
   scalding column that shoves and burns whatever is inside, and roars loudly
   enough to bring hunters running. Creatures caught in it cook.
@@ -162,7 +163,7 @@ Requires Godot 4.5.1 with export templates installed.
 
 ```sh
 godot --headless --import                                       # first-time import
-godot --headless --path . -s res://tests/run_tests.gd           # 49 tests: generation, traversal, events, vents, bosses, frames, saves, assets
+godot --headless --path . -s res://tests/run_tests.gd           # 50 tests: generation, traversal, events, vents, bosses, frames, saves, assets
 godot --headless --path . res://tests/flow_test.tscn            # end-to-end menu and dive flow
 godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
 python3 tools/audio/generate.py                                 # regenerate all audio (numpy + ffmpeg)

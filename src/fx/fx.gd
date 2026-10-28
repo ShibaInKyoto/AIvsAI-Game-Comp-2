@@ -308,6 +308,21 @@ static func float_label(color: Color) -> Label3D:
 	return l
 
 
+## A word that pops up at [param at] in the world, rises and fades.
+static func float_text(level: Node3D, at: Vector2, text: String, color: Color) -> void:
+	if level == null:
+		return
+	var l := float_label(color)
+	l.text = text
+	l.font_size = 44
+	level.add_child(l)
+	l.global_position = Vector3(at.x, at.y, 1.5)
+	var tween := l.create_tween()
+	tween.tween_property(l, ^"global_position:y", at.y + 1.6, 0.9)
+	tween.parallel().tween_property(l, ^"modulate:a", 0.0, 0.4).set_delay(0.5)
+	tween.tween_callback(l.queue_free)
+
+
 static func sparkle(level: Node3D, at: Vector2, color: Color) -> void:
 	var pm := ParticleProcessMaterial.new()
 	pm.direction = Vector3(0, 1, 0)

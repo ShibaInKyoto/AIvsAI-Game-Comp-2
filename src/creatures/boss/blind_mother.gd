@@ -59,6 +59,7 @@ func setup() -> void:
 	salvage_drop = 70
 	glow_color = Color(1.0, 0.5, 0.3)
 	hearing = 2.4
+	ambushable = false
 	pos = lair_center + Vector2(0.0, -lair_radius.y * 0.45)
 	super.setup()
 	active_radius = 1000.0
