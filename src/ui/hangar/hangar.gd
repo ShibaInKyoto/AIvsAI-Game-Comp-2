@@ -304,6 +304,12 @@ func _build_milestones() -> void:
 	var default_paint := UiUtil.button("Factory paint", func() -> void: _set_paint(""), 220)
 	default_paint.disabled = meta.paint == ""
 	head.add_child(default_paint)
+	var best := "the Choir still sings"
+	if meta.best_pressure_win >= 0:
+		best = "best win at pressure %d" % meta.best_pressure_win
+	var records := "Records:  %d dives  -  %d victories  -  deepest %s m  -  %d creatures  -  %d Stalkers  -  %s"
+	_content.add_child(UiUtil.label(records % [meta.dives, meta.wins, UiUtil.thousands(meta.deepest_depth),
+		meta.total_kills, meta.stalkers_killed, best], &"DimLabel", 18))
 	for m in Milestones.all():
 		var row := _row_panel()
 		var achieved := meta.milestones.has(m.id)
