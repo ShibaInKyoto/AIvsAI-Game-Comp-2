@@ -14,12 +14,15 @@ const SPECIES: Dictionary[StringName, Script] = {
 	&"isopod": preload("res://src/creatures/isopod.gd"),
 	&"siphon": preload("res://src/creatures/siphonophore.gd"),
 	&"puffer": preload("res://src/creatures/puffer.gd"),
+	&"ghostfin": preload("res://src/creatures/ghostfin.gd"),
 }
+## Species that hunt in packs: how many spawn together (one budget cost each pack).
+const PACKS: Dictionary[StringName, int] = {&"ghostfin": 3}
 const WALL_DWELLERS: Array[StringName] = [&"gulper", &"lurelight", &"isopod"]
 ## Spawn cost of each species against the biome's creature budget.
 const COST: Dictionary[StringName, float] = {
 	&"shoal": 0.6, &"jelly": 0.8, &"lancer": 1.0, &"lurelight": 1.5,
-	&"gulper": 1.4, &"stalker": 4.0, &"isopod": 0.7, &"siphon": 1.6, &"puffer": 0.7,
+	&"gulper": 1.4, &"stalker": 4.0, &"isopod": 0.7, &"siphon": 1.6, &"puffer": 0.7, &"ghostfin": 1.3,
 }
 const SAFE_RADIUS := 26.0
 
@@ -79,12 +82,14 @@ static func _spawn_creatures(level: Level, run: RunState, used: PackedVector2Arr
 		var p := _creature_spot(level, id, used)
 		if p.is_empty():
 			continue
-		var c: Creature = SPECIES[id].new()
-		c.pos = p.pos
-		if p.has("normal"):
-			c.set(&"wall_normal", p.normal)
-		level.add_entity(c)
-		used.append(c.pos)
+		for k in PACKS.get(id, 1):
+			var c: Creature = SPECIES[id].new()
+			c.pos = p.pos if k == 0 else level.field.resolve_circle(
+				p.pos + Vector2(rng.randf_range(-3.0, 3.0), rng.randf_range(-2.0, 2.0)), 1.0)
+			if p.has("normal"):
+				c.set(&"wall_normal", p.normal)
+			level.add_entity(c)
+		used.append(p.pos)
 		budget -= COST.get(id, 1.0)
 
 

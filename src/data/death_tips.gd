@@ -8,6 +8,8 @@ const TIPS: Dictionary[StringName, String] = {
 	&"lancer": "Lancers glow before they dash. Sidestep the charge, then harpoon them while they recover.",
 	&"puffer": "Puffers swell into spines when you rush past. Drift by slowly - or harpoon a swollen one " +
 		"from range to burst it over whatever is next to it.",
+	&"ghostfin": "Ghostfins hunt the lamp. Switch it off and they lose interest in a few seconds, or throw a " +
+		"flare and let the pack circle that instead.",
 	&"jelly": "Drifter jellies are drawn to light. Swing the lamp away, or switch it off, as you pass.",
 	&"lurelight": "A lone light in the dark is usually a lure. Ping first: the sonar shows what is holding it.",
 	&"gulper": "Gulper eels feel fast movement through the rock. Pass their burrows slowly.",

@@ -90,6 +90,8 @@ has not noticed the sub can be **ambushed** (harpoon hits deal double), and
 | Stalker         | 3-5    | hearing+light| Large hunter. Investigates noise, attacks light.       |
 | Vent isopod     | 4-5    | touch        | Crawls on walls, latches onto the hull, drains power.  |
 | Siphonophore    | 2,3,5  | touch        | A drifting chain of bells that stings along its length.|
+| Ghostfin        | 5      | light        | Near-invisible packs that circle a lit lamp and dart   |
+|                 |        |              | in by turns; lose interest in the dark, chase flares.  |
 | Mimic           | 3-5    | touch        | Disguised as a salvage cache; wakes, lunges and chases.|
 | Lamplighter     | 2      | light only   | Guardian sealing the exit of zone 4. Her lure pulls    |
 |                 |        |              | the sub in (a ping breaks it); she charges any lamp    |

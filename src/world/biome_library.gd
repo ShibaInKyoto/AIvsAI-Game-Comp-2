@@ -212,7 +212,7 @@ static func _hadal() -> BiomeDef:
 	b.snow_amount = 1.4
 	b.glow_color = Color(0.7, 0.4, 1.0)
 	b.creatures = {&"stalker": 1.0, &"gulper": 1.5, &"lurelight": 1.2, &"jelly": 1.2, &"isopod": 1.0, &"lancer": 1.2,
-			&"siphon": 0.6}
+			&"siphon": 0.6, &"ghostfin": 1.6}
 	b.creature_budget = 15
 	b.props = {&"crystal": 1.2, &"spine": 1.0, &"rock": 0.8, &"mushroom": 0.4}
 	b.bulb_count = 6

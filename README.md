@@ -123,12 +123,12 @@ rumble and four graphics presets.
   fragile), **Bathysphere** (armored, long sonar, shock pulse), **Whisper**
   (near silent, quick scanner, sonar decoys).
 * 12 hangar upgrades, a creature codex and 13 story logs to recover.
-* Ten creature species with their own senses and tells: drifting jellies,
+* Eleven creature species with their own senses and tells: drifting jellies,
   dashing lancers that hunt the shoals, spined puffers that swell into living
   mines when rushed, angler-like lurelights, burrowing gulper eels,
   wall-crawling isopods, stinging siphonophore chains, caches that turn out to
-  be mimics, shoals, and the Stalker, which hunts by sound across the whole
-  zone.
+  be mimics, shoals, ghostfin packs that hunt the lamp on the hadal floor, and
+  the Stalker, which hunts by sound across the whole zone.
 * 17 milestones (silence the Choir, scan every species, kill a Stalker...), each
   unlocking a hull paint.
 * **Zone objectives** for bonus salvage or research: open caches, hunt, scan
@@ -176,7 +176,7 @@ src/
   core/       run state, meta progression, submarine stats
   data/       biomes, modules/upgrades/frames, codex, logs, zone events, pressure
   world/      generator, terrain field + renderer, level, props, pickups, interactables
-  creatures/  creature base, ten species, two lair guardians and the Choir
+  creatures/  creature base, eleven species, two lair guardians and the Choir
   player/     submarine, model, harpoon, tool belt, projectiles
   dive/       dive controller, camera, tutorial, test autopilot
   ui/         theme, HUD, sonar chart, menus, hangar, decompression stop, ending
@@ -191,7 +191,7 @@ Requires Godot 4.5.1 with export templates installed.
 
 ```sh
 godot --headless --import                                       # first-time import
-godot --headless --path . -s res://tests/run_tests.gd           # 72 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
+godot --headless --path . -s res://tests/run_tests.gd           # 74 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
 godot --headless --path . res://tests/flow_test.tscn            # end-to-end menu and dive flow
 godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
 python3 tools/audio/generate.py                                 # regenerate all audio (numpy + ffmpeg)
