@@ -169,8 +169,8 @@ func _begin(sub: Submarine) -> void:
 	Events.shake_requested.emit(0.3)
 	if not _explained:
 		_explained = true
-		Events.toast.emit("The Choir is singing, and the rock is moving. The tunnel behind you is closing.",
-			UiTheme.WARN)
+		Events.toast.emit("The Choir is singing, and the rock is moving." +
+			(" The tunnel behind you is closing." if seal else ""), UiTheme.WARN)
 	else:
 		Events.toast.emit("The trench is moving.", UiTheme.WARN)
 
