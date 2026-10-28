@@ -30,6 +30,7 @@ func build(frame_id: StringName, hull_color: Color) -> void:
 			_build_whisper()
 		_:
 			_build_lantern()
+	_merge_static()
 
 
 func animate(delta: float, thrust: float) -> void:
@@ -111,115 +112,233 @@ static func _plating_texture() -> ImageTexture:
 # --- Frames ------------------------------------------------------------------------
 
 func _build_lantern() -> void:
-	var body := CapsuleMesh.new()
-	body.radius = 0.72
-	body.height = 3.4
-	body.radial_segments = 24
-	body.rings = 8
-	_part(body, hull_material, Vector3(-0.1, 0, 0), Vector3(0, 0, -90))
-	_part(_cylinder(0.735, 0.735, 0.22, 24), _dark, Vector3(-0.55, 0, 0), Vector3(0, 0, -90))
-	_part(MeshKit.sphere(0.62, 24, 12), cockpit_material, Vector3(1.05, 0.08, 0), Vector3.ZERO)
-	var tower := BoxMesh.new()
-	tower.size = Vector3(0.9, 0.42, 0.42)
-	_part(tower, hull_material, Vector3(-0.2, 0.78, 0), Vector3(0, 0, 4))
-	_part(_cylinder(0.015, 0.03, 0.7, 6), _steel, Vector3(-0.45, 1.25, 0), Vector3(0, 0, 12))
-	strobe = _part(MeshKit.sphere(0.06), MeshKit.emissive_material(Color.WHITE, 6.0), Vector3(-0.52, 1.6, 0), Vector3.ZERO)
-	_part(_cylinder(0.5, 0.42, 0.5, 20), _dark, Vector3(-1.95, 0, 0), Vector3(0, 0, -90))
-	_add_propeller(Vector3(-2.05, 0, 0), 3, 0.38)
-	var fin := BoxMesh.new()
-	fin.size = Vector3(0.55, 0.06, 0.5)
-	_part(fin, hull_material, Vector3(-1.5, 0.0, 0.62), Vector3(0, 0, -6))
-	_part(fin, hull_material, Vector3(-1.5, 0.0, -0.62), Vector3(0, 0, -6))
-	var tail := BoxMesh.new()
-	tail.size = Vector3(0.5, 0.55, 0.05)
-	_part(tail, hull_material, Vector3(-1.55, 0.45, 0), Vector3(0, 0, -18))
-	_part(tail, hull_material, Vector3(-1.55, -0.45, 0), Vector3(0, 0, 18))
-	_part(_cylinder(0.04, 0.04, 2.2, 6), _steel, Vector3(0.0, -0.78, 0.35), Vector3(0, 0, -90))
-	_part(_cylinder(0.04, 0.04, 2.2, 6), _steel, Vector3(0.0, -0.78, -0.35), Vector3(0, 0, -90))
-	_running_lights(Vector3(-1.5, 0.05, 0.9), Vector3(-1.5, 0.05, -0.9))
-	_part(_cylinder(0.14, 0.2, 0.3, 12), _dark, Vector3(1.0, -0.55, 0.0), Vector3(0, 0, -90))
+	# A deep research submersible: a blunt pressure hull under a flat foam deck
+	# and a short sail, viewports in heavy bezels at the bow, a lamp bar, a
+	# folded manipulator, ducted thrusters and a skid frame.
+	var hull := MeshKit.lathe(PackedVector2Array([Vector2(0.0, 0.25), Vector2(0.06, 0.5), Vector2(0.2, 0.68),
+		Vector2(0.55, 0.74), Vector2(0.8, 0.7), Vector2(0.92, 0.58), Vector2(0.98, 0.36), Vector2(1.0, 0.12)]),
+		3.8, 24, 18, 0.88, 1.0)
+	_part(hull, hull_material, Vector3(-0.1, 0, 0), Vector3.ZERO)
+	var deck := MeshKit.lathe(PackedVector2Array([Vector2(0, 0.12), Vector2(0.12, 0.42), Vector2(0.85, 0.46),
+		Vector2(1, 0.2)]), 2.7, 16, 8, 0.32, 1.0)
+	_part(deck, hull_material, Vector3(-0.25, 0.6, 0), Vector3.ZERO)
+	var sail := MeshKit.lathe(PackedVector2Array([Vector2(0, 0.16), Vector2(0.25, 0.3), Vector2(0.8, 0.3),
+		Vector2(1, 0.14)]), 0.95, 14, 6, 1.25, 0.72)
+	_part(sail, hull_material, Vector3(-0.35, 0.92, 0), Vector3.ZERO)
+	_ring(0.2, 0.05, _dark, Vector3(-0.35, 1.28, 0), Vector3(0, 0, 0))
+	_part(_cylinder(0.71, 0.71, 0.14, 24), _dark, Vector3(-1.15, 0, 0), Vector3(0, 0, -90))
+	# Bow viewport in a heavy bezel, with two small side ports.
+	_part(MeshKit.sphere(0.4, 20, 10), cockpit_material, Vector3(1.58, -0.08, 0), Vector3.ZERO)
+	_ring(0.42, 0.07, _dark, Vector3(1.66, -0.08, 0), Vector3(0, 0, 90))
+	for z: float in [0.56, -0.56]:
+		_part(MeshKit.sphere(0.12, 10, 6), cockpit_material, Vector3(1.2, -0.28, z), Vector3.ZERO)
+		_ring(0.13, 0.035, _dark, Vector3(1.2, -0.28, z * 1.04), Vector3(90, 0, 0))
+	# Lamp bar over the viewport.
+	_part(_box(Vector3(0.32, 0.13, 0.72)), _dark, Vector3(1.38, 0.5, 0), Vector3(0, 0, -12))
+	_part(_box(Vector3(0.03, 0.07, 0.62)), MeshKit.emissive_material(Color(1.0, 0.95, 0.8), 4.0),
+		Vector3(1.55, 0.47, 0), Vector3(0, 0, -12))
+	# Manipulator arm folded under the bow, claw forward.
+	var shoulder := Vector3(1.05, -0.6, 0.34)
+	var elbow := Vector3(1.62, -0.74, 0.4)
+	var wrist := Vector3(1.42, -0.92, 0.44)
+	_part(MeshKit.sphere(0.09, 8, 4), _steel, shoulder, Vector3.ZERO)
+	_seg(shoulder, elbow, 0.055, _steel)
+	_part(MeshKit.sphere(0.07, 8, 4), _dark, elbow, Vector3.ZERO)
+	_seg(elbow, wrist, 0.045, _steel)
+	_seg(wrist, wrist + Vector3(0.18, 0.05, 0.03), 0.02, _dark)
+	_seg(wrist, wrist + Vector3(0.18, -0.06, 0.03), 0.02, _dark)
+	# Ducted lateral thrusters and a vertical one in the deck.
+	for z: float in [0.86, -0.86]:
+		_ring(0.2, 0.05, _dark, Vector3(-0.85, 0.05, z), Vector3(0, 0, 90))
+		_part(_cylinder(0.05, 0.05, 0.2, 8), _steel, Vector3(-0.85, 0.05, z), Vector3(0, 0, -90))
+		_seg(Vector3(-0.85, 0.05, z * 0.72), Vector3(-0.85, 0.05, z * 0.9), 0.045, _dark)
+	_ring(0.22, 0.05, _dark, Vector3(-1.35, 0.72, 0), Vector3.ZERO)
+	# Stern: shrouded main propeller and stabilisers.
+	_part(_cylinder(0.3, 0.16, 0.4, 16), _dark, Vector3(-2.12, 0, 0), Vector3(0, 0, -90))
+	_ring(0.42, 0.06, _dark, Vector3(-2.32, 0, 0), Vector3(0, 0, 90))
+	_add_propeller(Vector3(-2.3, 0, 0), 3, 0.36)
+	var stab := MeshKit.fin(PackedVector2Array([Vector2(0.3, 0), Vector2(-0.35, 0), Vector2(-0.45, 0.42),
+		Vector2(-0.1, 0.4)]), 0.05)
+	_part(stab, hull_material, Vector3(-1.75, 0.0, 0.5), Vector3(90, 0, 0))
+	_part(stab, hull_material, Vector3(-1.75, 0.0, -0.5), Vector3(-90, 0, 0))
+	_part(stab, hull_material, Vector3(-1.75, 0.45, 0), Vector3.ZERO)
+	# Skid frame.
+	for z: float in [0.42, -0.42]:
+		_seg(Vector3(-1.3, -0.9, z), Vector3(1.05, -0.9, z), 0.04, _steel)
+		_seg(Vector3(1.05, -0.9, z), Vector3(1.3, -0.72, z), 0.04, _steel)
+		for x: float in [-0.9, 0.0, 0.85]:
+			_seg(Vector3(x, -0.55, z * 0.8), Vector3(x, -0.9, z), 0.03, _steel)
+	_part(_cylinder(0.015, 0.03, 0.6, 6), _steel, Vector3(-0.5, 1.55, 0), Vector3(0, 0, 10))
+	strobe = _part(MeshKit.sphere(0.06), MeshKit.emissive_material(Color.WHITE, 6.0), Vector3(-0.56, 1.86, 0),
+		Vector3.ZERO)
+	_running_lights(Vector3(-1.95, 0.05, 0.95), Vector3(-1.95, 0.05, -0.95))
 
 
 func _build_mako() -> void:
-	# Long needle hull with a teardrop canopy and swept fins.
-	var hull := MeshKit.lathe(PackedVector2Array([
-			Vector2(0.0, 0.18), Vector2(0.1, 0.42), Vector2(0.5, 0.55), Vector2(0.82, 0.45), Vector2(1.0, 0.04)]),
-		4.6, 20, 14, 0.85, 1.0)
+	# A fast attack sub: a long torpedo hull, a low canopy faired into a hump,
+	# bow planes, an X-tail round a pump-jet, and torpedo ports in the bow.
+	var hull := MeshKit.lathe(PackedVector2Array([Vector2(0.0, 0.12), Vector2(0.05, 0.3), Vector2(0.15, 0.45),
+		Vector2(0.6, 0.5), Vector2(0.85, 0.44), Vector2(0.96, 0.28), Vector2(1.0, 0.06)]), 4.5, 22, 16, 0.82, 1.0)
 	_part(hull, hull_material, Vector3(-0.1, 0, 0), Vector3.ZERO)
-	_part(_cylinder(0.5, 0.5, 0.16, 20), _dark, Vector3(0.6, 0, 0), Vector3(0, 0, -90))
-	var canopy := MeshKit.lathe(PackedVector2Array([Vector2(0, 0.05), Vector2(0.4, 0.32), Vector2(1, 0.02)]), 1.5, 16,
-			8, 1.0, 0.8)
-	_part(canopy, cockpit_material, Vector3(0.85, 0.36, 0), Vector3.ZERO)
-	var wing := MeshKit.fin(PackedVector2Array([Vector2(0.4, 0), Vector2(-0.6, 0), Vector2(-0.9, -0.75), Vector2(-0.3,
-			-0.7)]), 0.05)
-	_part(wing, hull_material, Vector3(-0.6, -0.05, 0.42), Vector3(-75, 0, 0))
-	_part(wing, hull_material, Vector3(-0.6, -0.05, -0.42), Vector3(75, 0, 0))
-	var dorsal := MeshKit.fin(PackedVector2Array([Vector2(0.2, 0), Vector2(-0.7, 0), Vector2(-0.95, 0.7)]), 0.05)
-	_part(dorsal, hull_material, Vector3(-1.4, 0.35, 0), Vector3.ZERO)
-	_part(dorsal, _dark, Vector3(-1.4, -0.35, 0), Vector3(180, 0, 0))
-	_part(_cylinder(0.24, 0.2, 0.4, 14), _dark, Vector3(-2.35, 0, 0), Vector3(0, 0, -90))
-	_add_propeller(Vector3(-2.5, 0, 0), 4, 0.28)
-	strobe = _part(MeshKit.sphere(0.05), MeshKit.emissive_material(Color.WHITE, 6.0), Vector3(-1.95, 1.05, 0),
+	var hump := MeshKit.lathe(PackedVector2Array([Vector2(0, 0.05), Vector2(0.3, 0.22), Vector2(1, 0.04)]), 1.8, 14,
+		8, 0.55, 1.0)
+	_part(hump, hull_material, Vector3(-0.25, 0.33, 0), Vector3.ZERO)
+	var canopy := MeshKit.lathe(PackedVector2Array([Vector2(0, 0.04), Vector2(0.35, 0.25), Vector2(1, 0.02)]), 1.3,
+		16, 8, 0.72, 0.72)
+	_part(canopy, cockpit_material, Vector3(0.75, 0.35, 0), Vector3.ZERO)
+	_part(_cylinder(0.46, 0.46, 0.08, 20), _dark, Vector3(-0.95, 0, 0), Vector3(0, 0, -90))
+	# Bow planes and an X-tail.
+	var plane := MeshKit.fin(PackedVector2Array([Vector2(0.2, 0), Vector2(-0.25, 0), Vector2(-0.45, 0.55),
+		Vector2(-0.1, 0.52)]), 0.04)
+	_part(plane, hull_material, Vector3(1.05, -0.02, 0.3), Vector3(90, 0, 0))
+	_part(plane, hull_material, Vector3(1.05, -0.02, -0.3), Vector3(-90, 0, 0))
+	var tail := MeshKit.fin(PackedVector2Array([Vector2(0.3, 0), Vector2(-0.45, 0), Vector2(-0.7, 0.95),
+		Vector2(-0.25, 0.9)]), 0.05)
+	for deg: float in [45.0, 135.0, 225.0, 315.0]:
+		_part(tail, hull_material if deg < 180.0 else _dark, Vector3(-1.75, 0, 0), Vector3(deg - 90.0, 0, 0))
+	# Pump-jet: a shroud round a many-bladed rotor.
+	_part(_cylinder(0.26, 0.14, 0.35, 16), _dark, Vector3(-2.35, 0, 0), Vector3(0, 0, -90))
+	_ring(0.3, 0.06, _dark, Vector3(-2.5, 0, 0), Vector3(0, 0, 90))
+	_add_propeller(Vector3(-2.5, 0, 0), 5, 0.24)
+	# Torpedo ports either side of the bow and tube fairings along the belly.
+	for z: float in [0.2, -0.2]:
+		_ring(0.075, 0.025, _dark, Vector3(1.72, -0.12, z), Vector3(0, 0, 90))
+		var fairing := _capsule(0.11, 1.6)
+		_part(fairing, hull_material, Vector3(0.35, -0.38, z * 1.3), Vector3(0, 0, -90))
+	# Intake slots on the flanks.
+	_part(_box(Vector3(0.5, 0.07, 0.04)), _dark, Vector3(0.1, 0.05, 0.49), Vector3.ZERO)
+	_part(_box(Vector3(0.5, 0.07, 0.04)), _dark, Vector3(0.1, 0.05, -0.49), Vector3.ZERO)
+	strobe = _part(MeshKit.sphere(0.05), MeshKit.emissive_material(Color.WHITE, 6.0), Vector3(-2.2, 0.48, 0.0),
 			Vector3.ZERO)
-	_running_lights(Vector3(-1.1, -0.15, 1.12), Vector3(-1.1, -0.15, -1.12))
-	_part(_cylinder(0.11, 0.16, 0.25, 10), _dark, Vector3(1.5, -0.32, 0.0), Vector3(0, 0, -90))
-	# Torpedo tubes under the hull.
-	_part(_cylinder(0.11, 0.11, 1.4, 10), _steel, Vector3(0.3, -0.5, 0.25), Vector3(0, 0, -90))
-	_part(_cylinder(0.11, 0.11, 1.4, 10), _steel, Vector3(0.3, -0.5, -0.25), Vector3(0, 0, -90))
+	_running_lights(Vector3(-2.2, -0.42, 0.42), Vector3(-2.2, -0.42, -0.42))
+	_part(_cylinder(0.11, 0.16, 0.25, 10), _dark, Vector3(1.55, -0.32, 0.0), Vector3(0, 0, -90))
 
 
 func _build_bathysphere() -> void:
-	# A thick pressure sphere with portholes inside a protective cage.
-	_part(MeshKit.sphere(1.2, 28, 16), hull_material, Vector3(0, 0, 0), Vector3.ZERO)
-	var port_mat := cockpit_material
-	_part(MeshKit.sphere(0.36, 16, 8), port_mat, Vector3(1.02, 0.2, 0.0), Vector3.ZERO)
-	_part(MeshKit.sphere(0.2, 12, 6), port_mat, Vector3(0.75, 0.3, 0.75), Vector3.ZERO)
-	_part(MeshKit.sphere(0.2, 12, 6), port_mat, Vector3(0.75, 0.3, -0.75), Vector3.ZERO)
-	var rim := TorusMesh.new()
-	rim.inner_radius = 1.17
-	rim.outer_radius = 1.3
-	rim.rings = 32
-	rim.ring_segments = 8
-	_part(rim, _dark, Vector3.ZERO, Vector3(0, 0, 90))
-	_part(rim, _dark, Vector3.ZERO, Vector3(90, 0, 0))
+	# A Beebe-style bathysphere: a thick cast sphere with quartz ports in heavy
+	# bezels, a bolted hatch and lifting eye, a reinforcing belt, a frame on
+	# skids, a ballast tank and a thruster on an aft outrigger.
+	_part(MeshKit.sphere(1.15, 28, 16), hull_material, Vector3.ZERO, Vector3.ZERO)
+	_ring(1.16, 0.07, _dark, Vector3.ZERO, Vector3.ZERO)
+	# Quartz ports: one big one forward, two smaller above it.
+	_part(_cylinder(0.3, 0.34, 0.22, 16), _dark, Vector3(1.05, 0.12, 0), Vector3(0, 0, -90))
+	_part(MeshKit.sphere(0.24, 14, 8), cockpit_material, Vector3(1.12, 0.12, 0), Vector3.ZERO)
+	for z: float in [0.58, -0.58]:
+		var at := Vector3(0.82, 0.52, z)
+		var out := at.normalized()
+		_seg(at - out * 0.05, at + out * 0.14, 0.17, _dark)
+		_part(MeshKit.sphere(0.13, 10, 6), cockpit_material, at + out * 0.12, Vector3.ZERO)
+	# Bolted hatch and lifting eye on top.
+	_part(_cylinder(0.42, 0.46, 0.14, 18), _dark, Vector3(0, 1.12, 0), Vector3.ZERO)
+	for i in 10:
+		var a := TAU * i / 10.0
+		_part(MeshKit.sphere(0.035, 6, 3), _steel, Vector3(cos(a) * 0.4, 1.2, sin(a) * 0.4), Vector3.ZERO)
+	_ring(0.16, 0.04, _steel, Vector3(0, 1.42, 0), Vector3(90, 0, 0))
+	# Frame: four posts down to a pair of skids.
 	for i in 4:
 		var a := TAU * i / 4.0 + PI * 0.25
-		_part(_cylinder(0.05, 0.05, 2.3, 6), _steel, Vector3(0, -0.4, 0) + Vector3(cos(a), 0, sin(a)) * 1.05, Vector3.ZERO)
-	_part(_cylinder(0.06, 0.06, 2.2, 6), _steel, Vector3(0, -1.5, 0.74), Vector3(0, 0, -90))
-	_part(_cylinder(0.06, 0.06, 2.2, 6), _steel, Vector3(0, -1.5, -0.74), Vector3(0, 0, -90))
-	# Ballast tanks and twin thrusters.
-	_part(_capsule(0.32, 1.8), hull_material, Vector3(-0.2, -1.05, 0.0), Vector3(0, 0, -90))
-	_part(_cylinder(0.3, 0.26, 0.45, 14), _dark, Vector3(-1.45, 0.0, 0.0), Vector3(0, 0, -90))
-	_add_propeller(Vector3(-1.62, 0.0, 0.0), 3, 0.26)
-	_part(_cylinder(0.02, 0.03, 0.9, 6), _steel, Vector3(-0.2, 1.55, 0), Vector3(0, 0, 8))
-	strobe = _part(MeshKit.sphere(0.07), MeshKit.emissive_material(Color.WHITE, 6.0), Vector3(-0.27, 2.0, 0), Vector3.ZERO)
-	_running_lights(Vector3(-0.2, 0.0, 1.32), Vector3(-0.2, 0.0, -1.32))
-	_part(_cylinder(0.15, 0.22, 0.3, 12), _dark, Vector3(1.2, -0.55, 0.0), Vector3(0, 0, -90))
+		var top := Vector3(cos(a) * 0.95, -0.55, sin(a) * 0.95)
+		var foot := Vector3(cos(a) * 1.05, -1.45, sin(a) * 0.75)
+		_seg(top, foot, 0.05, _steel)
+	for z: float in [0.75, -0.75]:
+		_seg(Vector3(-1.0, -1.45, z), Vector3(1.0, -1.45, z), 0.06, _steel)
+		_seg(Vector3(1.0, -1.45, z), Vector3(1.2, -1.28, z), 0.06, _steel)
+	_part(_capsule(0.3, 1.7), hull_material, Vector3(-0.1, -1.08, 0.0), Vector3(0, 0, -90))
+	# Aft outrigger with the thruster.
+	_seg(Vector3(-0.95, 0.0, 0), Vector3(-1.45, 0.0, 0), 0.07, _steel)
+	_part(_cylinder(0.26, 0.2, 0.42, 14), _dark, Vector3(-1.55, 0.0, 0.0), Vector3(0, 0, -90))
+	_ring(0.34, 0.05, _dark, Vector3(-1.72, 0.0, 0.0), Vector3(0, 0, 90))
+	_add_propeller(Vector3(-1.72, 0.0, 0.0), 3, 0.28)
+	_part(_cylinder(0.02, 0.03, 0.8, 6), _steel, Vector3(-0.35, 1.45, 0), Vector3(0, 0, 8))
+	strobe = _part(MeshKit.sphere(0.07), MeshKit.emissive_material(Color.WHITE, 6.0), Vector3(-0.41, 1.85, 0),
+		Vector3.ZERO)
+	_running_lights(Vector3(-0.3, 0.0, 1.24), Vector3(-0.3, 0.0, -1.24))
+	_part(_cylinder(0.15, 0.22, 0.3, 12), _dark, Vector3(1.05, -0.62, 0.0), Vector3(0, 0, -90))
 
 
 func _build_whisper() -> void:
-	# Flattened, faceted stealth hull with glowing seams and a pump-jet.
+	# A flattened, faceted stealth drone: smoked glass and a glowing sensor
+	# strip instead of a canopy, seams of light, a faceted dorsal blade and a
+	# hexagonal pump-jet.
 	var hull := MeshKit.lathe(PackedVector2Array([
 			Vector2(0.0, 0.25), Vector2(0.2, 0.55), Vector2(0.6, 0.6), Vector2(0.9, 0.35), Vector2(1.0, 0.05)]),
 		3.8, 6, 10, 0.45, 1.25)
 	_part(hull, hull_material, Vector3(0, 0, 0), Vector3.ZERO)
 	var seam := MeshKit.emissive_material(Color(0.6, 0.4, 1.0), 3.0)
 	_part(_box(Vector3(3.0, 0.03, 1.35)), seam, Vector3(-0.1, 0.0, 0.0), Vector3.ZERO)
-	var sensor := MeshKit.lathe(PackedVector2Array([Vector2(0, 0.02), Vector2(0.5, 0.2), Vector2(1, 0.02)]), 0.9, 12,
+	var glass := MeshKit.lathe(PackedVector2Array([Vector2(0, 0.02), Vector2(0.45, 0.22), Vector2(1, 0.02)]), 1.2, 6,
 			6, 0.5, 1.0)
-	_part(sensor, cockpit_material, Vector3(1.25, 0.18, 0), Vector3.ZERO)
+	_part(glass, _dark, Vector3(0.95, 0.2, 0), Vector3.ZERO)
+	_part(_box(Vector3(0.5, 0.03, 0.08)), cockpit_material, Vector3(1.2, 0.27, 0), Vector3(0, 0, -8))
+	var blade := MeshKit.fin(PackedVector2Array([Vector2(0.35, 0), Vector2(-0.55, 0), Vector2(-0.75, 0.5),
+		Vector2(-0.45, 0.42)]), 0.05)
+	_part(blade, hull_material, Vector3(-0.85, 0.24, 0), Vector3.ZERO)
 	var vane := MeshKit.fin(PackedVector2Array([Vector2(0.2, 0), Vector2(-0.5, 0), Vector2(-0.7, 0.55), Vector2(-0.3,
 			0.5)]), 0.04)
-	_part(vane, hull_material, Vector3(-1.2, 0.2, 0.35), Vector3(-20, 0, 0))
-	_part(vane, hull_material, Vector3(-1.2, 0.2, -0.35), Vector3(20, 0, 0))
+	_part(vane, hull_material, Vector3(-1.2, 0.05, 0.6), Vector3(80, 0, 0))
+	_part(vane, hull_material, Vector3(-1.2, 0.05, -0.6), Vector3(-80, 0, 0))
 	_part(_cylinder(0.32, 0.36, 0.5, 6), _dark, Vector3(-1.95, 0, 0), Vector3(0, 0, -90))
-	_add_propeller(Vector3(-2.05, 0, 0), 6, 0.26)
-	strobe = _part(MeshKit.sphere(0.04), MeshKit.emissive_material(Color(0.6, 0.4, 1.0), 4.0), Vector3(-0.6, 0.3, 0),
+	var shroud := _ring(0.36, 0.05, _dark, Vector3(-2.2, 0, 0), Vector3(0, 0, 90))
+	(shroud.mesh as TorusMesh).rings = 6
+	_add_propeller(Vector3(-2.1, 0, 0), 6, 0.26)
+	strobe = _part(MeshKit.sphere(0.04), MeshKit.emissive_material(Color(0.6, 0.4, 1.0), 4.0), Vector3(-1.45, 0.72, 0),
 			Vector3.ZERO)
 	_part(_cylinder(0.1, 0.14, 0.25, 8), _dark, Vector3(1.4, -0.22, 0.0), Vector3(0, 0, -90))
 
 
 # --- Helpers ---------------------------------------------------------------------
+
+## Bakes the static parts sharing a material into one mesh each (a frame is
+## built from dozens of primitives); the propeller and strobe stay separate
+## because they animate.
+func _merge_static() -> void:
+	var groups: Dictionary[Material, Array] = {}
+	for child in get_children():
+		var mi := child as MeshInstance3D
+		if mi == null or mi == strobe:
+			continue
+		if not groups.has(mi.material_override):
+			groups[mi.material_override] = []
+		groups[mi.material_override].append(mi)
+	for mat: Material in groups:
+		var parts: Array = groups[mat]
+		if parts.size() < 2:
+			continue
+		var st := SurfaceTool.new()
+		st.begin(Mesh.PRIMITIVE_TRIANGLES)
+		for mi: MeshInstance3D in parts:
+			for surface in mi.mesh.get_surface_count():
+				st.append_from(mi.mesh, surface, mi.transform)
+			remove_child(mi)
+			mi.queue_free()
+		var merged := MeshInstance3D.new()
+		merged.mesh = st.commit()
+		merged.material_override = mat
+		merged.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		add_child(merged)
+
+
+## A cylinder strut from [param a] to [param b].
+func _seg(a: Vector3, b: Vector3, r: float, mat: Material) -> MeshInstance3D:
+	var y := (b - a).normalized()
+	var x := y.cross(Vector3.BACK)
+	if x.length_squared() < 0.01:
+		x = y.cross(Vector3.RIGHT)
+	x = x.normalized()
+	var mi := _part(_cylinder(r, r, a.distance_to(b), 8), mat, (a + b) * 0.5, Vector3.ZERO)
+	mi.basis = Basis(x, y, x.cross(y).normalized())
+	return mi
+
+
+## A ring (bezel, duct, collar) of [param radius] around its local Y axis.
+func _ring(radius: float, thickness: float, mat: Material, pos: Vector3, rot_deg: Vector3) -> MeshInstance3D:
+	var t := TorusMesh.new()
+	t.inner_radius = radius - thickness
+	t.outer_radius = radius + thickness
+	t.rings = 24
+	t.ring_segments = 8
+	return _part(t, mat, pos, rot_deg)
+
 
 func _add_propeller(at: Vector3, blades: int, length: float) -> void:
 	propeller.position = at
