@@ -500,6 +500,23 @@ def engine_loop():
 
 
 
+def plate_step():
+    """The Ironclad's stride: a heavy thud through the rock and its plates
+    clattering against each other, dulled by the water."""
+    d = 0.7
+    thud = _thud(70, 32, 0.5, 0.09) * 1.2
+    clatter = np.zeros(seconds(d))
+    for k in range(5):
+        tick = _clang(RNG.uniform(600, 1100), 0.18, 0.03) * RNG.uniform(0.15, 0.3)
+        i = seconds(0.03 + k * RNG.uniform(0.03, 0.06))
+        clatter[i:i + len(tick)] += tick[: len(clatter) - i]
+    grit = lowpass(noise(d, "pink"), 700) * env_exp(d, 0.08, 0.001) * 0.35
+    out = np.zeros(seconds(d))
+    out[: len(thud)] += thud
+    out = mix(out, lowpass(clatter, 2500), grit)
+    return normalize(trim_silence(wet_dry(out, SMALL_ROOM, 0.25)), 0.75)
+
+
 def station_hum():
     """Meridian Deep's failing power: a 4 s seamless transformer drone (50 Hz with
     buzzy odd harmonics), a relay ticking, metal ticking as it cools, all dulled

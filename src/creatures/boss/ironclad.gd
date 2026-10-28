@@ -44,6 +44,7 @@ var _cooldown := 0.0
 var _goal_x := 0.0
 var _chasing := false
 var _linger := 0.0
+var _stride := 0.0
 var _slam_dir := Vector2.UP
 var _t := 0.0
 var _clank_cooldown := 0.0
@@ -210,6 +211,11 @@ func _crawl(delta: float) -> void:
 	var want_y := maxf(fy + RIDE if fy != -INF and fy > pos.y - RIDE - 3.0 else pos.y, _lowest)
 	vel.x = lerpf(vel.x, heading * speed, 1.0 - exp(-4.0 * delta))
 	vel.y = lerpf(vel.y, clampf((want_y - pos.y) * 4.0, -8.0, 8.0), 1.0 - exp(-6.0 * delta))
+	# Every stride shakes the floor; heard (and felt) across the lair.
+	_stride += absf(vel.x) * delta
+	if _stride > 2.2:
+		_stride = 0.0
+		Audio.play_at(&"plate_step", pos + Vector2(0.0, -RIDE), -4.0, 0.08)
 	var slope := clampf((want_y - pos.y) * 0.25, -0.35, 0.35)
 	facing = facing.slerp(Vector2(heading, slope * heading).normalized(), 1.0 - exp(-5.0 * delta)).normalized()
 
