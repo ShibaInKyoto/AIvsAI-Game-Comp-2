@@ -54,6 +54,8 @@ itself. Every zone is a procedurally generated cave cross-section. Find the
   scanning creatures and recovering logs) on three more submarines.
 * At the bottom waits **the Choir**. It sings in waves. Answer each wave with
   a sonar ping as it reaches you.
+* Quit whenever you like: the dive is saved at the start of every zone and
+  **Resume dive** on the title screen picks it up again.
 
 ### Controls
 
@@ -153,7 +155,7 @@ Requires Godot 4.5.1 with export templates installed.
 
 ```sh
 godot --headless --import                                       # first-time import
-godot --headless --path . -s res://tests/run_tests.gd           # 44 tests: generation, traversal, events, frames, assets, sims
+godot --headless --path . -s res://tests/run_tests.gd           # 46 tests: generation, traversal, events, frames, saves, assets, sims
 godot --headless --path . res://tests/flow_test.tscn            # end-to-end menu and dive flow
 godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
 python3 tools/audio/generate.py                                 # regenerate all audio (numpy + ffmpeg)

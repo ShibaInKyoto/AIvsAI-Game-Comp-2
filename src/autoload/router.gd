@@ -64,6 +64,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		Settings.toggle_fullscreen()
 
 
+## True while a transition is fading; [method go_to] calls are ignored then.
+func is_busy() -> bool:
+	return _busy
+
+
 func go_to(path: String, fade_time := 0.6) -> void:
 	if _busy:
 		return

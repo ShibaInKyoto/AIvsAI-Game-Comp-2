@@ -61,3 +61,43 @@ func refill() -> void:
 func add_module(id: StringName, upgrades: Dictionary) -> void:
 	modules.append(id)
 	rebuild_stats(upgrades)
+
+
+## Snapshot for resuming an interrupted dive (stats are rebuilt on load).
+func to_dict() -> Dictionary:
+	return {
+		"run_seed": run_seed, "frame_id": frame_id, "zone": zone, "modules": modules,
+		"hull": hull, "battery": battery, "torpedoes": torpedoes, "flares": flares,
+		"salvage": salvage, "research": research, "kills": kills, "scans": scans, "logs": logs,
+		"time": time, "pressure": pressure, "daily": daily, "daily_event": daily_event,
+		"deepest_depth": deepest_depth, "last_hit_by": last_hit_by,
+	}
+
+
+static func from_dict(d: Dictionary, upgrades: Dictionary) -> RunState:
+	var r := RunState.new()
+	r.run_seed = int(d.get("run_seed", 0))
+	r.frame_id = StringName(d.get("frame_id", "lantern"))
+	if Catalog.frame(r.frame_id) == null:
+		r.frame_id = &"lantern"
+	r.zone = clampi(int(d.get("zone", 0)), 0, BiomeLibrary.TOTAL_ZONES - 1)
+	for m in d.get("modules", []):
+		if Catalog.module(StringName(m)) != null:
+			r.modules.append(StringName(m))
+	r.rebuild_stats(upgrades)
+	r.hull = clampf(float(d.get("hull", r.stats.max_hull)), 1.0, r.stats.max_hull)
+	r.battery = clampf(float(d.get("battery", r.stats.max_battery)), 0.0, r.stats.max_battery)
+	r.torpedoes = clampi(int(d.get("torpedoes", 0)), 0, r.stats.torpedo_capacity)
+	r.flares = clampi(int(d.get("flares", 0)), 0, r.stats.flare_capacity)
+	r.salvage = int(d.get("salvage", 0))
+	r.research = int(d.get("research", 0))
+	r.kills = int(d.get("kills", 0))
+	r.scans = int(d.get("scans", 0))
+	r.logs = int(d.get("logs", 0))
+	r.time = float(d.get("time", 0.0))
+	r.pressure = int(d.get("pressure", 0))
+	r.daily = bool(d.get("daily", false))
+	r.daily_event = StringName(d.get("daily_event", ""))
+	r.deepest_depth = int(d.get("deepest_depth", 0))
+	r.last_hit_by = StringName(d.get("last_hit_by", ""))
+	return r

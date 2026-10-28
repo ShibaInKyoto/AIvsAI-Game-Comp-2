@@ -106,6 +106,7 @@ func load_zone(zone: int) -> void:
 	else:
 		Events.banner.emit(biome.display_name.to_upper(), "%s   %d - %d m" % [biome.tagline, int(depth.x), int(depth.y)])
 	state = State.PLAYING
+	Game.save_run()
 
 
 ## Generates the layout on a worker thread so the frame keeps ticking.

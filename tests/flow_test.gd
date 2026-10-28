@@ -1,7 +1,8 @@
 extends Node
 ## End-to-end smoke test of the real scenes and menus, driven by code:
 ## title -> dive -> decompression stop -> next zone -> pause & settings ->
-## implosion -> run summary -> hangar (buy, tabs) -> title.
+## implosion -> run summary -> hangar (buy, tabs) -> interrupted dive ->
+## resume -> ending -> title.
 ## Run headless:  godot --headless --path . res://tests/flow_test.tscn
 ## Exits with code 1 if a step times out.
 
@@ -39,6 +40,7 @@ func _run() -> void:
 	stop.call("_finish", &"descend")
 	await _wait(func() -> bool: return dive.get("state") == 1 and Game.run.zone == 1)
 	print("FLOW: zone 2 loaded")
+	check(Game.has_saved_run() and Game.saved_run().zone == 1, "dive snapshot saved at zone start")
 
 	var pause: PauseMenu = dive.get("_pause_menu")
 	pause.open()
@@ -54,6 +56,7 @@ func _run() -> void:
 	var summary: RunSummary = await _wait_node(func() -> Node: return _find(dive, "RunSummary"))
 	check(is_instance_valid(summary), "run summary shown")
 	check(Game.run.outcome == RunState.Outcome.IMPLODED, "run recorded as imploded")
+	check(not Game.has_saved_run(), "dive snapshot cleared when the run ends")
 	print("FLOW: summary shown, salvage banked total ", Game.meta.salvage)
 	Router.go_to(Router.HANGAR, 0.05)
 	var hangar: Node = await _wait_scene("hangar")
@@ -64,6 +67,22 @@ func _run() -> void:
 	check(Game.meta.buy_upgrade(&"hull"), "buy hull upgrade")
 	check(Game.meta.salvage < before, "salvage spent")
 	print("FLOW: hangar ok")
+
+	# Leaving mid-dive keeps a snapshot the title screen can resume.
+	Router.go_to(Router.TITLE, 0.05)
+	var title2: Node = await _wait_scene("title_screen")
+	title2.call("_on_dive")
+	var dive2: Node = await _wait_scene("Dive")
+	await _wait(func() -> bool: return dive2.get("state") == 1 and not Router.is_busy())
+	Router.go_to(Router.TITLE, 0.05)
+	var title3: Node = await _wait_scene("title_screen")
+	await _wait(func() -> bool: return not Router.is_busy())
+	check(Game.has_saved_run(), "interrupted dive kept")
+	title3.call("_on_resume")
+	var dive3: Node = await _wait_scene("Dive")
+	await _wait(func() -> bool: return dive3.get("state") == 1 and not Router.is_busy())
+	check(Game.run.zone == 0, "resumed at the zone it was left in")
+	print("FLOW: resume ok")
 
 	Router.go_to(Router.ENDING, 0.05)
 	await _wait_scene("Ending")

@@ -4,6 +4,9 @@ extends Node
 signal meta_changed
 
 const SAVE_PATH := "user://save.json"
+## The dive in progress, snapshotted at the start of each zone so quitting
+## mid-dive is not the end of it.
+const RUN_PATH := "user://run.json"
 
 var meta := MetaState.new()
 var run: RunState
@@ -81,8 +84,50 @@ func reset_progress() -> void:
 	save_game()
 
 
+## Snapshots the current dive (called as each zone begins).
+func save_run() -> void:
+	if run == null or Autopilot.requested():
+		return
+	var f := FileAccess.open(RUN_PATH, FileAccess.WRITE)
+	if f:
+		f.store_string(JSON.stringify(run.to_dict()))
+		f.close()
+
+
+func has_saved_run() -> bool:
+	return FileAccess.file_exists(RUN_PATH)
+
+
+## The interrupted dive, or null if there is none (or it is unreadable).
+func saved_run() -> RunState:
+	if not has_saved_run():
+		return null
+	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(RUN_PATH))
+	return RunState.from_dict(parsed, meta.upgrades) if parsed is Dictionary else null
+
+
+## Continues the interrupted dive from the start of the zone it was in.
+func resume_run() -> bool:
+	var saved := saved_run()
+	if saved == null:
+		clear_saved_run()
+		return false
+	run = saved
+	return true
+
+
+func clear_saved_run() -> void:
+	if has_saved_run():
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(RUN_PATH))
+
+
 ## Starts a new dive with the selected frame. Daily dives use a date seed.
+## An interrupted dive that is not resumed counts as abandoned.
 func start_run(daily := false) -> void:
+	var interrupted := saved_run()
+	if interrupted:
+		run = interrupted
+		end_run(RunState.Outcome.IMPLODED)
 	run = RunState.new()
 	run.frame_id = StringName(meta.selected_frame)
 	run.daily = daily
@@ -138,5 +183,6 @@ func end_run(outcome: RunState.Outcome) -> int:
 		meta.daily_best_depth = maxi(meta.daily_best_depth, run.deepest_depth)
 		meta.daily_won = meta.daily_won or outcome == RunState.Outcome.VICTORY
 	last_milestones = Milestones.check(meta, run)
+	clear_saved_run()
 	save_game()
 	return kept

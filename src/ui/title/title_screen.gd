@@ -47,7 +47,13 @@ func _ready() -> void:
 	_menu = VBoxContainer.new()
 	_menu.add_theme_constant_override(&"separation", 12)
 	column.add_child(_menu)
-	var dive := UiUtil.button("Dive", _on_dive, 360)
+	var saved := Game.saved_run()
+	var resume: Button
+	if saved:
+		var biome := BiomeLibrary.biome_for_zone(saved.zone)
+		resume = UiUtil.button("Resume dive   (zone %d, %s)" % [saved.zone + 1, biome.display_name], _on_resume, 360)
+		_menu.add_child(resume)
+	var dive := UiUtil.button("New dive" if saved else "Dive", _on_dive, 360)
 	_menu.add_child(dive)
 	var daily := "Daily dive: %s" % ZoneEvents.display_name(ZoneEvents.daily(Game.today()))
 	var record := Game.meta.daily_summary(Game.today())
@@ -66,6 +72,9 @@ func _ready() -> void:
 	var stats := "Dives %d   -   Deepest %s m   -   Salvage %d   -   Research %d" % [
 		meta.dives, UiUtil.thousands(meta.deepest_depth), meta.salvage, meta.research]
 	column.add_child(UiUtil.label(stats, &"DimLabel"))
+	if saved:
+		column.add_child(UiUtil.label("Starting a new dive abandons the interrupted one (insurance still pays).",
+				&"DimLabel", 18))
 	if meta.dives == 0:
 		column.add_child(UiUtil.label("New pilot: start with Dive. The first zone teaches the basics.", &"DimLabel",
 				18, UiTheme.ACCENT))
@@ -78,7 +87,7 @@ func _ready() -> void:
 	version.offset_bottom = -12
 	version.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_ui.add_child(version)
-	dive.grab_focus()
+	(resume if resume else dive).grab_focus()
 	if QualityProbe.wanted():
 		var probe := QualityProbe.new()
 		probe.adjusted.connect(func(quality_name: String) -> void:
@@ -86,6 +95,11 @@ func _ready() -> void:
 					% quality_name, &"DimLabel", 18, UiTheme.WARN)
 			column.add_child(note))
 		add_child(probe)
+
+
+func _on_resume() -> void:
+	if Game.resume_run():
+		Router.go_to(Router.DIVE)
 
 
 func _on_dive() -> void:
