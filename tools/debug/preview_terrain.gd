@@ -29,6 +29,8 @@ func _ready() -> void:
 		env.environment.volumetric_fog_density = float(OS.get_environment("GFOG"))
 	if OS.get_environment("SKYC") != "":
 		env.environment.ambient_light_sky_contribution = float(OS.get_environment("SKYC"))
+	if OS.get_environment("NOGLOW") != "":
+		env.environment.glow_enabled = false
 	if OS.get_environment("NOSSAO") != "":
 		env.environment.ssao_enabled = false
 	if OS.get_environment("NOVFOG") != "":
