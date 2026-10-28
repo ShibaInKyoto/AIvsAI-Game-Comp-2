@@ -51,7 +51,7 @@ static func _spawn_creatures(level: Level, run: RunState, used: PackedVector2Arr
 	if not level.layout.has_exit:
 		budget *= 0.35
 	elif level.zone == BiomeLibrary.LAIR_ZONE:
-		budget *= 0.7
+		budget *= 0.5
 	if level.event == &"frenzy":
 		budget *= 1.6
 	var ids: Array[StringName] = []
@@ -68,7 +68,8 @@ static func _spawn_creatures(level: Level, run: RunState, used: PackedVector2Arr
 		guard += 1
 		var id := ids[rng.rand_weighted(weights)]
 		if id == &"stalker":
-			if stalkers >= 1 or not level.layout.has_exit:
+			# One Stalker at most, and never alongside a boss.
+			if stalkers >= 1 or not level.layout.has_exit or level.zone == BiomeLibrary.LAIR_ZONE:
 				continue
 			stalkers += 1
 		var p := _creature_spot(level, id, used)

@@ -79,6 +79,9 @@ func drive(delta: float) -> void:
 	if level.boss and level.boss.active:
 		_fight_boss()
 		return
+	if is_instance_valid(level.guardian) and level.guardian.active:
+		_fight_guardian(delta)
+		return
 	var path := _route
 	# Advance along the path once we are close to the current waypoint.
 	while _path_index < path.size() - 1 and sub.pos.distance_to(path[_path_index]) < 6.0:
@@ -134,6 +137,37 @@ func _fight_boss() -> void:
 	if boss.vulnerable > 0.3 and sub.harpoon.state == Harpoon.State.IDLE and to.length() < sub.stats.harpoon_range:
 		sub.harpoon.fire(sub.aim)
 		sub.harpoon.release()
+
+
+## Against the Blind Mother: hold station near the lair floor and ping to draw
+## a lunge, sidestep the charge, then harpoon her while she is stuck.
+func _fight_guardian(delta: float) -> void:
+	var mother := level.guardian
+	var to := mother.pos - sub.pos
+	sub.aim = to.normalized()
+	sub.facing = 1.0 if sub.aim.x >= 0.0 else -1.0
+	match mother.state:
+		BlindMother.State.AIM, BlindMother.State.LUNGE:
+			# Dodge across the line of the charge.
+			sub.external_move = Vector2(-to.y, to.x).normalized()
+		BlindMother.State.STUCK:
+			sub.external_move = (to - to.normalized() * 7.0).limit_length(1.0)
+			if sub.harpoon.state == Harpoon.State.IDLE and to.length() < sub.stats.harpoon_range:
+				sub.harpoon.fire(sub.aim)
+				sub.harpoon.release()
+		_:
+			var threat := _nearest_threat()
+			if threat and threat != mother:
+				sub.aim = (threat.pos - sub.pos).normalized()
+				if sub.harpoon.state == Harpoon.State.IDLE and sub.pos.distance_to(threat.pos) < sub.stats.harpoon_range:
+					sub.harpoon.fire(sub.aim)
+					sub.harpoon.release()
+			var station := mother.lair_center + Vector2(0.0, -mother.lair_radius.y * 0.55)
+			sub.external_move = (station - sub.pos).limit_length(1.0) * 0.6
+			_ping_timer -= delta
+			if _ping_timer <= 0.0:
+				_ping_timer = 3.0
+				sub.try_ping()
 
 
 func _nearest_threat() -> Creature:

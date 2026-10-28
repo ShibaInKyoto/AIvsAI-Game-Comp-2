@@ -49,7 +49,7 @@ var _gills: MeshInstance3D
 
 func setup() -> void:
 	species = &"mother"
-	max_hp = 260.0
+	max_hp = 320.0
 	radius = 1.6
 	mass = 60.0
 	contact_damage = 14.0
@@ -310,11 +310,11 @@ func _recover(away: Vector2) -> void:
 func _enrage() -> void:
 	Audio.play_at(&"stalker_roar", pos, 4.0, 0.03, 0.5)
 	Events.shake_requested.emit(0.6)
-	for i in 1 + phase:
-		var p := level.layout.point_in_chamber(level.rng, LevelLayout.Chamber.new(lair_center, lair_radius, &"exit"), 2.0)
-		var lancer: Creature = LevelPopulator.SPECIES[&"lancer"].new()
-		lancer.pos = p
-		level.add_entity(lancer)
+	# One lancer answers each of her roars.
+	var p := level.layout.point_in_chamber(level.rng, LevelLayout.Chamber.new(lair_center, lair_radius, &"exit"), 2.0)
+	var lancer: Creature = LevelPopulator.SPECIES[&"lancer"].new()
+	lancer.pos = p
+	level.add_entity(lancer)
 
 
 ## Each segment follows the one ahead like a rope, with a slow travelling wave.
