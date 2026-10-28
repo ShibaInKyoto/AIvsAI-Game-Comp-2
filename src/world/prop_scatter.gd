@@ -53,7 +53,7 @@ static func scatter(level: Level) -> void:
 			if a.pos.distance_to(layout.start) < 6.0:
 				continue
 			var z := rng.randf_range(def.z.x, def.z.y)
-			var base := a.pos + a.normal * _surface_offset(z)
+			var base := a.pos + a.normal * surface_offset(z)
 			var up := a.normal
 			if def.placement == "floor":
 				up = (a.normal + Vector2.UP * 1.2).normalized()
@@ -95,7 +95,7 @@ static func _placement_ok(placement: String, n: Vector2) -> bool:
 
 ## Distance along the wall normal at which the terrain relief sits at depth z
 ## (inverse of the relief profile in terrain.gdshader).
-static func _surface_offset(z: float) -> float:
+static func surface_offset(z: float) -> float:
 	if z < 0.0:
 		return 2.4 * atanh(clampf(-z / TerrainRenderer.BACK_DEPTH, 0.0, 0.95))
 	return -2.0 * atanh(clampf(z / TerrainRenderer.ROCK_HEIGHT, 0.0, 0.95))
@@ -226,20 +226,6 @@ static func _mesh(id: StringName) -> Mesh:
 
 
 ## Repaints a mesh's vertex colors: func(vertex: Vector3) -> Color.
-static func _paint(mesh: ArrayMesh, painter: Callable) -> ArrayMesh:
-	var out := ArrayMesh.new()
-	for s in mesh.get_surface_count():
-		var arrays := mesh.surface_get_arrays(s)
-		var verts: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
-		var colors := PackedColorArray()
-		colors.resize(verts.size())
-		for i in verts.size():
-			colors[i] = painter.call(verts[i])
-		arrays[Mesh.ARRAY_COLOR] = colors
-		out.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
-	return out
-
-
 ## Lathe standing along +Y instead of +X, base at y = 0.
 static func _upright(profile: PackedVector2Array, h: float, sides: int, rings: int) -> ArrayMesh:
 	var m := MeshKit.lathe(profile, h, sides, rings)
@@ -263,7 +249,7 @@ static func _kelp() -> ArrayMesh:
 			var xf := Transform3D(Basis(Vector3.UP, rng.randf() * TAU) * Basis(Vector3.BACK, side * 0.5), off + Vector3(0, y, 0))
 			parts.append([leaf, xf])
 			y += rng.randf_range(0.35, 0.6)
-	return _paint(MeshKit.merge(parts), func(v: Vector3) -> Color:
+	return MeshKit.painted(MeshKit.merge(parts), func(v: Vector3) -> Color:
 		var t := clampf(v.y / 6.0, 0.0, 1.0)
 		return Color(0.25 + t * 0.15, 0.32 + t * 0.12, 0.12, 0.0))
 
@@ -303,7 +289,7 @@ static func _rock() -> ArrayMesh:
 	st.create_from_arrays(arrays)
 	st.generate_normals()
 	var mesh := st.commit()
-	return _paint(mesh, func(v: Vector3) -> Color:
+	return MeshKit.painted(mesh, func(v: Vector3) -> Color:
 		var g := 0.75 + noise.get_noise_3dv(v * 3.0) * 0.2
 		return Color(g, g, g * 1.02, 0.0))
 
@@ -328,7 +314,7 @@ static func _coral() -> ArrayMesh:
 	# A rounded brain-coral lump at the base.
 	var lump := MeshKit.ball(0.45, 0.0, 12, 8)
 	parts.append([lump, Transform3D(Basis().scaled(Vector3(1.3, 0.7, 1.1)), Vector3(0.35, 0.1, 0.2))])
-	return _paint(MeshKit.merge(parts), func(v: Vector3) -> Color:
+	return MeshKit.painted(MeshKit.merge(parts), func(v: Vector3) -> Color:
 		var tip := smoothstep(0.9, 1.35, v.length())
 		return Color(0.9, 0.82, 0.8, tip))
 
@@ -342,7 +328,7 @@ static func _anemone() -> ArrayMesh:
 		var b := Basis(Vector3.UP, a) * Basis(Vector3.BACK, 0.5 + (i % 3) * 0.15)
 		parts.append([_upright(PackedVector2Array([Vector2(0, 0.035), Vector2(1, 0.01)]), 0.55, 4, 2),
 			Transform3D(b, Vector3(cos(a) * ring, 0.4, sin(a) * ring))])
-	return _paint(MeshKit.merge(parts), func(v: Vector3) -> Color:
+	return MeshKit.painted(MeshKit.merge(parts), func(v: Vector3) -> Color:
 		return Color(0.9, 0.8, 0.85, smoothstep(0.55, 0.85, v.y)))
 
 
@@ -353,7 +339,7 @@ static func _fan() -> ArrayMesh:
 	rng.seed = 31
 	var seg := _upright(PackedVector2Array([Vector2(0, 1.0), Vector2(1, 0.75)]), 1.0, 4, 1)
 	_fan_branch(parts, seg, rng, Vector3.ZERO, Vector3.UP, 0.42, 0.055, 0)
-	return _paint(MeshKit.merge(parts), func(v: Vector3) -> Color:
+	return MeshKit.painted(MeshKit.merge(parts), func(v: Vector3) -> Color:
 		return Color(0.8, 0.75, 0.8, smoothstep(0.5, 1.4, v.y) * 0.8 + 0.1))
 
 
@@ -385,7 +371,7 @@ static func _crystal() -> ArrayMesh:
 		var prism := _upright(PackedVector2Array([Vector2(0, 0.14), Vector2(0.8, 0.14), Vector2(1, 0.0)]), h, 6, 3)
 		var b := Basis(Vector3.UP, rng.randf() * TAU) * Basis(Vector3.BACK, rng.randf_range(-0.6, 0.6))
 		parts.append([prism, Transform3D(b, Vector3(rng.randf_range(-0.25, 0.25), 0, rng.randf_range(-0.25, 0.25)))])
-	return _paint(MeshKit.merge(parts), func(v: Vector3) -> Color:
+	return MeshKit.painted(MeshKit.merge(parts), func(v: Vector3) -> Color:
 		return Color(0.8, 0.85, 0.9, 0.35 + smoothstep(0.2, 1.2, v.y) * 0.65))
 
 
@@ -400,7 +386,7 @@ static func _mushroom() -> ArrayMesh:
 	parts.append([cap, Transform3D(Basis().scaled(Vector3.ONE * 0.6), Vector3(0.45, 0.42, 0.1))])
 	var spots := FastNoiseLite.new()
 	spots.frequency = 2.6
-	return _paint(MeshKit.merge(parts), func(v: Vector3) -> Color:
+	return MeshKit.painted(MeshKit.merge(parts), func(v: Vector3) -> Color:
 		var on_cap := smoothstep(0.38, 0.5, v.y)
 		var spot := smoothstep(0.1, 0.45, spots.get_noise_3dv(v))
 		return Color(0.75, 0.75, 0.8, on_cap * (0.15 + spot * 0.85)))
@@ -424,7 +410,7 @@ static func _spine() -> ArrayMesh:
 				off += Basis(Vector3.BACK, -0.32 * k) * Vector3(0, height / 4.5, 0)
 			parts.append([seg, Transform3D(bend, Vector3(x, 0, 0) + off)])
 	parts.append([_upright(rib, 5.0, 6, 3), Transform3D(Basis(Vector3.BACK, -PI * 0.5), Vector3(-0.4, 0.15, 0))])
-	return _paint(MeshKit.merge(parts), func(_v: Vector3) -> Color:
+	return MeshKit.painted(MeshKit.merge(parts), func(_v: Vector3) -> Color:
 		return Color(0.86, 0.83, 0.76, 0.0))
 
 
@@ -440,7 +426,7 @@ static func _tubeworm() -> ArrayMesh:
 		var b := Basis(Vector3.BACK, rng.randf_range(-0.25, 0.25))
 		parts.append([tube, Transform3D(b, off)])
 		parts.append([plume, Transform3D(b, off + b * Vector3(0, h, 0))])
-	return _paint(MeshKit.merge(parts), func(v: Vector3) -> Color:
+	return MeshKit.painted(MeshKit.merge(parts), func(v: Vector3) -> Color:
 		var plume := smoothstep(0.55, 0.75, v.y)
 		return Color(0.85 + plume * 0.1, 0.82 - plume * 0.6, 0.78 - plume * 0.6, plume))
 
@@ -453,7 +439,7 @@ static func _chimney() -> ArrayMesh:
 		var t := i / 10.0
 		profile.append(Vector2(t, lerpf(0.9, 0.35, t) * (1.0 + noise.get_noise_1d(t) * 0.25)))
 	var body := _upright(profile, 5.0, 10, 10)
-	return _paint(body, func(v: Vector3) -> Color:
+	return MeshKit.painted(body, func(v: Vector3) -> Color:
 		var hot := smoothstep(4.3, 5.0, v.y)
 		var g := 0.35 + noise.get_noise_2d(v.x * 4.0, v.y * 2.0) * 0.1
 		return Color(g, g * 0.92, g * 0.88, hot))

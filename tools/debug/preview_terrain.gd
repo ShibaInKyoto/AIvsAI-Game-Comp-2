@@ -66,6 +66,17 @@ func _ready() -> void:
 	_lamp.light_volumetric_fog_energy = float(OS.get_environment("VFOGE")) if OS.get_environment("VFOGE") != "" else 8.0
 	_lamp.light_color = Color(1.0, 0.95, 0.85)
 	root3d.add_child(_lamp)
+	if OS.get_environment("WRECKS") != "":
+		var wreck_level := Level.new()
+		root3d.add_child(wreck_level)
+		wreck_level.layout = layout
+		wreck_level.field = layout.field
+		wreck_level.biome = layout.biome
+		var rng := RandomNumberGenerator.new()
+		rng.seed = 5
+		for spot in Wrecks.scatter(wreck_level, rng, PackedVector2Array()):
+			_shots.append(spot + Vector2(0, 3))
+		return
 	_shots.append(layout.start)
 	for c in layout.chambers:
 		if c.kind == &"main":

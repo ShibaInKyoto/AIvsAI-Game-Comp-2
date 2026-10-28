@@ -1,8 +1,9 @@
-// Scattered boulders. Triplanar-maps the cliff texture in world space so the
-// rocks match the cave walls, and dusts upward faces with sediment.
+// Scattered boulders (and the rusted wrecks of the wreck-field event).
+// Triplanar-maps the cliff texture in world space so they match the cave
+// walls, and dusts upward faces with sediment. Double-sided for open hulls.
 // INSTANCE_CUSTOM: y = tint blend, z = brightness.
 shader_type spatial;
-render_mode diffuse_burley, specular_schlick_ggx;
+render_mode diffuse_burley, specular_schlick_ggx, cull_disabled;
 
 #include "res://src/fx/shaders/sonar.gdshaderinc"
 

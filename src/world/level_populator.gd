@@ -144,9 +144,20 @@ static func _spawn_caches(level: Level, used: PackedVector2Array) -> void:
 		cache.rich = rng.randf() < 0.35
 		level.add_entity(cache)
 		used.append(cache.pos)
+	# A wreck field spills its salvage around the hulls.
+	if level.event == &"wrecks":
+		for spot in Wrecks.scatter(level, rng, used):
+			for k in 2:
+				var p := spot + Vector2(rng.randf_range(-5.0, 5.0), rng.randf_range(0.0, 3.0))
+				if layout.field.sample(p) >= 1.6 and layout.is_reachable(p):
+					var wreck_cache := SalvageCache.new()
+					wreck_cache.pos = p
+					wreck_cache.salvage = int(rng.randi_range(8, 13) * depth_scale)
+					level.add_entity(wreck_cache)
+					used.append(p)
 	# A couple more in the open so every route pays something. Below the
 	# reef, some of them are not caches at all.
-	for _i in (6 if level.event == &"wrecks" else 2):
+	for _i in (4 if level.event == &"wrecks" else 2):
 		var p := layout.random_open_point(rng, 2.0, used, 12.0)
 		if p == Vector2.INF:
 			continue

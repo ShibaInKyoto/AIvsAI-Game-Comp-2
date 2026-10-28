@@ -14,6 +14,8 @@ var shot_interval := 4.0
 
 ## With --stops the decompression stop UI is shown (for screenshots).
 var show_stops := false
+## --event=<id> forces a zone event in every zone (for screenshots).
+var force_event: StringName = &""
 var ping_interval := 9.0
 var _elapsed := 0.0
 var _shot_timer := 1.5
@@ -49,6 +51,7 @@ func _ready() -> void:
 	time_limit = float(arg("time", "60"))
 	shot_interval = float(arg("interval", "4"))
 	show_stops = OS.get_cmdline_user_args().has("--stops")
+	force_event = StringName(arg("event", ""))
 	_force_exit_at = float(arg("force-exit", "-1"))
 	ping_interval = float(arg("ping", "9"))
 	var zone := int(arg("zone", "-1"))

@@ -106,6 +106,22 @@ static func merge(parts: Array) -> ArrayMesh:
 	return st.commit()
 
 
+## Copy of [param mesh] with vertex colors from [param painter]
+## (func(vertex: Vector3) -> Color), for meshes drawn by the prop shaders.
+static func painted(mesh: ArrayMesh, painter: Callable) -> ArrayMesh:
+	var out := ArrayMesh.new()
+	for s in mesh.get_surface_count():
+		var arrays := mesh.surface_get_arrays(s)
+		var verts: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+		var colors := PackedColorArray()
+		colors.resize(verts.size())
+		for i in verts.size():
+			colors[i] = painter.call(verts[i])
+		arrays[Mesh.ARRAY_COLOR] = colors
+		out.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	return out
+
+
 static func transformed(mesh: Mesh, xf: Transform3D) -> ArrayMesh:
 	return merge([[mesh, xf]])
 

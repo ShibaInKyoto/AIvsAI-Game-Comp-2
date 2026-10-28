@@ -59,6 +59,8 @@ func load_zone(zone: int) -> void:
 	level = Level.new()
 	add_child(level)
 	var event := ZoneEvents.for_zone(run, zone)
+	if autopilot and autopilot.force_event != &"":
+		event = autopilot.force_event
 	level.build(layout, Settings.quality, run.pressure, event)
 	LevelPopulator.populate(level, run)
 	# Deferred so zone objectives see the exit before the stop screen opens.
