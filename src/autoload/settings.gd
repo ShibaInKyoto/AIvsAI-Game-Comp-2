@@ -19,6 +19,10 @@ var fullscreen := true
 var vsync := true
 var screen_shake := 1.0
 var show_fps := false
+## Assist mode: the submarine takes much less damage.
+var assist := false
+## Gamepad rumble on impacts.
+var rumble := true
 ## Last input device used; prompts and aiming adapt to it.
 var using_gamepad := false
 
@@ -49,6 +53,8 @@ func load_settings() -> void:
 	vsync = cfg.get_value("video", "vsync", vsync)
 	show_fps = cfg.get_value("video", "show_fps", show_fps)
 	screen_shake = cfg.get_value("game", "screen_shake", screen_shake)
+	assist = cfg.get_value("game", "assist", assist)
+	rumble = cfg.get_value("game", "rumble", rumble)
 
 
 func save_settings() -> void:
@@ -61,6 +67,8 @@ func save_settings() -> void:
 	cfg.set_value("video", "vsync", vsync)
 	cfg.set_value("video", "show_fps", show_fps)
 	cfg.set_value("game", "screen_shake", screen_shake)
+	cfg.set_value("game", "assist", assist)
+	cfg.set_value("game", "rumble", rumble)
 	cfg.save(PATH)
 
 
@@ -95,6 +103,18 @@ func apply() -> void:
 			vp.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
 			vp.scaling_3d_scale = 1.0
 	changed.emit()
+
+
+## Damage multiplier applied to the player's submarine.
+func damage_taken_mult() -> float:
+	return 0.6 if assist else 1.0
+
+
+## Short gamepad rumble scaled by [param strength] (0..1).
+func rumble_pulse(strength: float, duration := 0.2) -> void:
+	if rumble and using_gamepad:
+		for pad in Input.get_connected_joypads():
+			Input.start_joy_vibration(pad, clampf(strength, 0.0, 1.0) * 0.6, clampf(strength, 0.0, 1.0), duration)
 
 
 func toggle_fullscreen() -> void:

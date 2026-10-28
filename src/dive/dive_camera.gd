@@ -27,6 +27,8 @@ func _ready() -> void:
 
 func add_trauma(amount: float) -> void:
 	_trauma = clampf(_trauma + amount * Settings.screen_shake, 0.0, 1.0)
+	if amount >= 0.5:
+		Settings.rumble_pulse(amount * 0.8, 0.3)
 
 
 func snap() -> void:

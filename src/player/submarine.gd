@@ -408,7 +408,9 @@ func take_damage(amount: float, from: Vector2, source: Node = null, knockback :=
 		return
 	if source is Creature:
 		amount *= Pressure.creature_damage(run.pressure)
+	amount *= Settings.damage_taken_mult()
 	run.hull -= amount
+	Settings.rumble_pulse(amount / 25.0, 0.25)
 	_invulnerable = 0.35
 	_since_damage = 0.0
 	if knockback:
@@ -448,7 +450,7 @@ func drain(hull_amount: float, battery_amount: float) -> void:
 	if not alive:
 		return
 	run.battery = maxf(run.battery - battery_amount, 0.0)
-	run.hull -= hull_amount
+	run.hull -= hull_amount * Settings.damage_taken_mult()
 	_since_damage = 0.0
 	if run.hull <= 0.0:
 		run.hull = 0.0
