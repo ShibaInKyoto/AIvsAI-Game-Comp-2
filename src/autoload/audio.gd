@@ -170,7 +170,8 @@ func play_at(sound: StringName, pos: Vector2, volume_db := 0.0, pitch_variance :
 	p.play()
 
 
-func play_music(track: StringName, fade := 2.5) -> void:
+## Crossfades to [param track]; [param gain_db] trims tracks mastered quieter.
+func play_music(track: StringName, fade := 2.5, gain_db := 0.0) -> void:
 	if track == _current_music:
 		return
 	_current_music = track
@@ -188,7 +189,7 @@ func play_music(track: StringName, fade := 2.5) -> void:
 		new.stream = stream
 		new.volume_db = -60.0
 		new.play()
-		create_tween().tween_property(new, ^"volume_db", 0.0, fade)
+		create_tween().tween_property(new, ^"volume_db", gain_db, fade)
 
 
 func stop_music(fade := 2.0) -> void:

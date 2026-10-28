@@ -151,7 +151,8 @@ func tick(delta: float) -> void:
 
 func _begin() -> void:
 	active = true
-	Audio.play_music(&"boss", 1.5)
+	# The boss track is mastered quieter (its dense mix clips otherwise).
+	Audio.play_music(&"boss", 1.5, 3.0)
 	Audio.play(&"choir_call", 2.0)
 	Events.banner.emit("THE CHOIR", "Answer it.  Keep answering.")
 	Events.shake_requested.emit(0.6)
