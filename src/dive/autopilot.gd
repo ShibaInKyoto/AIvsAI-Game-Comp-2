@@ -97,6 +97,8 @@ func drive(delta: float) -> void:
 			print("AUTOPILOT: %s woke at %.1f s, hull %.0f" % [guardian.title, _elapsed, sub.run.hull])
 		if guardian is BlindMother:
 			_fight_mother(guardian as BlindMother, delta)
+		elif guardian is Ironclad:
+			_fight_ironclad(guardian as Ironclad, delta)
 		else:
 			_fight_lamplighter(guardian as Lamplighter, delta)
 		return
@@ -215,6 +217,53 @@ func _fight_mother(mother: BlindMother, delta: float) -> void:
 			if _ping_timer <= 0.0:
 				_ping_timer = 3.0
 				sub.try_ping()
+
+
+## Against the Ironclad: hang high over the lair vent nearest it, out of
+## the column and its reach, pinging so it walks over and stands listening
+## beneath; when the vent blows and cracks its shell, harpoon it from above.
+func _fight_ironclad(boss: Ironclad, delta: float) -> void:
+	var to := boss.pos - sub.pos
+	sub.aim = to.normalized()
+	sub.facing = 1.0 if sub.aim.x >= 0.0 else -1.0
+	var vent: ThermalVent = null
+	for e in level.entities:
+		var v := e as ThermalVent
+		if v and v.in_lair and (vent == null or v.pos.distance_to(boss.pos) < vent.pos.distance_to(boss.pos)):
+			vent = v
+	var station := boss.pos + Vector2(0.0, Ironclad.SLAM_RANGE + 5.0)
+	if vent:
+		# Straight above the vent's mouth: the ping draws it there, and a
+		# tilted column leans away from the perch.
+		station = level.field.resolve_circle(vent.pos + Vector2(0.0, ThermalVent.HEIGHT + 3.0), 2.0)
+		_ping_timer -= delta
+		if _ping_timer <= 0.0 and boss.exposed <= 0.0:
+			_ping_timer = 4.5
+			sub.try_ping()
+	# Running flat: dash down for a glow bulb the Ironclad is not standing on.
+	if sub.run.battery < 22.0 and boss.exposed <= 0.0:
+		var bulb: GlowBulb = null
+		for e in level.entities:
+			var g := e as GlowBulb
+			if g and g.is_ripe() and boss.in_lair(g.pos, 1.6) and g.pos.distance_to(boss.pos) > 15.0 \
+					and (bulb == null or g.pos.distance_to(sub.pos) < bulb.pos.distance_to(sub.pos)):
+				bulb = g
+		if bulb:
+			station = bulb.pos
+	var striking := boss.state == Ironclad.State.REAR or boss.state == Ironclad.State.SLAM
+	if striking and to.length() < Ironclad.SLAM_RANGE + 4.0:
+		station = sub.pos - to.normalized() * 8.0
+	# Out of any column that is blowing (or about to).
+	for e in level.entities:
+		var v := e as ThermalVent
+		if v and v.state != ThermalVent.State.DORMANT and v.column_strength(sub.pos, Submarine.RADIUS + 1.5) > 0.0:
+			station = sub.pos + v.normal.orthogonal() * signf((sub.pos - v.pos).dot(v.normal.orthogonal()) + 0.01) * 6.0
+	sub.external_move = (station - sub.pos).limit_length(1.0)
+	if boss.exposed > 0.3 and sub.harpoon.state == Harpoon.State.IDLE and to.length() < sub.stats.harpoon_range:
+		sub.harpoon.fire(sub.aim)
+		sub.harpoon.release()
+	elif boss.exposed <= 0.0:
+		_strike_close_threat()
 
 
 ## Against the Lamplighter: run dark and ping to break the lure's pull, keep

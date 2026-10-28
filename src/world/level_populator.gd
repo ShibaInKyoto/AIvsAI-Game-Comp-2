@@ -27,6 +27,9 @@ const COST: Dictionary[StringName, float] = {
 	&"gulper": 1.4, &"stalker": 4.0, &"isopod": 0.7, &"siphon": 1.6, &"puffer": 0.7, &"ghostfin": 1.3,
 }
 const SAFE_RADIUS := 26.0
+## Vents and glow bulbs on the Ironclad's lair floor.
+const LAIR_VENTS := 4
+const LAIR_BULBS := 3
 
 
 static func populate(level: Level, run: RunState) -> void:
@@ -150,13 +153,70 @@ static func _spawn_guardian(level: Level, used: PackedVector2Array) -> void:
 	if rooms.is_empty():
 		return
 	var lair: LevelLayout.Chamber = rooms[0]
-	var guardian: Guardian = BlindMother.new() if level.zone == BiomeLibrary.LAIR_ZONE else Lamplighter.new()
+	var guardian: Guardian
+	match level.zone:
+		BiomeLibrary.LAIR_ZONE:
+			guardian = BlindMother.new()
+		BiomeLibrary.FURNACE_ZONE:
+			guardian = Ironclad.new()
+			_spawn_lair_vents(level, lair, used)
+		_:
+			guardian = Lamplighter.new()
 	guardian.lair_center = lair.center
 	guardian.lair_radius = lair.radius
 	level.guardian = guardian
 	level.add_entity(guardian)
 	level.seal_exit()
 	used.append(lair.center)
+
+
+## The Ironclad's lair floor is a vent field: the eruptions are what crack
+## its shell. The floor is probed straight across the lair (wall anchors are
+## too sparse to rely on) and vents spread over it, clear of the fissure.
+static func _spawn_lair_vents(level: Level, lair: LevelLayout.Chamber, used: PackedVector2Array) -> void:
+	var field := level.field
+	var spots: Array[Vector2] = []
+	for k in 35:
+		var x := lair.center.x + (k / 17.0 - 1.0) * lair.radius.x * 0.88
+		if absf(x - level.layout.exit.x) < 5.5:
+			continue
+		var y := MeridianStation.floor_below(field, Vector2(x, lair.center.y + 2.0), lair.radius.y * 1.6)
+		if y != -INF and field.normal(Vector2(x, y)).y > 0.45:
+			spots.append(Vector2(x, y))
+	# Every other usable spot, outside in, so the vents spread across both halves.
+	var placed: Array[Vector2] = []
+	spots.sort_custom(func(a: Vector2, b: Vector2) -> bool:
+		return absf(a.x - lair.center.x) > absf(b.x - lair.center.x))
+	for p in spots:
+		if placed.size() >= LAIR_VENTS:
+			break
+		if placed.any(func(q: Vector2) -> bool: return q.distance_to(p) < 7.0):
+			continue
+		var n := field.normal(p)
+		var vent := ThermalVent.new()
+		vent.pos = p + n * 0.3
+		vent.normal = n
+		vent.in_lair = true
+		level.add_entity(vent)
+		placed.append(p)
+		used.append(vent.pos)
+	# Heat-loving glow mats between the vents: the only charge in the lair, and
+	# down on the floor where the Ironclad walks.
+	var mats: Array[Vector2] = []
+	for p in spots:
+		if mats.size() >= LAIR_BULBS:
+			break
+		if placed.any(func(q: Vector2) -> bool: return q.distance_to(p) < 3.5) \
+				or mats.any(func(q: Vector2) -> bool: return q.distance_to(p) < 5.0):
+			continue
+		var n := field.normal(p)
+		var bulb := GlowBulb.new()
+		bulb.pos = p + n * 0.5
+		bulb.normal = n
+		bulb.color = level.biome.glow_color
+		level.add_entity(bulb)
+		mats.append(p)
+		used.append(bulb.pos)
 
 
 static func _spawn_boss(level: Level, used: PackedVector2Array) -> void:

@@ -16,6 +16,7 @@ singing at the bottom of the world.
 | ![Twilight Reef](docs/screenshots/reef.jpg) | ![The Lamplighter](docs/screenshots/lamplighter.jpg) |
 | ![Abyssal Vents](docs/screenshots/vents.jpg) | ![The Blind Mother](docs/screenshots/mother.jpg) |
 | ![The Choir](docs/screenshots/choir.jpg) | ![Decompression stop](docs/screenshots/stop.jpg) |
+| ![The Ironclad, its shell cracked by an eruption](docs/screenshots/ironclad.jpg) | ![A whale fall](docs/screenshots/whale.jpg) |
 | ![The ruins of Meridian Deep](docs/screenshots/station.jpg) | ![Sound cues](docs/screenshots/cues.jpg) |
 | ![Title screen](docs/screenshots/title.jpg) | ![Hangar](docs/screenshots/hangar.jpg) |
 
@@ -72,6 +73,12 @@ itself. Every zone is a procedurally generated cave cross-section. Find the
 * At the bottom of the Midnight Caverns the way down is sealed by **the Blind
   Mother**, a colossal eyeless eel that strikes at sound. Make noise beside a
   wall, slip aside, and hit her gills while her head is stuck in the rock.
+* At the bottom of the Abyssal Vents walks **the Ironclad**, an armoured
+  isopod the size of a bus whose plates turn every weapon. Only the vents in
+  its lair crack its shell: hang above a vent and ping so it walks over to
+  listen, wait for the eruption, and strike while the seams glow. It never
+  goes looking for an eruption itself, and it rears up to slam anything that
+  comes close.
 * On the hadal floor, on the way down, stand the ruins of **Meridian Deep**
   itself. A few windows still have power, and its beacon still pings: each
   ping charts the cave around it and is loud enough to draw hunters.
@@ -190,7 +197,7 @@ src/
   core/       run state, meta progression, submarine stats
   data/       biomes, modules/upgrades/frames, codex, logs, zone events, pressure
   world/      generator, terrain field + renderer, level, props, pickups, interactables
-  creatures/  creature base, eleven species, two lair guardians and the Choir
+  creatures/  creature base, eleven species, three lair guardians and the Choir
   player/     submarine, model, harpoon, tool belt, projectiles
   dive/       dive controller, camera, tutorial, test autopilot
   ui/         theme, HUD, sonar chart, menus, hangar, decompression stop, ending
@@ -205,7 +212,7 @@ Requires Godot 4.5.1 with export templates installed.
 
 ```sh
 godot --headless --import                                       # first-time import
-godot --headless --path . -s res://tests/run_tests.gd           # 89 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
+godot --headless --path . -s res://tests/run_tests.gd           # 93 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
 godot --headless --path . res://tests/flow_test.tscn            # end-to-end menu and dive flow
 godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
 python3 tools/audio/generate.py                                 # regenerate all audio (numpy + ffmpeg)

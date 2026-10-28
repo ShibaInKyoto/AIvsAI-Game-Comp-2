@@ -23,6 +23,8 @@ static var _crack_mesh: Mesh
 static var _explained := false
 
 var normal := Vector2.UP
+## One of the vents on the Ironclad's lair floor.
+var in_lair := false
 var state := State.DORMANT
 var _timer := 0.0
 var _scald_timer := 0.0

@@ -20,6 +20,8 @@ const TIPS: Dictionary[StringName, String] = {
 		"close, or throw her a flare, and strike while she is dazzled.",
 	&"mother": "The Blind Mother strikes at sound. Ping beside a wall, slip away slowly, and hit her gills while " +
 		"she is stuck. Torpedo blasts and sonar decoys lure her into the rock.",
+	&"ironclad": "The Ironclad's plates only crack in a vent's eruption. Ping from beyond a rumbling vent so it " +
+		"walks into the blast, keep out of reach when it rears, and strike while the shell glows.",
 	&"choir": "Answer each wave with a ping just as it reaches you. The ring around your sub shows when.",
 	&"rock": "Ramming rock at speed cracks the hull. Ease off the boost in tight tunnels.",
 	&"torpedo": "Torpedoes do not care who fired them. Keep your distance from the blast.",
@@ -60,6 +62,8 @@ static func describe(cause: StringName) -> String:
 			return "the Lamplighter"
 		&"mother":
 			return "the Blind Mother"
+		&"ironclad":
+			return "the Ironclad"
 		&"vent":
 			return "a thermal vent"
 		&"rockfall":

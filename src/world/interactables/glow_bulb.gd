@@ -72,6 +72,10 @@ func tick(delta: float) -> void:
 		_harvest(sub)
 
 
+func is_ripe() -> bool:
+	return not _harvested
+
+
 func _harvest(sub: Submarine) -> void:
 	_harvested = true
 	Events.bulb_harvested.emit(pos)

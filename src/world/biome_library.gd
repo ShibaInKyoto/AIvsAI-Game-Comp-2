@@ -9,15 +9,17 @@ const BIOME_COUNT := 5
 const TOTAL_ZONES := BIOME_COUNT * ZONES_PER_BIOME + 1
 ## The last Twilight Reef zone ends in the Lamplighter's lair ...
 const ANGLER_ZONE := 3
-## ... and the last Midnight Caverns zone in the Blind Mother's.
+## ... the last Midnight Caverns zone in the Blind Mother's ...
 const LAIR_ZONE := 5
+## ... and the last Abyssal Vents zone in the Ironclad's.
+const FURNACE_ZONE := 7
 
 static var _cache: Array[BiomeDef] = []
 
 
 ## Whether a guardian seals the way down out of [param zone].
 static func is_lair(zone: int) -> bool:
-	return zone == ANGLER_ZONE or zone == LAIR_ZONE
+	return zone == ANGLER_ZONE or zone == LAIR_ZONE or zone == FURNACE_ZONE
 
 
 static func get_biome(index: int) -> BiomeDef:

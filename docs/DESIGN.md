@@ -99,6 +99,11 @@ has not noticed the sub can be **ambushed** (harpoon hits deal double), and
 |                 |        |              | flare, her scales open to attack.                      |
 | Blind Mother    | 3      | hearing only | Mid-run boss sealing the exit of zone 6. Lunges at     |
 |                 |        |              | sound; stuck in rock, her gills are open to attack.    |
+| Ironclad        | 4      | hearing only | Guardian sealing the exit of zone 8. A colossal        |
+|                 |        |              | armoured isopod walking a vent-field lair towards      |
+|                 |        |              | sound (never towards an eruption) and rearing up to    |
+|                 |        |              | slam what comes close. Only a vent's heat cracks its   |
+|                 |        |              | shell open to attack.                                  |
 | The Choir       | 5      | everything   | Final encounter. Sings in waves: a ping as a wave      |
 |                 |        |              | arrives answers it (free of battery cost) and opens    |
 |                 |        |              | its four voice organs to the harpoon for a moment. A   |
@@ -169,8 +174,8 @@ pickups, caches and projectiles: a 2D position and velocity on the play
 plane, a radius, `setup()`/`tick()` hooks and `sync_transform()` into 3D.
 Creatures add senses (hearing via `Level.loudest_noise_at`, light via the
 sub's lamp cone, line of sight via the SDF), steering and a per-species
-`think()`/`behave()` state machine. The two lair guardians (the Lamplighter
-and the Blind Mother) extend `Guardian`, which owns the lair geometry, the
+`think()`/`behave()` state machine. The three lair guardians (the
+Lamplighter, the Blind Mother and the Ironclad) extend `Guardian`, which owns the lair geometry, the
 waking fanfare, the shared rewards and unsealing the way down.
 
 **Hazards.** Thermal vents and loose stalactites are entities too, and they

@@ -62,6 +62,10 @@ static func entries() -> Array[Entry]:
 			Entry.new(&"mother", "The Blind Mother", "Mater caeca", "Extreme",
 				"Thirty metres of eyeless eel coiled at the bottom of the Midnight Caverns. She hears a sub drift past " +
 					"from across her lair and strikes at the sound - straight through anything in the way."),
+			Entry.new(&"ironclad", "The Ironclad", "Bathynomus ferreus", "Extreme",
+				"An isopod the size of a bus, walking the floor of the hottest vent field in the trench. Its plates " +
+					"turn harpoons and torpedoes, but not the vents: caught in an eruption, the shell splits and glows. " +
+					"It hunts by sound, and while it hunts it forgets to step around the heat."),
 			Entry.new(&"choir", "The Choir", "-", "Unknown",
 				"Whatever has been answering our pings. The station logs call it the Choir. It sings the trench into new shapes."),
 		]
