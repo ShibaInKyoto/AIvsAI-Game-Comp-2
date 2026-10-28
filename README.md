@@ -25,7 +25,9 @@ It is a single executable with everything embedded. It needs a GPU with Vulkan
 or Direct3D 12, which covers any dedicated GPU from the last decade. The exe is
 not code-signed, so SmartScreen may warn on first launch: choose
 **More info > Run anyway**. Progress and settings are saved in
-`%APPDATA%\FATHOM`.
+`%APPDATA%\FATHOM`. On first launch the title screen measures the frame rate
+and lowers the graphics preset if your PC needs it (change it any time in
+Settings).
 
 ## How to play
 
