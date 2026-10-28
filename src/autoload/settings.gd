@@ -27,6 +27,8 @@ var show_fps := false
 var assist := false
 ## Gamepad rumble on impacts.
 var rumble := true
+## Accessibility: show where threat sounds come from (see [SoundCues]).
+var sound_cues := false
 ## Set once [QualityProbe] has checked this machine's frame rate.
 var quality_probed := false
 ## Last input device used; prompts and aiming adapt to it.
@@ -64,6 +66,7 @@ func load_settings() -> void:
 	screen_shake = cfg.get_value("game", "screen_shake", screen_shake)
 	assist = cfg.get_value("game", "assist", assist)
 	rumble = cfg.get_value("game", "rumble", rumble)
+	sound_cues = cfg.get_value("game", "sound_cues", sound_cues)
 	var saved: Variant = cfg.get_value("input", "bindings", {})
 	bindings = saved if saved is Dictionary else {}
 	_apply_bindings()
@@ -82,6 +85,7 @@ func save_settings() -> void:
 	cfg.set_value("game", "screen_shake", screen_shake)
 	cfg.set_value("game", "assist", assist)
 	cfg.set_value("game", "rumble", rumble)
+	cfg.set_value("game", "sound_cues", sound_cues)
 	cfg.set_value("input", "bindings", bindings)
 	cfg.save(PATH)
 

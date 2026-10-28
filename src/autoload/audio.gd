@@ -5,6 +5,9 @@ extends Node
 ## res://assets/audio/{sfx,music}/<name>.ogg (synthesized by tools/audio).
 ## Missing sounds are ignored so gameplay never depends on audio assets.
 
+## A positional sound was played (the sound-cue overlay listens).
+signal sound_at(sound: StringName, pos: Vector2)
+
 const SFX_DIR := "res://assets/audio/sfx/"
 const MUSIC_DIR := "res://assets/audio/music/"
 const POOL_2D := 16
@@ -158,8 +161,11 @@ func play_ui(sound: StringName, volume_db := 0.0) -> void:
 
 ## Positional sound on the gameplay plane.
 func play_at(sound: StringName, pos: Vector2, volume_db := 0.0, pitch_variance := 0.08, pitch := 1.0) -> void:
+	if _rate_limited(sound, 25):
+		return
+	sound_at.emit(sound, pos)
 	var stream := get_stream(sound)
-	if stream == null or _rate_limited(sound, 25):
+	if stream == null:
 		return
 	var p := _pool3d[_next_3d]
 	_next_3d = (_next_3d + 1) % _pool3d.size()

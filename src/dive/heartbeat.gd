@@ -17,6 +17,11 @@ func _ready() -> void:
 	volume_db = -60.0
 
 
+## How hard the heart is pounding, 0 (silent) to 1.
+func intensity() -> float:
+	return _intensity
+
+
 func tick(level: Level, sub: Submarine, delta: float) -> void:
 	var want := 0.0
 	if sub and sub.alive:

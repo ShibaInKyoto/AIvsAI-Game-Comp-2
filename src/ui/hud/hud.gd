@@ -7,6 +7,8 @@ var sub: Submarine
 var level: Level
 var camera: Camera3D
 var objective: ZoneObjective
+## The dive's heartbeat, which the sound cues show (set by the dive).
+var heartbeat: Heartbeat
 
 var _depth_label: Label
 var _zone_label: Label
@@ -54,6 +56,11 @@ func _ready() -> void:
 	_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_overlay.hud = self
 	root.add_child(_overlay)
+
+	var cues := SoundCues.new()
+	cues.set_anchors_preset(Control.PRESET_FULL_RECT)
+	cues.hud = self
+	root.add_child(cues)
 
 	# Depth gauge (top left).
 	var depth_box := VBoxContainer.new()

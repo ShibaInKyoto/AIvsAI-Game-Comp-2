@@ -28,6 +28,7 @@ func _ready() -> void:
 	heartbeat = Heartbeat.new()
 	add_child(heartbeat)
 	hud = Hud.new()
+	hud.heartbeat = heartbeat
 	add_child(hud)
 	add_child(PostFx.new())
 	add_child(LogReader.new())

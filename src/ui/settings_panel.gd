@@ -39,6 +39,8 @@ func _ready() -> void:
 	_check(grid, "Assist mode (40% less damage, wider timing)", Settings.assist,
 		func(on: bool) -> void: Settings.assist = on)
 	_check(grid, "Gamepad rumble", Settings.rumble, func(on: bool) -> void: Settings.rumble = on)
+	_check(grid, "Sound cues (show where threat sounds come from)", Settings.sound_cues,
+		func(on: bool) -> void: Settings.sound_cues = on)
 
 	column.add_child(UiUtil.label("Quality changes to terrain detail apply from the next zone.", &"DimLabel"))
 	column.add_child(UiUtil.button("Controls...", func() -> void: add_child(ControlsPanel.new())))

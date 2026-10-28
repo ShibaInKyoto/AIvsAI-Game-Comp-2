@@ -103,8 +103,11 @@ Every keyboard and mouse control can be rebound under **Settings > Controls**
 (prompts follow your keyboard layout, so WASD reads ZQSD on AZERTY).
 **How to dive** on the title screen (and in the pause menu) sums up the rules
 and controls. Settings include an **Assist mode** (40% less hull damage and
-wider timing windows against the Choir), screen-shake strength, gamepad
-rumble and four graphics presets.
+wider timing windows against the Choir), **Sound cues** (threat sounds such
+as a lancer's wind-up, a vent's rumble or cracking rock flash a labelled arc
+round the sub pointing at their source, and a Stalker's hunt shows as a
+pulsing heartbeat, so the game is playable without sound), screen-shake
+strength, gamepad rumble and four graphics presets.
 
 ## Replayability
 
@@ -194,7 +197,7 @@ Requires Godot 4.5.1 with export templates installed.
 
 ```sh
 godot --headless --import                                       # first-time import
-godot --headless --path . -s res://tests/run_tests.gd           # 78 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
+godot --headless --path . -s res://tests/run_tests.gd           # 80 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
 godot --headless --path . res://tests/flow_test.tscn            # end-to-end menu and dive flow
 godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
 python3 tools/audio/generate.py                                 # regenerate all audio (numpy + ffmpeg)
