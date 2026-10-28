@@ -11,8 +11,10 @@ signal defeated
 
 enum State { DORMANT, PROWL, AIM, LUNGE, STUCK, RECOVER, DEAD }
 
-const SEGMENTS := 30
-const SPACING := 0.85
+const SEGMENTS := 32
+const SPACING := 1.15
+## Model scale: she dwarfs everything else in the trench.
+const SIZE := 1.6
 const AIM_TIME := 0.75
 const LUNGE_MAX := 2.2
 const LUNGE_DAMAGE := 32.0
@@ -42,6 +44,7 @@ var _t := 0.0
 var _clank_cooldown := 0.0
 var _taught_armor := false
 var _taught_stuck := false
+var _shrink := 1.0
 var _body_mesh := ArrayMesh.new()
 var _body: MeshInstance3D
 var _gills: MeshInstance3D
@@ -50,7 +53,7 @@ var _gills: MeshInstance3D
 func setup() -> void:
 	species = &"mother"
 	max_hp = 320.0
-	radius = 1.6
+	radius = 2.3
 	mass = 60.0
 	contact_damage = 14.0
 	salvage_drop = 70
@@ -62,8 +65,8 @@ func setup() -> void:
 	_orbit = level.rng.randf() * TAU
 	# Coiled on the lair floor until something wakes her.
 	for i in SEGMENTS:
-		var a := i * 0.42
-		var r := 2.0 + i * 0.22
+		var a := i * 0.36
+		var r := 3.0 + i * 0.3
 		segments.append(pos + Vector2(cos(a) * r, sin(a) * r * 0.4))
 
 
@@ -72,7 +75,7 @@ func build_model() -> void:
 		m.set_shader_parameter(&"back_color", Color(0.07, 0.06, 0.07))
 		m.set_shader_parameter(&"belly_color", Color(0.28, 0.24, 0.22))
 		m.set_shader_parameter(&"glow_color", Color(1.0, 0.45, 0.25))
-		m.set_shader_parameter(&"glow_strength", 1.6)
+		m.set_shader_parameter(&"glow_strength", 0.8)
 		m.set_shader_parameter(&"rim_strength", 0.35)
 		m.set_shader_parameter(&"roughness", 0.55)
 		m.set_shader_parameter(&"body_length", 3.4)
@@ -159,7 +162,7 @@ func behave(delta: float) -> void:
 				_cooldown = REST[phase]
 		State.DEAD:
 			vel = vel.lerp(Vector2(0.0, -1.5), 1.0 - exp(-1.0 * delta))
-			model.scale = Vector3.ONE * maxf(_timer / 3.0, 0.01)
+			_shrink = maxf(_timer / 3.0, 0.01)
 			if _timer <= 0.0:
 				despawn()
 
@@ -245,6 +248,7 @@ func is_hostile() -> bool:
 
 func _update_visuals(delta: float) -> void:
 	super._update_visuals(delta)
+	model.basis = model.basis.scaled(Vector3.ONE * SIZE * _shrink)
 	var glow := 0.25
 	match state:
 		State.AIM:
@@ -321,7 +325,7 @@ func _enrage() -> void:
 func _follow_body() -> void:
 	if state == State.DORMANT:
 		return
-	segments[0] = pos - facing * 1.6
+	segments[0] = pos - facing * 1.6 * SIZE
 	for i in range(1, SEGMENTS):
 		var to := segments[i] - segments[i - 1]
 		var d := to.length()
@@ -343,5 +347,5 @@ func _rebuild_body() -> void:
 			var dir := (segments[i - 1] - segments[i + 1]).normalized()
 			p += Vector2(-dir.y, dir.x) * sin(_t * 2.2 - i * 0.45) * 0.35 * t
 		pts.append(Vector3(p.x, p.y, -0.2))
-		radii.append(lerpf(1.35, 0.25, pow(t, 0.8)))
-	MeshKit.tube(_body_mesh, pts, radii, 10, 0.6)
+		radii.append(lerpf(2.1, 0.35, pow(t, 0.8)) * _shrink)
+	MeshKit.tube(_body_mesh, pts, radii, 10, 0.12)
