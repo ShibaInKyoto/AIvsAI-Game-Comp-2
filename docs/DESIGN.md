@@ -51,7 +51,7 @@ Hangar (spend salvage & research) -> Dive -> Zone 1 -> Decompression stop
 | 2 | Twilight Reef    | 200–1000 m  | Bioluminescent coral, anglers, siphonophores          |
 | 3 | Midnight Caverns | 1–4 km      | Pitch dark, gulper eels, loose stalactites, Stalker   |
 | 4 | Abyssal Vents    | 4–6 km      | Hydrothermal vents, heat currents, latching isopods   |
-| 5 | Hadal Trench     | 6–11 km     | Alien geometry, the Meridian station, the Choir       |
+| 5 | Hadal Trench     | 6–11 km     | Alien geometry, Vasquez's drone, Meridian, the Choir  |
 
 ## Player kit
 

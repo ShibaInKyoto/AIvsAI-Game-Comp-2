@@ -79,6 +79,10 @@ itself. Every zone is a procedurally generated cave cross-section. Find the
   listen, wait for the eruption, and strike while the seams glow. It never
   goes looking for an eruption itself, and it rears up to slam anything that
   comes close.
+* In the last stretch of the Hadal Trench, a work lamp gutters out of a wall:
+  **Vasquez's drone**, lost the night the trench closed, sealed into rock that
+  flowed over it like wax. Come alongside to play its flight recorder and
+  drain what charge is left in its cells.
 * On the hadal floor, on the way down, stand the ruins of **Meridian Deep**
   itself. A few windows still have power, and its beacon still pings: each
   ping charts the cave around it and is loud enough to draw hunters.
@@ -212,7 +216,7 @@ Requires Godot 4.5.1 with export templates installed.
 
 ```sh
 godot --headless --import                                       # first-time import
-godot --headless --path . -s res://tests/run_tests.gd           # 93 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
+godot --headless --path . -s res://tests/run_tests.gd           # 97 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
 godot --headless --path . res://tests/flow_test.tscn            # end-to-end menu and dive flow
 godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
 python3 tools/audio/generate.py                                 # regenerate all audio (numpy + ffmpeg)

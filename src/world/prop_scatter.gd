@@ -145,7 +145,7 @@ static func _material(id: StringName, biome: BiomeDef) -> ShaderMaterial:
 	if _materials.has(key):
 		return _materials[key]
 	if id == &"rock":
-		_materials[key] = _rock_material(biome)
+		_materials[key] = rock_material(biome)
 		return _materials[key]
 	var def: Dictionary = DEFS[id]
 	var m := ShaderMaterial.new()
@@ -254,7 +254,8 @@ static func _kelp() -> ArrayMesh:
 		return Color(0.25 + t * 0.15, 0.32 + t * 0.12, 0.12, 0.0))
 
 
-static func _rock_material(biome: BiomeDef) -> ShaderMaterial:
+## Loose rock that matches the cave walls of [param biome].
+static func rock_material(biome: BiomeDef) -> ShaderMaterial:
 	var m := ShaderMaterial.new()
 	m.shader = ROCK_SHADER
 	m.set_shader_parameter(&"rock_albedo", TerrainRenderer.ROCK_ALBEDO)

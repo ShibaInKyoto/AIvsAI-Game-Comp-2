@@ -48,6 +48,10 @@ static func populate(level: Level, run: RunState) -> void:
 	_spawn_caches(level, used)
 	if level.event == &"whalefall":
 		_spawn_whale_fall(level, used)
+	if level.zone == VasquezDrone.ZONE:
+		var drone := VasquezDrone.place(level, rng, used)
+		if drone:
+			used.append(drone.pos)
 	if Game.meta.has_wreck() and Game.meta.wreck_zone == level.zone:
 		_spawn_lost_wreck(level, used)
 	_spawn_debris(level)

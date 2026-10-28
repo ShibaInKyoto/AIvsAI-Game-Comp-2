@@ -62,7 +62,7 @@ func _sequence() -> void:
 		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		await _reveal(l, 2.6)
 	var meta := Game.meta
-	var found := meta.logs_found.size()
+	var found := SignalLogs.found_count(meta.logs_found)
 	if found >= SignalLogs.count():
 		var heading := UiUtil.label("THE MERIDIAN RECORD", &"TitleLabel", 34, UiTheme.WARN)
 		heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

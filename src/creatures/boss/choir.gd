@@ -310,6 +310,8 @@ func _defeat() -> void:
 	tween.tween_property(_light, ^"light_energy", 0.0, 4.0)
 	tween.parallel().tween_method(func(v: float) -> void:
 		_heart_mat.set_shader_parameter(&"glow_strength", v), 3.5, 0.2, 4.0)
+	if not Game.meta.logs_found.has(String(SignalLogs.FINAL.id)):
+		Game.meta.logs_found.append(String(SignalLogs.FINAL.id))
 	get_tree().create_timer(2.0).timeout.connect(func() -> void:
 		Events.log_found.emit(&"log_final"))
 	get_tree().create_timer(12.0).timeout.connect(func() -> void: defeated.emit())

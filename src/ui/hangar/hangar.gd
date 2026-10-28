@@ -352,7 +352,8 @@ func _build_codex() -> void:
 
 func _build_logs() -> void:
 	var found := Game.meta.logs_found
-	_content.add_child(UiUtil.label("%d / %d logs recovered" % [found.size(), SignalLogs.count()], &"MonoLabel"))
+	_content.add_child(UiUtil.label("%d / %d logs recovered" % [SignalLogs.found_count(found), SignalLogs.count()],
+		&"MonoLabel"))
 	for l in SignalLogs.LOGS:
 		var row := _row_panel()
 		var info := VBoxContainer.new()
@@ -366,6 +367,17 @@ func _build_logs() -> void:
 		else:
 			info.add_child(UiUtil.label("[ encrypted ]", &"HeaderLabel", 24, UiTheme.TEXT_DIM))
 			info.add_child(UiUtil.label("Recover this log from a black-box beacon in the trench.", &"DimLabel"))
+	for l in SignalLogs.EXTRAS:
+		if not found.has(l.id):
+			continue
+		var row := _row_panel()
+		var info := VBoxContainer.new()
+		info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(info)
+		info.add_child(UiUtil.label("%s  -  %s" % [l.title, l.author], &"HeaderLabel", 24, UiTheme.ACCENT))
+		var text := UiUtil.label(l.text)
+		text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		info.add_child(text)
 
 
 func _build_milestones() -> void:

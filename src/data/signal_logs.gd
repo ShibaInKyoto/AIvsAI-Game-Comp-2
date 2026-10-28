@@ -62,16 +62,27 @@ const LOGS: Array[Dictionary] = [
 ]
 
 
+## The flight recorder of Vasquez's drone, played where the rock sealed it
+## in. Not part of the Meridian set, but kept in the archive once heard.
+const DRONE := {"id": "log_drone", "title": "Drone recorder", "author": "T. Vasquez",
+	"text": "Cutter's through the first seal. The rock is soft here, and warm, like it hasn't set yet. " +
+		"I can hear it through the frame - not the tone, a tune. The tunnel is closing behind me. " +
+		"Slow. Gentle, like a hand. It isn't angry, Hale. It's tidying up. Tell Okafor she was ri-"}
+
 ## Spoken by the Choir itself when the song ends. Not part of the found set.
 const FINAL := {"id": "log_final", "title": "Unknown transmission", "author": "the Choir / I. Okafor",
 	"text": "You answered. You kept answering. It has never been answered for that long. It " +
 		"is not dying - it is listening now, and the trench is holding still. Go up. Tell " +
 		"them the sea is not empty. Tell them it sings."}
 
+## Recordings outside the Meridian set, in the order the archive lists them.
+const EXTRAS: Array[Dictionary] = [DRONE, FINAL]
+
 
 static func get_log(id: StringName) -> Dictionary:
-	if String(id) == FINAL.id:
-		return FINAL
+	for l in EXTRAS:
+		if l.id == String(id):
+			return l
 	for l in LOGS:
 		if l.id == String(id):
 			return l
@@ -88,3 +99,12 @@ static func next_unfound(found: Array[String], _zone: int) -> StringName:
 
 static func count() -> int:
 	return LOGS.size()
+
+
+## How many of the Meridian logs are among [param found] (extras aside).
+static func found_count(found: Array[String]) -> int:
+	var n := 0
+	for l in LOGS:
+		if found.has(l.id):
+			n += 1
+	return n
