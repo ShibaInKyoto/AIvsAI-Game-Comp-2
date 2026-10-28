@@ -83,6 +83,8 @@ has not noticed the sub can be **ambushed** (harpoon hits deal double), and
 | Glimmer shoal   | 1-3    | sight        | Boids. Scatter from the sub. Prey for predators.       |
 | Drifter jelly   | 1-5    | none         | Drifts with currents. Shocks on contact.               |
 | Lancer          | 1-3    | hearing      | Charges noise sources in straight dashes.              |
+| Spined puffer   | 1-2    | hearing+touch| Swells into a ball of spines when rushed; harpooned    |
+|                 |        |              | while swollen it bursts over its neighbours.           |
 | Lurelight       | 2-5    | light        | Ambush angler hidden in the dark behind a glowing lure.|
 | Gulper eel      | 3-5    | vibration    | Lunges from wall burrows when you pass fast.           |
 | Stalker         | 3-5    | hearing+light| Large hunter. Investigates noise, attacks light.       |

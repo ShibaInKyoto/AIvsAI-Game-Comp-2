@@ -258,6 +258,25 @@ def creature_die():
     return normalize(trim_silence(wet_dry(mix(groan * 0.7, _bubbles(d, 25, 300, 1000) * 0.4), BIG_WATER, 0.4)), 0.7)
 
 
+def puffer_puff():
+    # A quick gulping swell: a rising bloop over a burst of bubbles.
+    d = 0.5
+    bloop = sine(_sweep(170, 560, d, 0.6)) * env_adsr(d, 0.01, 0.15, 0.3, 0.3)
+    return normalize(trim_silence(wet_dry(mix(bloop, _bubbles(d, 14, 500, 1600) * 0.5), SMALL_ROOM, 0.35)), 0.6)
+
+
+def puffer_burst():
+    d = 1.0
+    pop = _thud(260, 80, 0.25, 0.04)
+    needles = np.zeros(seconds(d))
+    for _ in range(18):
+        s = seconds(RNG.uniform(0.0, 0.25))
+        f = RNG.uniform(2500, 5200)
+        c = sine(f, 0.06) * env_exp(0.06, 0.012) * RNG.uniform(0.2, 0.6)
+        needles[s:s + len(c)] += c
+    return normalize(trim_silence(wet_dry(mix(pop, needles, _bubbles(d, 20, 400, 1500) * 0.4), SMALL_ROOM, 0.4)), 0.75)
+
+
 def lancer_windup():
     d = 0.6
     out = np.zeros(seconds(d))

@@ -13,12 +13,13 @@ const SPECIES: Dictionary[StringName, Script] = {
 	&"stalker": preload("res://src/creatures/stalker.gd"),
 	&"isopod": preload("res://src/creatures/isopod.gd"),
 	&"siphon": preload("res://src/creatures/siphonophore.gd"),
+	&"puffer": preload("res://src/creatures/puffer.gd"),
 }
 const WALL_DWELLERS: Array[StringName] = [&"gulper", &"lurelight", &"isopod"]
 ## Spawn cost of each species against the biome's creature budget.
 const COST: Dictionary[StringName, float] = {
 	&"shoal": 0.6, &"jelly": 0.8, &"lancer": 1.0, &"lurelight": 1.5,
-	&"gulper": 1.4, &"stalker": 4.0, &"isopod": 0.7, &"siphon": 1.6,
+	&"gulper": 1.4, &"stalker": 4.0, &"isopod": 0.7, &"siphon": 1.6, &"puffer": 0.7,
 }
 const SAFE_RADIUS := 26.0
 

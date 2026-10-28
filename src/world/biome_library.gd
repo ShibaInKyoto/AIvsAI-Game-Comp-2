@@ -64,7 +64,7 @@ static func _shelf() -> BiomeDef:
 	b.sun_energy = 1.0
 	b.snow_amount = 0.6
 	b.glow_color = Color(0.4, 1.0, 0.8)
-	b.creatures = {&"shoal": 3.0, &"jelly": 1.6, &"lancer": 1.0}
+	b.creatures = {&"shoal": 3.0, &"jelly": 1.6, &"lancer": 1.0, &"puffer": 1.3}
 	b.creature_budget = 9
 	b.props = {&"kelp": 1.0, &"rock": 1.0, &"coral": 0.6, &"anemone": 0.5}
 	b.bulb_count = 4
@@ -96,7 +96,7 @@ static func _reef() -> BiomeDef:
 	b.sun_energy = 0.35
 	b.snow_amount = 1.0
 	b.glow_color = Color(1.0, 0.35, 0.85)
-	b.creatures = {&"shoal": 2.0, &"jelly": 2.0, &"lancer": 1.6, &"lurelight": 1.0, &"siphon": 0.6}
+	b.creatures = {&"shoal": 2.0, &"jelly": 2.0, &"lancer": 1.6, &"lurelight": 1.0, &"siphon": 0.6, &"puffer": 1.0}
 	b.creature_budget = 12
 	b.props = {&"coral": 1.2, &"fan": 1.0, &"rock": 0.8, &"anemone": 0.8, &"kelp": 0.3}
 	b.bulb_count = 5

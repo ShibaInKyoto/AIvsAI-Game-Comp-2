@@ -6,6 +6,8 @@ extends RefCounted
 const TIPS: Dictionary[StringName, String] = {
 	&"stalker": "The Stalker hunts by sound. Drift slowly, kill the lamp, and send it elsewhere with a flare or a decoy.",
 	&"lancer": "Lancers glow before they dash. Sidestep the charge, then harpoon them while they recover.",
+	&"puffer": "Puffers swell into spines when you rush past. Drift by slowly - or harpoon a swollen one " +
+		"from range to burst it over whatever is next to it.",
 	&"jelly": "Drifter jellies are drawn to light. Swing the lamp away, or switch it off, as you pass.",
 	&"lurelight": "A lone light in the dark is usually a lure. Ping first: the sonar shows what is holding it.",
 	&"gulper": "Gulper eels feel fast movement through the rock. Pass their burrows slowly.",

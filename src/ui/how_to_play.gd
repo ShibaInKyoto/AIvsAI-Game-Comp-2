@@ -26,10 +26,10 @@ func _ready() -> void:
 	var panel := PanelContainer.new()
 	column.add_child(panel)
 	var inner := VBoxContainer.new()
-	inner.add_theme_constant_override(&"separation", 10)
+	inner.add_theme_constant_override(&"separation", 6)
 	panel.add_child(inner)
 	for tip in TIPS:
-		var l := UiUtil.label("-  " + tip, &"", 21)
+		var l := UiUtil.label("-  " + tip, &"", 19)
 		l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		inner.add_child(l)
 	column.add_child(UiUtil.label("CONTROLS", &"HeaderLabel"))

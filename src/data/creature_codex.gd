@@ -26,6 +26,10 @@ static func entries() -> Array[Entry]:
 			Entry.new(&"shoal", "Glimmer Shoal", "Lucens gregaria", "Harmless",
 				"Schools of finger-length fish that flash in unison. They scatter from engines " +
 					"and are hunted by almost everything else down here."),
+			Entry.new(&"puffer", "Spined Puffer", "Diodon tumescens", "Low",
+				"A slow, curious reef fish that gulps water and swells into a ball of spines when anything " +
+					"rushes past. Drift by gently. Harpooned while swollen, it bursts and sprays spines at " +
+					"everything nearby."),
 			Entry.new(&"jelly", "Drifter Jelly", "Medusa errans", "Low",
 				"Drifts on the currents and drifts towards light. Its tentacles carry a charge that shorts batteries on contact."),
 			Entry.new(&"lancer", "Lancer", "Sphyraena sonans", "Medium",
