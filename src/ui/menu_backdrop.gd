@@ -15,6 +15,8 @@ var _t := 0.0
 var _ping_timer := 2.0
 var _anchor := Vector2.ZERO
 var _run: RunState
+## A codex species shown in place of the submarine (see [method preview_creature]).
+var _specimen: Creature
 
 
 func _ready() -> void:
@@ -75,6 +77,37 @@ func refresh_sub() -> void:
 func preview_frame(frame_id: StringName) -> void:
 	if sub and frame_id != _run.frame_id:
 		_show_frame(frame_id)
+
+
+## Shows a scanned species where the submarine idles (&"" brings the sub back).
+## The specimen is never ticked, so it holds still with no behaviour running.
+func preview_creature(id: StringName) -> void:
+	if is_instance_valid(_specimen):
+		# Out of the entity list now: freeing it later from outside a level tick
+		# would leave a dead entry behind.
+		level.entities.erase(_specimen)
+		_specimen.queue_free()
+	_specimen = null
+	if sub:
+		sub.model.visible = true
+	var specimen: Creature = null
+	if LevelPopulator.SPECIES.has(id) and id != &"shoal":
+		specimen = LevelPopulator.SPECIES[id].new()
+	elif id == &"mimic":
+		specimen = Mimic.new()
+	elif id == &"lamplighter":
+		specimen = Lamplighter.new()
+	if specimen == null or sub == null:
+		return
+	# Hide only the hull: the sub's lamp and fill light keep the specimen lit.
+	sub.model.visible = false
+	level.add_entity(specimen)
+	specimen.active_radius = 0.0
+	specimen.targetable = false
+	specimen.scannable = false
+	specimen.pos = sub.pos
+	specimen.sync_transform()
+	_specimen = specimen
 
 
 func _show_frame(frame_id: StringName) -> void:

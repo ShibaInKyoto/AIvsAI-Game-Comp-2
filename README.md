@@ -122,7 +122,8 @@ rumble and four graphics presets.
 * 4 submarine frames: **Lantern** (balanced, flares), **Mako** (fast, torpedoes,
   fragile), **Bathysphere** (armored, long sonar, shock pulse), **Whisper**
   (near silent, quick scanner, sonar decoys).
-* 12 hangar upgrades, a creature codex and 13 story logs to recover.
+* 12 hangar upgrades, a creature codex (hover a scanned species in the hangar
+  to see it in the viewport) and 13 story logs to recover.
 * Eleven creature species with their own senses and tells: drifting jellies,
   dashing lancers that hunt the shoals, spined puffers that swell into living
   mines when rushed, angler-like lurelights, burrowing gulper eels,

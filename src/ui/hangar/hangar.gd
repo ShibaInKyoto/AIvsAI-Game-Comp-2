@@ -198,7 +198,8 @@ func _change_pressure(delta: int) -> void:
 
 func _show_tab(tab: Tab) -> void:
 	_tab = tab
-	# Drop any frame preview from browsing the Submarines tab.
+	# Drop any frame or creature preview from browsing the other tabs.
+	_backdrop.preview_creature(&"")
 	_backdrop.preview_frame(StringName(Game.meta.selected_frame))
 	for i in _tab_buttons.size():
 		_tab_buttons[i].button_pressed = i == tab
@@ -332,6 +333,9 @@ func _build_codex() -> void:
 		info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(info)
 		if scanned:
+			# Hovering a scanned species shows it in the viewport.
+			var id := e.id
+			(row.get_parent() as Control).mouse_entered.connect(func() -> void: _backdrop.preview_creature(id))
 			info.add_child(UiUtil.label("%s   %s" % [e.name, e.latin], &"HeaderLabel", 26))
 			var notes := UiUtil.label(e.notes)
 			notes.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
