@@ -44,3 +44,13 @@ func test_every_zone_is_crossable() -> void:
 		check(reached[0], "zone %d crossed (stopped %.0f m from the exit after %.0f s)" % [
 			zone, sub.pos.distance_to(layout.exit), t])
 		level.free()
+
+
+## The way to the exit is never a tight squeeze: some route keeps well over
+## a sub radius (1.15 m) of water around it in every zone.
+func test_route_is_never_a_squeeze() -> void:
+	for zone in BiomeLibrary.TOTAL_ZONES - 1:
+		for s in 3:
+			var layout := LevelGenerator.new().generate(BiomeLibrary.biome_for_zone(zone), 1000 + s * 17 + zone, zone)
+			check(not layout.find_path(layout.start, layout.exit, 1.6).is_empty(),
+				"zone %d seed %d has a route with 1.6 m clearance" % [zone, s])

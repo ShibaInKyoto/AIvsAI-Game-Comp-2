@@ -17,6 +17,9 @@ const ROCK_CAP := 6.0
 const SUB_CLEARANCE := 1.15
 const MARGIN := 14.0
 const SMOOTH := 2.5
+## Wall noise can pinch the main tunnel after it is carved; this much
+## clearance (sub radius 1.15) is restored along the route afterwards.
+const MIN_CORRIDOR := 2.2
 
 var _rng := RandomNumberGenerator.new()
 var _w := 0
@@ -73,7 +76,7 @@ func _try_generate(biome: BiomeDef, zone_seed: int, zone: int) -> LevelLayout:
 			_carve_ellipse(waypoints[i], r)
 			layout.chambers.append(LevelLayout.Chamber.new(waypoints[i], r, &"main"))
 			if r.x > 13.0 and _rng.randf() < biome.pillar_chance:
-				_add_pillar(waypoints[i] + Vector2(_rng.randf_range(-0.3, 0.3) * r.x, 0.0), r.y)
+				_try_add_pillar(layout.main_path, waypoints[i], r)
 
 	# The exit: a room with a fissure dropping out of the bottom of the zone.
 	var exit_r := Vector2(10.0, 7.0)
@@ -85,6 +88,7 @@ func _try_generate(biome: BiomeDef, zone_seed: int, zone: int) -> LevelLayout:
 	_carve_branches(layout, waypoints, size, biome)
 	_add_spires(layout, biome)
 	_erode(biome, PackedFloat32Array([layout.start.x, exit_room.x]))
+	_keep_route_open(layout, exit_room)
 	_build_field(layout)
 	_flood_reachable(layout)
 	_collect_anchors(layout)
@@ -129,6 +133,15 @@ func _generate_arena(layout: LevelLayout) -> LevelLayout:
 
 
 # --- Layout planning -------------------------------------------------------
+
+## Re-opens a comfortable corridor along the main route wherever erosion or
+## spires pinched it (pillars are placed clear of the route to begin with).
+func _keep_route_open(layout: LevelLayout, exit_room: Vector2) -> void:
+	var path := layout.main_path
+	for i in range(1, path.size()):
+		_carve_capsule(path[i - 1], path[i], MIN_CORRIDOR, MIN_CORRIDOR, 1.0)
+	_carve_capsule(exit_room, layout.exit, MIN_CORRIDOR, MIN_CORRIDOR, 1.0)
+
 
 func _plan_main_path(size: Vector2) -> PackedVector2Array:
 	var pts := PackedVector2Array()
@@ -175,11 +188,25 @@ func _carve_branches(layout: LevelLayout, waypoints: PackedVector2Array, size: V
 			_carve_path(back, Vector2(3.0, 4.2))
 
 
-func _add_pillar(center: Vector2, half_height: float) -> void:
-	var top := center + Vector2(_rng.randf_range(-2, 2), half_height + 2.0)
-	var bottom := center + Vector2(_rng.randf_range(-2, 2), -half_height - 2.0)
-	var r := _rng.randf_range(1.6, 2.6)
-	_add_rock_capsule(top, bottom, r * 1.4, r)
+## Stands a rock column in a wide room, off to one side of the main route so
+## the way through stays open. Gives up if no placement leaves enough room.
+func _try_add_pillar(route: PackedVector2Array, room_center: Vector2, room_radius: Vector2) -> void:
+	for _attempt in 4:
+		var side := -1.0 if _rng.randf() < 0.5 else 1.0
+		var center := room_center + Vector2(side * _rng.randf_range(0.35, 0.65) * room_radius.x, 0.0)
+		var top := center + Vector2(_rng.randf_range(-2, 2), room_radius.y + 2.0)
+		var bottom := center + Vector2(_rng.randf_range(-2, 2), -room_radius.y - 2.0)
+		var r := _rng.randf_range(1.6, 2.6)
+		if _route_distance(route, top, bottom) > r * 1.4 + MIN_CORRIDOR + 0.5:
+			_add_rock_capsule(top, bottom, r * 1.4, r)
+			return
+
+
+static func _route_distance(route: PackedVector2Array, a: Vector2, b: Vector2) -> float:
+	var best := INF
+	for p in route:
+		best = minf(best, p.distance_to(Geometry2D.get_closest_point_to_segment(p, a, b)))
+	return best
 
 
 ## Stalactites and stalagmites hanging into the larger rooms.
