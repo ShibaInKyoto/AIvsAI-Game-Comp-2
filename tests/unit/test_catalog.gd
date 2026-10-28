@@ -37,6 +37,7 @@ func test_draft_is_distinct_and_respects_tools() -> void:
 		for m in picks:
 			check(ids.count(m.id) == 1, "draft has duplicates")
 			check(m.requires_tool == &"" or stats.has_tool(m.requires_tool), "%s needs a missing tool" % m.id)
+			check(m.id != &"flare_kit", "flare kit offered to a sub that already has flares")
 
 
 func test_draft_respects_stack_limits() -> void:

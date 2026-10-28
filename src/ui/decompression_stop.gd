@@ -87,6 +87,16 @@ func _build() -> void:
 		_descend.grab_focus()
 
 
+func _unhandled_input(event: InputEvent) -> void:
+	if _picked or _cards == null:
+		return
+	for i in mini(_cards.get_child_count(), 3):
+		if event.is_action_pressed(StringName("pick_%d" % (i + 1))):
+			(_cards.get_child(i) as Button).pressed.emit()
+			get_viewport().set_input_as_handled()
+			return
+
+
 func _module_card(mod: Catalog.ModuleDef) -> Button:
 	var b := Button.new()
 	b.custom_minimum_size = Vector2(380, 230)
@@ -99,7 +109,8 @@ func _module_card(mod: Catalog.ModuleDef) -> Button:
 	box.offset_bottom = -16
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	b.add_child(box)
-	var rarity := UiUtil.label(Catalog.RARITY_NAMES[mod.rarity].to_upper(), &"DimLabel", 16,
+	var hotkey := "[%d]  " % (_cards.get_child_count() + 1) if not Settings.using_gamepad else ""
+	var rarity := UiUtil.label(hotkey + Catalog.RARITY_NAMES[mod.rarity].to_upper(), &"DimLabel", 16,
 			Catalog.RARITY_COLORS[mod.rarity])
 	box.add_child(rarity)
 	var title := UiUtil.label(mod.name, &"HeaderLabel", 28, mod.color)

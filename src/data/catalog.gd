@@ -70,6 +70,9 @@ const TOOL_NAMES: Dictionary[StringName, String] = {
 	&"flare": "Flare", &"torpedo": "Torpedo", &"shock": "Shock Pulse",
 }
 
+## Modules that install a tool; only offered to subs that lack it.
+const KIT_TOOLS: Dictionary[StringName, StringName] = {&"flare_kit": &"flare", &"torpedo_kit": &"torpedo"}
+
 static var _frames: Array[FrameDef] = []
 static var _upgrades: Array[UpgradeDef] = []
 static var _modules: Array[ModuleDef] = []
@@ -124,6 +127,8 @@ static func draft(rng: RandomNumberGenerator, owned: Array[StringName], stats: S
 		if owned.count(m.id) >= m.max_stacks:
 			continue
 		if m.requires_tool != &"" and not stats.has_tool(m.requires_tool):
+			continue
+		if KIT_TOOLS.has(m.id) and stats.has_tool(KIT_TOOLS[m.id]):
 			continue
 		pool.append(m)
 		weights.append([1.0, 0.55, 0.22][m.rarity])

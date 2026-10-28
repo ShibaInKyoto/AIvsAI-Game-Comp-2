@@ -140,7 +140,6 @@ func _register_inputs() -> void:
 	_action(&"ping", [_key(KEY_SPACE), _joy(JOY_BUTTON_A)])
 	_action(&"boost", [_key(KEY_SHIFT), _axis(JOY_AXIS_TRIGGER_LEFT, 1.0)])
 	_action(&"lamp", [_key(KEY_F), _joy(JOY_BUTTON_Y)])
-	_action(&"interact", [_key(KEY_E), _joy(JOY_BUTTON_X)])
 	_action(&"map", [_key(KEY_TAB), _joy(JOY_BUTTON_BACK)])
 	_action(&"pause", [_key(KEY_ESCAPE), _key(KEY_P), _joy(JOY_BUTTON_START)])
 	_action(&"fullscreen", [_key(KEY_F11)])

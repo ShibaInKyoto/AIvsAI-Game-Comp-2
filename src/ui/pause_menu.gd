@@ -54,17 +54,7 @@ func _build() -> void:
 		surface_requested.emit()))
 	column.add_child(UiUtil.spacer(10))
 	column.add_child(UiUtil.label("CONTROLS", &"HeaderLabel"))
-	var grid := GridContainer.new()
-	grid.columns = 2
-	grid.add_theme_constant_override(&"h_separation", 30)
-	column.add_child(grid)
-	for row: Array in [
-		["Move", "WASD / left stick"], ["Aim lamp & tools", "Mouse / right stick"],
-		["Harpoon (hold to winch)", "Left mouse / RT"], ["Use tool", "Right mouse / RB"],
-		["Cycle tool", "Q / LB"], ["Sonar ping", "Space / A"], ["Boost", "Shift / LT"],
-		["Toggle lamp", "F / Y"], ["Fullscreen", "F11"]]:
-		grid.add_child(UiUtil.label(row[0], &"DimLabel", 20))
-		grid.add_child(UiUtil.label(row[1], &"MonoLabel", 20))
+	column.add_child(Prompt.controls_grid())
 	resume.grab_focus()
 
 
