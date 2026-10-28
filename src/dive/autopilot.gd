@@ -113,11 +113,19 @@ func drive(delta: float) -> void:
 	# Advance along the path once we are close to the current waypoint.
 	while _path_index < path.size() - 1 and sub.pos.distance_to(path[_path_index]) < 4.0:
 		_path_index += 1
-	var target := path[mini(_path_index + 1, path.size() - 1)]
+	var ahead := mini(_path_index + 1, path.size() - 1)
+	# Never steer into the rock: round a sharp corner the next waypoint can be
+	# out of sight, so fall back to the nearest one that is not.
+	while ahead > _path_index and not level.field.line_of_sight(sub.pos, path[ahead], Submarine.RADIUS * 0.9):
+		ahead -= 1
+	var target := path[ahead]
 	if _path_index >= path.size() - 2:
 		target = level.layout.exit
 	var to := target - sub.pos
 	var move := to.normalized()
+	# Pressed against a wall, push off it rather than grinding into it.
+	if level.field.sample(sub.pos) < Submarine.RADIUS + 0.25:
+		move = (move + level.field.normal(sub.pos) * 0.8).normalized()
 	var threat := _nearest_threat()
 	if threat:
 		sub.aim = (threat.pos - sub.pos).normalized()
