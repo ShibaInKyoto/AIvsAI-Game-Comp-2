@@ -79,6 +79,13 @@ func _ready() -> void:
 	version.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_ui.add_child(version)
 	dive.grab_focus()
+	if QualityProbe.wanted():
+		var probe := QualityProbe.new()
+		probe.adjusted.connect(func(quality_name: String) -> void:
+			var note := UiUtil.label("Graphics set to %s for a smoother frame rate on this PC (change it in Settings)."
+					% quality_name, &"DimLabel", 18, UiTheme.WARN)
+			column.add_child(note))
+		add_child(probe)
 
 
 func _on_dive() -> void:

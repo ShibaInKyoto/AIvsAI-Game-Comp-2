@@ -23,6 +23,8 @@ var show_fps := false
 var assist := false
 ## Gamepad rumble on impacts.
 var rumble := true
+## Set once [QualityProbe] has checked this machine's frame rate.
+var quality_probed := false
 ## Last input device used; prompts and aiming adapt to it.
 var using_gamepad := false
 
@@ -52,6 +54,7 @@ func load_settings() -> void:
 	fullscreen = cfg.get_value("video", "fullscreen", fullscreen)
 	vsync = cfg.get_value("video", "vsync", vsync)
 	show_fps = cfg.get_value("video", "show_fps", show_fps)
+	quality_probed = cfg.get_value("video", "quality_probed", quality_probed)
 	screen_shake = cfg.get_value("game", "screen_shake", screen_shake)
 	assist = cfg.get_value("game", "assist", assist)
 	rumble = cfg.get_value("game", "rumble", rumble)
@@ -66,6 +69,7 @@ func save_settings() -> void:
 	cfg.set_value("video", "fullscreen", fullscreen)
 	cfg.set_value("video", "vsync", vsync)
 	cfg.set_value("video", "show_fps", show_fps)
+	cfg.set_value("video", "quality_probed", quality_probed)
 	cfg.set_value("game", "screen_shake", screen_shake)
 	cfg.set_value("game", "assist", assist)
 	cfg.set_value("game", "rumble", rumble)
