@@ -1,13 +1,11 @@
 class_name BlindMother
-extends Creature
+extends Guardian
 ## The Blind Mother: a colossal eyeless eel coiled in a lair at the bottom of
 ## the Midnight Caverns, sealing the way down. She hunts by sound alone and
 ## lunges at whatever she hears. A lunge that ends in rock wedges her head in
 ## the wall and lays her glowing gills open; anywhere else her hide shrugs off
 ## almost everything. Ping beside a wall, slip away quietly - or fire a
 ## torpedo across the lair and let her chase the blast.
-
-signal defeated
 
 enum State { DORMANT, PROWL, AIM, LUNGE, STUCK, RECOVER, DEAD }
 
@@ -26,12 +24,8 @@ const LUNGE_SPEED: Array[float] = [24.0, 27.0, 30.0]
 const STUCK_TIME: Array[float] = [3.6, 3.0, 2.5]
 const REST: Array[float] = [1.6, 1.1, 0.7]
 
-var lair_center := Vector2.ZERO
-var lair_radius := Vector2(24.0, 14.0)
 var state := State.DORMANT
 var phase := 0
-## True from the moment she wakes until she dies.
-var active := false
 var segments := PackedVector2Array()
 
 var _timer := 0.0
@@ -52,6 +46,7 @@ var _gills: MeshInstance3D
 
 func setup() -> void:
 	species = &"mother"
+	title = "THE BLIND MOTHER"
 	max_hp = 320.0
 	radius = 2.3
 	mass = 60.0
@@ -121,7 +116,7 @@ func think() -> void:
 	var sub := level.player
 	match state:
 		State.DORMANT:
-			if sub and sub.alive and _in_lair(sub.pos, 1.15):
+			if sub and sub.alive and in_lair(sub.pos, 1.15):
 				_awaken()
 		State.PROWL:
 			if _cooldown <= 0.0:
@@ -219,28 +214,8 @@ func die() -> void:
 	if state == State.DEAD:
 		return
 	state = State.DEAD
-	active = false
-	targetable = false
-	hostile = false
 	_timer = 3.0
-	Events.hitstop.emit(0.25)
-	Events.shake_requested.emit(1.0)
-	Fx.flash(level, pos, glow_color, 30.0, 0.8)
-	Fx.ichor(level, pos, glow_color, 60)
-	Fx.bubble_burst(level, pos, 60, 3.0)
-	Audio.play_at(&"choir_death", pos, 0.0, 0.0, 0.7)
-	Events.creature_killed.emit(species, pos)
-	var sub := level.player
-	if sub:
-		sub.run.kills += 1
-		sub.run.research += 15
-		sub.show_gain(15, " research", UiTheme.ACCENT)
-	Pickup.scatter(level, pos, &"salvage", salvage_drop, 3.0)
-	Pickup.scatter(level, pos, &"repair", 2, 2.0)
-	level.unseal_exit()
-	Audio.play_music(level.biome.music, 3.0)
-	Events.banner.emit("THE WAY DOWN IS OPEN", "The Blind Mother is silent.")
-	defeated.emit()
+	reward_defeat("The Blind Mother is silent.")
 
 
 func is_hostile() -> bool:
@@ -259,21 +234,12 @@ func _update_visuals(delta: float) -> void:
 	_gills.set_instance_shader_parameter(&"glow_boost", glow)
 
 
-func _in_lair(p: Vector2, scale: float) -> bool:
-	return ((p - lair_center) / (lair_radius * scale)).length_squared() < 1.0
-
-
 func _awaken() -> void:
 	if active:
 		return
-	active = true
 	state = State.PROWL
 	_cooldown = 1.5
-	alert()
-	Audio.play_at(&"stalker_roar", pos, 4.0, 0.03, 0.55)
-	Audio.play_music(&"lair", 1.0)
-	Events.shake_requested.emit(0.7)
-	Events.banner.emit("THE BLIND MOTHER", "She hunts by sound alone. Make her strike the rock.")
+	wake("She hunts by sound alone. Make her strike the rock.")
 
 
 func _begin_aim(target: Vector2) -> void:

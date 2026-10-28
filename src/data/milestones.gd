@@ -47,6 +47,8 @@ static func all() -> Array[Milestone]:
 			Milestone.new("archivist", "Archivist", "Recover every signal log.", "Black Box Orange",
 				Color(1.0, 0.5, 0.0), func(m: MetaState, _r: RunState) -> bool:
 					return m.logs_found.size() >= SignalLogs.count()),
+			Milestone.new("lights_out", "Lights Out", "Put out the Lamplighter.", "Lure Teal",
+				Color(0.15, 0.62, 0.6), func(m: MetaState, _r: RunState) -> bool: return m.anglers_killed >= 1),
 			Milestone.new("lullaby", "Lullaby", "Silence the Blind Mother.", "Bone",
 				Color(0.86, 0.82, 0.72), func(m: MetaState, _r: RunState) -> bool: return m.mothers_killed >= 1),
 			Milestone.new("hunter", "Apex", "Kill a Stalker.", "Stalker Grey",

@@ -34,7 +34,7 @@ var exit_known := false
 ## The final encounter, present only on the hadal floor.
 var boss: ChoirBoss
 ## The Blind Mother, in the lair zone; the exit stays sealed while she lives.
-var guardian: BlindMother
+var guardian: Guardian
 var exit_sealed := false
 var descent_marker: DescentMarker
 

@@ -317,6 +317,28 @@ def lair() -> np.ndarray:
     return normalize(soft_clip(normalize(render_loop(length, ev, DEEP, 0.5), 0.9), 1.2), 0.75)
 
 
+def angler() -> np.ndarray:
+    """The Lamplighter's lair: a glassy lure motif spiralling round a tritone
+    over a slow soft pulse, low pads and swells that open like a mouth."""
+    length = 48.0
+    beat = 60.0 / 84.0
+    root = 40
+    motif = [0, 6, 11, 14, 11, 6]
+    ev = []
+    for b in range(int(length / beat)):
+        n = root + 24 + motif[b % len(motif)] + (1 if (b // 24) % 2 else 0)
+        ev.append((b * beat, to_stereo(bell(midi_to_hz(n), 2.2, 3.5, 1.4) * 0.28, float(np.sin(b * 0.7) * 0.6))))
+        if b % 2 == 0:
+            ev.append((b * beat, to_stereo(thump(42) * 0.5)))
+    for i in range(4):
+        dur = 12.0
+        ev.append((i * dur, to_stereo(sub_drone(midi_to_hz(root - 12), dur))))
+        ev.append((i * dur, pad(midi_to_hz(root), dur, 0.2, 2.5, 3.5) * 0.7))
+        ev.append((i * dur, pad(midi_to_hz(root + 6 + (1 if i % 2 else 0)), dur, 0.3, 3.0, 3.0) * 0.45))
+        ev.append((i * dur + 6.0, pad(midi_to_hz(root - 5), 6.0, 0.1, 3.0, 2.5) * 0.6))
+    return normalize(soft_clip(normalize(render_loop(length, ev, DEEP, 0.5), 0.9), 1.2), 0.6)
+
+
 def loss() -> np.ndarray:
     ev = []
     for f in chord_notes(50, [0, 3, 7, 10]):
@@ -373,5 +395,5 @@ def ambience() -> np.ndarray:
 
 TRACKS = {
     "title": title, "shelf": shelf, "reef": reef, "midnight": midnight, "vents": vents,
-    "hadal": hadal, "boss": boss, "lair": lair, "loss": loss, "ending": ending, "ambience": ambience,
+    "hadal": hadal, "boss": boss, "lair": lair, "angler": angler, "loss": loss, "ending": ending, "ambience": ambience,
 }

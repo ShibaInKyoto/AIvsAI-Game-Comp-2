@@ -15,6 +15,7 @@ var _hull_bar: ProgressBar
 var _hull_label: Label
 var _battery_bar: ProgressBar
 var _boss_box: VBoxContainer
+var _boss_name: Label
 var _boss_bar: ProgressBar
 var _battery_label: Label
 var _salvage_label: Label
@@ -140,9 +141,9 @@ func _ready() -> void:
 	_place(_boss_box, Control.PRESET_CENTER_TOP, Vector2(-320, 36), Vector2(640, 60))
 	_boss_box.visible = false
 	root.add_child(_boss_box)
-	var boss_name := UiUtil.label("THE BLIND MOTHER", &"HeaderLabel", 24, UiTheme.DANGER)
-	boss_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_boss_box.add_child(boss_name)
+	_boss_name = UiUtil.label("", &"HeaderLabel", 24, UiTheme.DANGER)
+	_boss_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_boss_box.add_child(_boss_name)
 	_boss_bar = ProgressBar.new()
 	_boss_bar.custom_minimum_size = Vector2(640, 12)
 	_boss_bar.show_percentage = false
@@ -251,6 +252,7 @@ func _process(delta: float) -> void:
 	var guardian := level.guardian
 	_boss_box.visible = is_instance_valid(guardian) and guardian.active
 	if _boss_box.visible:
+		_boss_name.text = guardian.title
 		_boss_bar.max_value = guardian.max_hp
 		_boss_bar.value = guardian.hp
 

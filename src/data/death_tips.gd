@@ -14,6 +14,8 @@ const TIPS: Dictionary[StringName, String] = {
 	&"isopod": "A latched isopod drains hull and battery. Boost or fire a shock pulse to throw it off.",
 	&"siphon": "Lantern chains sting along their whole length. Go around the colony, never through it.",
 	&"mimic": "Deep caches sometimes bite. Hook one with the harpoon from a distance before you ram it.",
+	&"lamplighter": "Run dark around the Lamplighter and ping to break her lure's pull. Light her eyes up " +
+		"close, or throw her a flare, and strike while she is dazzled.",
 	&"mother": "The Blind Mother strikes at sound. Ping beside a wall, slip away slowly, and hit her gills while " +
 		"she is stuck. Torpedo blasts and sonar decoys lure her into the rock.",
 	&"choir": "Answer each wave with a ping just as it reaches you. The ring around your sub shows when.",
@@ -52,6 +54,8 @@ static func describe(cause: StringName) -> String:
 			return "the Choir's song"
 		&"stalker":
 			return "the Stalker"
+		&"lamplighter":
+			return "the Lamplighter"
 		&"mother":
 			return "the Blind Mother"
 		&"vent":

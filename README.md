@@ -61,6 +61,10 @@ itself. Every zone is a procedurally generated cave cross-section. Find the
   the dive report tells you what sank you and how to deal with it.
 * Spend salvage in the **hangar** on permanent upgrades. Spend research (from
   scanning creatures and recovering logs) on three more submarines.
+* At the bottom of the Twilight Reef the way down is guarded by **the
+  Lamplighter**, an angler the size of a whale that sees only light. Run dark,
+  ping to break her lure's pull, then shine your lamp in her eyes up close (or
+  feed her a flare) and strike while she is dazzled.
 * At the bottom of the Midnight Caverns the way down is sealed by **the Blind
   Mother**, a colossal eyeless eel that strikes at sound. Make noise beside a
   wall, slip aside, and hit her gills while her head is stuck in the rock.
@@ -108,7 +112,7 @@ rumble and four graphics presets.
   dashing lancers, spined puffers that swell into living mines when rushed, angler-like lurelights, burrowing gulper eels, wall-crawling
   isopods, stinging siphonophore chains, caches that turn out to be mimics,
   shoals, and the Stalker, which hunts by sound across the whole zone.
-* 16 milestones (silence the Choir, scan every species, kill a Stalker...), each
+* 17 milestones (silence the Choir, scan every species, kill a Stalker...), each
   unlocking a hull paint.
 * **Zone objectives** for bonus salvage or research: open caches, hunt, scan
   species, stay silent, harvest bulbs, recover a log.
@@ -155,7 +159,7 @@ src/
   core/       run state, meta progression, submarine stats
   data/       biomes, modules/upgrades/frames, codex, logs, zone events, pressure
   world/      generator, terrain field + renderer, level, props, pickups, interactables
-  creatures/  creature base, ten species, the Blind Mother and the Choir
+  creatures/  creature base, ten species, two lair guardians and the Choir
   player/     submarine, model, harpoon, tool belt, projectiles
   dive/       dive controller, camera, tutorial, test autopilot
   ui/         theme, HUD, sonar chart, menus, hangar, decompression stop, ending
@@ -170,7 +174,7 @@ Requires Godot 4.5.1 with export templates installed.
 
 ```sh
 godot --headless --import                                       # first-time import
-godot --headless --path . -s res://tests/run_tests.gd           # 58 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
+godot --headless --path . -s res://tests/run_tests.gd           # 61 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
 godot --headless --path . res://tests/flow_test.tscn            # end-to-end menu and dive flow
 godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
 python3 tools/audio/generate.py                                 # regenerate all audio (numpy + ffmpeg)

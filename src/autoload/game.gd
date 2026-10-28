@@ -26,6 +26,9 @@ func _ready() -> void:
 			meta.stalkers_killed += 1
 		elif id == &"mother":
 			meta.mothers_killed += 1
+			check_milestones()
+		elif id == &"lamplighter":
+			meta.anglers_killed += 1
 			check_milestones())
 
 

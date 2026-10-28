@@ -30,7 +30,7 @@ static func populate(level: Level, run: RunState) -> void:
 	var used := PackedVector2Array([layout.start])
 	if not layout.has_exit:
 		_spawn_boss(level, used)
-	elif level.zone == BiomeLibrary.LAIR_ZONE:
+	elif BiomeLibrary.is_lair(level.zone):
 		_spawn_guardian(level, used)
 	_spawn_creatures(level, run, used)
 	_spawn_bulbs(level, used)
@@ -52,7 +52,7 @@ static func _spawn_creatures(level: Level, run: RunState, used: PackedVector2Arr
 		budget *= 0.7
 	if not level.layout.has_exit:
 		budget *= 0.35
-	elif level.zone == BiomeLibrary.LAIR_ZONE:
+	elif BiomeLibrary.is_lair(level.zone):
 		budget *= 0.5
 	if level.event == &"frenzy":
 		budget *= 1.6
@@ -71,7 +71,7 @@ static func _spawn_creatures(level: Level, run: RunState, used: PackedVector2Arr
 		var id := ids[rng.rand_weighted(weights)]
 		if id == &"stalker":
 			# One Stalker at most, and never alongside a boss.
-			if stalkers >= 1 or not level.layout.has_exit or level.zone == BiomeLibrary.LAIR_ZONE:
+			if stalkers >= 1 or not level.layout.has_exit or BiomeLibrary.is_lair(level.zone):
 				continue
 			stalkers += 1
 		var p := _creature_spot(level, id, used)
@@ -106,17 +106,18 @@ static func _creature_spot(level: Level, id: StringName, used: PackedVector2Arra
 	return {"pos": spot}
 
 
-## The Blind Mother coils in the exit chamber and seals the way down.
+## A guardian (the Lamplighter or the Blind Mother) lairs in the exit
+## chamber and seals the way down.
 static func _spawn_guardian(level: Level, used: PackedVector2Array) -> void:
 	var rooms := level.layout.chambers_of_kind(&"exit")
 	if rooms.is_empty():
 		return
 	var lair: LevelLayout.Chamber = rooms[0]
-	var mother := BlindMother.new()
-	mother.lair_center = lair.center
-	mother.lair_radius = lair.radius
-	level.guardian = mother
-	level.add_entity(mother)
+	var guardian: Guardian = BlindMother.new() if level.zone == BiomeLibrary.LAIR_ZONE else Lamplighter.new()
+	guardian.lair_center = lair.center
+	guardian.lair_radius = lair.radius
+	level.guardian = guardian
+	level.add_entity(guardian)
 	level.seal_exit()
 	used.append(lair.center)
 

@@ -27,7 +27,7 @@ func _ready() -> void:
 	add_child(_level)
 	_level.build(layout, 2)
 	LevelPopulator.populate(_level, run)
-	_mother = _level.guardian
+	_mother = _level.guardian as BlindMother
 	_sub = Submarine.new()
 	_level.add_child(_sub)
 	_sub.setup(_level, run, _level.layout.field.resolve_circle(_mother.lair_center + Vector2(-8.0, 2.0), 2.0))

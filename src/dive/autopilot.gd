@@ -22,6 +22,9 @@ var _shot_timer := 1.5
 var _path_index := 0
 var _ping_timer := 0.0
 var _tool_timer := 4.0
+## Set while the Lamplighter fight has the lamp switched off.
+var _ran_dark := false
+var _guardian_seen := false
 var _shots := 0
 var _stuck_timer := 0.0
 var _last_pos := Vector2.ZERO
@@ -85,9 +88,19 @@ func drive(delta: float) -> void:
 	if level.boss and level.boss.active:
 		_fight_boss()
 		return
-	if is_instance_valid(level.guardian) and level.guardian.active:
-		_fight_guardian(delta)
+	var guardian: Guardian = level.guardian if is_instance_valid(level.guardian) else null
+	if guardian and guardian.active:
+		if not _guardian_seen:
+			_guardian_seen = true
+			print("AUTOPILOT: %s woke at %.1f s, hull %.0f" % [guardian.title, _elapsed, sub.run.hull])
+		if guardian is BlindMother:
+			_fight_mother(guardian as BlindMother, delta)
+		else:
+			_fight_lamplighter(guardian as Lamplighter, delta)
 		return
+	if _ran_dark:
+		_ran_dark = false
+		sub.lamp_on = true
 	var path := _route
 	# Advance along the path once we are close to the current waypoint.
 	while _path_index < path.size() - 1 and sub.pos.distance_to(path[_path_index]) < 6.0:
@@ -148,8 +161,7 @@ func _fight_boss() -> void:
 
 ## Against the Blind Mother: hold station near the lair floor and ping to draw
 ## a lunge, sidestep the charge, then harpoon her while she is stuck.
-func _fight_guardian(delta: float) -> void:
-	var mother := level.guardian
+func _fight_mother(mother: BlindMother, delta: float) -> void:
 	var to := mother.pos - sub.pos
 	sub.aim = to.normalized()
 	sub.facing = 1.0 if sub.aim.x >= 0.0 else -1.0
@@ -175,6 +187,48 @@ func _fight_guardian(delta: float) -> void:
 			if _ping_timer <= 0.0:
 				_ping_timer = 3.0
 				sub.try_ping()
+
+
+## Against the Lamplighter: run dark and ping to break the lure's pull, keep
+## clear of the lure, then light her eyes up close (or feed her a flare) and
+## harpoon her while she is dazzled.
+func _fight_lamplighter(angler: Lamplighter, delta: float) -> void:
+	_ran_dark = true
+	var head := angler.head_pos()
+	var to := head - sub.pos
+	var d := to.length()
+	sub.aim = to.normalized()
+	sub.facing = 1.0 if sub.aim.x >= 0.0 else -1.0
+	_ping_timer -= delta
+	if _ping_timer <= 0.0:
+		_ping_timer = 3.0
+		sub.try_ping()
+	var away_from_lure := (sub.pos - angler.lure_pos()).normalized()
+	match angler.state:
+		Lamplighter.State.WINDUP, Lamplighter.State.CHARGE:
+			sub.lamp_on = false
+			sub.external_move = Vector2(-to.y, to.x).normalized()
+		Lamplighter.State.DAZZLED:
+			sub.lamp_on = false
+			sub.external_move = (to - to.normalized() * 8.0).limit_length(1.0) * 0.6
+			if sub.harpoon.state == Harpoon.State.IDLE and d < sub.stats.harpoon_range:
+				sub.harpoon.fire(sub.aim)
+				sub.harpoon.release()
+		Lamplighter.State.STALK:
+			if sub.tools.current() == &"flare" and sub.run.flares > 0 and d < 20.0:
+				_tool_timer -= delta
+				if _tool_timer <= 0.0:
+					_tool_timer = 6.0
+					sub.tools.use(sub.aim)
+			# Close in to dazzling range, never onto the lure itself.
+			var want := (to - to.normalized() * 10.0).limit_length(1.0)
+			if sub.pos.distance_to(angler.lure_pos()) < Lamplighter.SNAP_REACH + 2.5:
+				want = away_from_lure
+			sub.external_move = want * 0.8
+			sub.lamp_on = d < Lamplighter.DAZZLE_RANGE - 2.0
+		_:
+			sub.lamp_on = false
+			sub.external_move = away_from_lure * 0.7
 
 
 ## Every few seconds near a threat, uses the current tool and cycles to the

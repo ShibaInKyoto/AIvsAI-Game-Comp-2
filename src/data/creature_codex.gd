@@ -51,6 +51,10 @@ static func entries() -> Array[Entry]:
 					"Every bell can sting. Drift around it, not through it."),
 			Entry.new(&"mimic", "Mimic", "Cista mendax", "High",
 				"It wears the shape of an expedition crate. Sonar marks it as alive - that is the only warning you get."),
+			Entry.new(&"lamplighter", "The Lamplighter", "Ceratias regina", "Extreme",
+				"A matriarch angler as long as a whale, guarding the way out of the reef. She sees only light: " +
+					"a lamp seen from afar draws a charge, and her lure pulls swimmers in until a ping breaks " +
+					"its spell. A lamp in her eyes up close, or a flare fed to her, dazzles her."),
 			Entry.new(&"mother", "The Blind Mother", "Mater caeca", "Extreme",
 				"Thirty metres of eyeless eel coiled at the bottom of the Midnight Caverns. She hears a sub drift past " +
 					"from across her lair and strikes at the sound - straight through anything in the way."),

@@ -91,6 +91,10 @@ has not noticed the sub can be **ambushed** (harpoon hits deal double), and
 | Vent isopod     | 4-5    | touch        | Crawls on walls, latches onto the hull, drains power.  |
 | Siphonophore    | 2,3,5  | touch        | A drifting chain of bells that stings along its length.|
 | Mimic           | 3-5    | touch        | Disguised as a salvage cache; wakes, lunges and chases.|
+| Lamplighter     | 2      | light only   | Guardian sealing the exit of zone 4. Her lure pulls    |
+|                 |        |              | the sub in (a ping breaks it); she charges any lamp    |
+|                 |        |              | seen from afar; dazzled by a lamp in her eyes or a     |
+|                 |        |              | flare, her scales open to attack.                      |
 | Blind Mother    | 3      | hearing only | Mid-run boss sealing the exit of zone 6. Lunges at     |
 |                 |        |              | sound; stuck in rock, her gills are open to attack.    |
 | The Choir       | 5      | everything   | Final encounter.                                       |
@@ -106,7 +110,7 @@ has not noticed the sub can be **ambushed** (harpoon hits deal double), and
 * Zone events (currents, blackout, frenzy, wrecks, dead calm, bloom) forecast
   at the decompression stop.
 * Optional zone objectives for bonus salvage or research.
-* 16 milestones, each unlocking a hull paint.
+* 17 milestones, each unlocking a hull paint.
 * A dive score (depth, kills, ambushes, scans, logs, salvage, outcome, x pressure)
   and a top-five records table on the title screen.
 

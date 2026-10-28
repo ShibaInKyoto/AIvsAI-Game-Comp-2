@@ -33,7 +33,7 @@ func test_lair_is_sealed_and_guarded() -> void:
 func test_noise_by_a_wall_makes_her_stick_and_open_up() -> void:
 	var run := RunState.new()
 	var level := _lair_level(run)
-	var mother := level.guardian
+	var mother := level.guardian as BlindMother
 	var sub := Submarine.new()
 	level.add_child(sub)
 	sub.setup(level, run, level.layout.start)

@@ -46,6 +46,9 @@ func _build() -> void:
 	if _run.zone == BiomeLibrary.LAIR_ZONE:
 		_column.add_child(UiUtil.label("Sonar returns from the bottom of the next zone are wrong. Something enormous " +
 			"is coiled down there, and it is listening.", &"", 22, UiTheme.DANGER))
+	elif _run.zone == BiomeLibrary.ANGLER_ZONE:
+		_column.add_child(UiUtil.label("A light is burning at the bottom of the next zone, far brighter than any " +
+			"reef glow. Something down there is watching for yours.", &"", 22, UiTheme.DANGER))
 	var event := ZoneEvents.for_zone(_run, _run.zone)
 	if event != ZoneEvents.NONE:
 		_column.add_child(UiUtil.label("Sensor forecast: %s - %s" % [ZoneEvents.display_name(event),
