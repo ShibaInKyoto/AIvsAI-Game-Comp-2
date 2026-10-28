@@ -47,7 +47,8 @@ itself. Every zone is a procedurally generated cave cross-section. Find the
   debris and creatures. **Glow bulbs** on the walls recharge your battery.
 * Between zones you dock at a **decompression stop**: install one of three
   modules, repair the hull, then *descend*, or *surface* and bank your salvage
-  with a depth bonus. If you implode, insurance keeps only part of it.
+  with a depth bonus. If you implode, insurance keeps only part of it, and
+  the dive report tells you what sank you and how to deal with it.
 * Spend salvage in the **hangar** on permanent upgrades. Spend research (from
   scanning creatures and recovering logs) on three more submarines.
 * At the bottom waits **the Choir**. It sings in waves. Answer each wave with
@@ -146,7 +147,7 @@ Requires Godot 4.5.1 with export templates installed.
 
 ```sh
 godot --headless --import                                       # first-time import
-godot --headless --path . -s res://tests/run_tests.gd           # 38 tests: generation, traversal, assets, biome and boss sims
+godot --headless --path . -s res://tests/run_tests.gd           # 40 tests: generation, traversal, assets, biome and boss sims
 godot --headless --path . res://tests/flow_test.tscn            # end-to-end menu and dive flow
 godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
 python3 tools/audio/generate.py                                 # regenerate all audio (numpy + ffmpeg)
