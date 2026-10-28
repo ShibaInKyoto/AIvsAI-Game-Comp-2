@@ -72,10 +72,10 @@ itself. Every zone is a procedurally generated cave cross-section. Find the
 | Pause | `Esc` | Start |
 | Fullscreen | `F11` | |
 
-**How to dive** on the title screen sums up the rules and controls. Settings
-include an **Assist mode** (40% less hull damage and wider timing windows
-against the Choir), screen-shake strength,
-gamepad rumble and four graphics presets.
+**How to dive** on the title screen (and in the pause menu) sums up the rules
+and controls. Settings include an **Assist mode** (40% less hull damage and
+wider timing windows against the Choir), screen-shake strength, gamepad
+rumble and four graphics presets.
 
 ## Replayability
 
@@ -110,8 +110,10 @@ and an architecture overview are in [docs/DESIGN.md](docs/DESIGN.md).
 * **Caves** (`src/world/level_generator.gd`). The generator carves tunnels,
   chambers and shafts into a signed distance field with smooth-min SDF
   operations. Domain-warped noise then erodes the walls and opens organic
-  caverns. A flood fill marks the water the sub can reach and seals pockets it
-  can't. Generation runs on a worker thread and takes about 0.3 s.
+  caverns. A corridor wide enough to pass comfortably is then re-opened along
+  the route, a flood fill marks the water the sub can reach, and pockets it
+  can't reach are sealed. Generation runs on a worker thread in under half a
+  second.
 * **One field for everything** (`src/world/terrain_field.gd`). The same SDF
   drives collision (circle vs field), creature steering, projectile ray
   marching and rendering. It is uploaded as a half-float texture, and a vertex
