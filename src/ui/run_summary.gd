@@ -69,6 +69,10 @@ func show_result(run: RunState, outcome: RunState.Outcome) -> void:
 			var tip := UiUtil.label("TIP  " + DeathTips.tip(run.last_hit_by), &"", 20, UiTheme.ACCENT)
 			tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			column.add_child(tip)
+			# Several early losses in a row: point at the gentler way to play.
+			if Game.meta.dives >= 3 and Game.meta.deepest_zone < 4 and not Settings.assist:
+				column.add_child(UiUtil.label("Finding it rough? Assist mode in Settings softens damage and timing.",
+						&"DimLabel"))
 	var row := HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.add_theme_constant_override(&"separation", 20)
