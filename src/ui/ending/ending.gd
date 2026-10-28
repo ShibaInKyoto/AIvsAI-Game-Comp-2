@@ -8,6 +8,13 @@ const LINES: PackedStringArray = [
 	"Somewhere below, a beacon keeps pinging - slower now, almost patient. Waiting for the next voice to answer.",
 ]
 
+## Shown only to pilots who recovered every Meridian log: what became of the crew.
+const RECORD_LINES: PackedStringArray = [
+	"Hale and Sato's pod was never found. Neither was Vasquez's drone.",
+	"But woven through the last song were four human voices, and one of them was humming a lullaby.",
+	"Okafor stayed to listen. She is listening still. And now, so is it.",
+]
+
 var _column: VBoxContainer
 ## Set once the player presses something: the rest of the epilogue appears at once.
 var _fast := false
@@ -55,6 +62,21 @@ func _sequence() -> void:
 		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		await _reveal(l, 2.6)
 	var meta := Game.meta
+	var found := meta.logs_found.size()
+	if found >= SignalLogs.count():
+		var heading := UiUtil.label("THE MERIDIAN RECORD", &"TitleLabel", 34, UiTheme.WARN)
+		heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		await _reveal(heading, 0.8)
+		for line in RECORD_LINES:
+			var l := UiUtil.label(line, &"", 24, UiTheme.WARN.lerp(UiTheme.TEXT, 0.55))
+			l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			await _reveal(l, 2.8)
+	else:
+		var hint := UiUtil.label("%d of %d Meridian logs recovered. The rest of their story is still down there." % [
+			found, SignalLogs.count()], &"DimLabel", 20)
+		hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		await _reveal(hint, 1.2)
 	var stats := UiUtil.label("Salvage banked: %d     Dives: %d     Victories: %d" % [Game.last_victory_banked,
 			meta.dives, meta.wins], &"MonoLabel", 22)
 	stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

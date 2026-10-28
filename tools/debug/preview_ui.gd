@@ -1,7 +1,8 @@
 extends Node
 ## Debug helper: shows one UI panel over the menu backdrop and saves a PNG.
 ## Usage: xvfb-run godot --path . res://tools/debug/preview_ui.tscn -- <out.png> <panel>
-## Panels: howto, settings, controls, stop, summary, records, credits, prologue.
+## Panels: howto, settings, controls, stop, summary, records, credits, prologue,
+## ending (every log found, epilogue shown at once).
 ## (summary banks a fake dive into the local save).
 
 
@@ -9,6 +10,17 @@ func _ready() -> void:
 	var args := OS.get_cmdline_user_args()
 	var out := args[0] if args.size() > 0 else "user://ui.png"
 	var which := args[1] if args.size() > 1 else "howto"
+	if which == "ending":
+		for l in SignalLogs.LOGS:
+			if not Game.meta.logs_found.has(l.id):
+				Game.meta.logs_found.append(l.id)
+		var ending: Node = load(Router.ENDING).instantiate()
+		ending.set(&"_fast", true)
+		add_child(ending)
+		await get_tree().create_timer(9.0).timeout
+		get_viewport().get_texture().get_image().save_png(out)
+		Router.quit()
+		return
 	add_child(MenuBackdrop.new())
 	match which:
 		"settings":
