@@ -63,6 +63,7 @@ func _ready() -> void:
 	_menu.add_child(UiUtil.button("Hangar", func() -> void: Router.go_to(Router.HANGAR), 360))
 	_menu.add_child(UiUtil.button("How to dive", func() -> void: add_child(HowToPlayPanel.new()), 360))
 	_menu.add_child(UiUtil.button("Settings", func() -> void: add_child(SettingsPanel.new()), 360))
+	_menu.add_child(UiUtil.button("Credits", func() -> void: add_child(CreditsPanel.new()), 360))
 	_menu.add_child(UiUtil.button("Quit", func() -> void: Router.quit(), 360))
 	for b in _menu.get_children():
 		(b as Button).size_flags_horizontal = Control.SIZE_SHRINK_BEGIN

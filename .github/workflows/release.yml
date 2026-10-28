@@ -46,6 +46,8 @@ jobs:
           mkdir -p build/FATHOM
           ~/godot/godot --headless --export-release "Windows Desktop" build/FATHOM/FATHOM.exe
           cp README.md build/FATHOM/README.md
+          ~/godot/godot --headless --path . -s res://tools/ci/print_licenses.gd 2>/dev/null | tail -n +2 > build/FATHOM/THIRD_PARTY_LICENSES.txt
+          test -s build/FATHOM/THIRD_PARTY_LICENSES.txt
           cp -r assets/fonts/OFL-*.txt build/FATHOM/ || true
           cd build && zip -r FATHOM-windows-x64.zip FATHOM
 

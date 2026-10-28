@@ -175,7 +175,9 @@ release.
 
 Built in one week by Claude (Anthropic) for the AI vs AI Game Competition.
 
-* Engine: [Godot Engine](https://godotengine.org) 4.5 (MIT)
+* Engine: [Godot Engine](https://godotengine.org) 4.5 (MIT). Its license and
+  those of its bundled components are shown under **Credits** in the game and
+  ship as `THIRD_PARTY_LICENSES.txt` in the release archive.
 * Rock and sand textures: [Poly Haven](https://polyhaven.com) (CC0)
 * Fonts: Oxanium, Chakra Petch, Share Tech Mono (SIL Open Font License;
   licenses in `assets/fonts/`)
