@@ -44,6 +44,10 @@ class Morph:
 	var bounds: Rect2
 	var original: PackedFloat32Array
 	var target: PackedFloat32Array
+	## The cells that actually move: grid indices, values before and the change.
+	var changed := PackedInt32Array()
+	var from := PackedFloat32Array()
+	var delta := PackedFloat32Array()
 	var progress := 0.0
 	## +1 while moving towards [member target], -1 while giving way again.
 	var direction := 1.0
@@ -189,20 +193,22 @@ func _update_glow(delta: float) -> void:
 ## it and shows it.
 func _upload() -> void:
 	var field := level.field
+	var moved := PackedInt32Array()
 	for m in _morphs:
 		var k := smoothstep(0.0, 1.0, m.progress)
 		var values := PackedFloat32Array()
-		values.resize(m.original.size())
-		for i in values.size():
-			values[i] = lerpf(m.original[i], m.target[i], k)
-		field.write_cells(m.cells, values)
+		values.resize(m.changed.size())
+		for j in values.size():
+			values[j] = m.from[j] + m.delta[j] * k
+		field.write_indices(m.changed, values)
+		moved.append_array(m.changed)
 	for e in level.entities:
 		if e is Creature or e is Pickup:
 			e.pos = _free_from_rock(e.pos, e.radius)
 	if level.player:
 		level.player.pos = _free_from_rock(level.player.pos, Submarine.RADIUS)
 	if level.terrain:
-		level.terrain.refresh(field)
+		level.terrain.refresh_cells(field, moved)
 
 
 ## [param p], pushed out of any seal it is caught in by a circle of [param r].
@@ -389,7 +395,12 @@ func _make_morph(shapes: Array[Array], fill: bool) -> Morph:
 			var surface := m.clearance(field.cell_pos(ix, iy))
 			var old := m.original[i]
 			var moved := minf(old, surface) if fill else maxf(old, -surface)
-			m.target[i] = lerpf(moved, old, smoothstep(TAPER.x, TAPER.y, surface))
+			var value := lerpf(moved, old, smoothstep(TAPER.x, TAPER.y, surface))
+			m.target[i] = value
+			if value != old:
+				m.changed.append(iy * field.width + ix)
+				m.from.append(old)
+				m.delta.append(value - old)
 			i += 1
 	return m
 

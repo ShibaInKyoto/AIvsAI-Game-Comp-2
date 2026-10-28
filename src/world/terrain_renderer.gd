@@ -21,6 +21,7 @@ const SAND_NORMAL := preload("res://assets/textures/sand_nor.jpg")
 static var _shared_noise: NoiseTexture2D
 
 var material: ShaderMaterial
+var _sdf_img: Image
 var _sdf_tex: ImageTexture
 
 
@@ -32,7 +33,8 @@ static func grid_step_for_quality(quality: int) -> float:
 func build(layout: LevelLayout, quality := 2) -> void:
 	var field := layout.field
 	var biome := layout.biome
-	_sdf_tex = ImageTexture.create_from_image(field.to_image())
+	_sdf_img = field.to_image()
+	_sdf_tex = ImageTexture.create_from_image(_sdf_img)
 
 	material = ShaderMaterial.new()
 	material.shader = SHADER
@@ -70,10 +72,16 @@ func build(layout: LevelLayout, quality := 2) -> void:
 			add_child(chunk)
 
 
-## Re-uploads [param field] after the rock has moved (same size as built).
-func refresh(field: TerrainField) -> void:
-	if _sdf_tex:
-		_sdf_tex.update(field.to_image())
+## Re-uploads [param field] after the rock has moved, redrawing only the
+## cells at grid indices [param indices].
+func refresh_cells(field: TerrainField, indices: PackedInt32Array) -> void:
+	if _sdf_tex == null:
+		return
+	var values := field.data
+	for i in indices:
+		@warning_ignore("integer_division")
+		_sdf_img.set_pixel(i % field.width, i / field.width, Color(values[i], 0.0, 0.0))
+	_sdf_tex.update(_sdf_img)
 
 
 ## Lights up to two regions of moving rock (centre xy, radius, strength 0..1).

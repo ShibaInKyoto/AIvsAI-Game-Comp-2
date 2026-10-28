@@ -156,6 +156,12 @@ func write_cells(cells: Rect2i, values: PackedFloat32Array) -> void:
 			i += 1
 
 
+## Overwrites the cells at grid indices [param indices] with [param values].
+func write_indices(indices: PackedInt32Array, values: PackedFloat32Array) -> void:
+	for j in indices.size():
+		data[indices[j]] = values[j]
+
+
 func to_image() -> Image:
 	var img := Image.create_from_data(width, height, false, Image.FORMAT_RF, data.to_byte_array())
 	img.convert(Image.FORMAT_RH)
