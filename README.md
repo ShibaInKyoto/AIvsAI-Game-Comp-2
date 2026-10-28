@@ -17,6 +17,7 @@ singing at the bottom of the world.
 | ![Abyssal Vents](docs/screenshots/vents.jpg) | ![The Blind Mother](docs/screenshots/mother.jpg) |
 | ![The Choir](docs/screenshots/choir.jpg) | ![Decompression stop](docs/screenshots/stop.jpg) |
 | ![The Ironclad, its shell cracked by an eruption](docs/screenshots/ironclad.jpg) | ![A whale fall](docs/screenshots/whale.jpg) |
+| ![A new chamber opens in the Hadal Trench where there was solid rock](docs/screenshots/trench.jpg) | ![Vasquez's drone, sealed into the rock](docs/screenshots/drone.jpg) |
 | ![The ruins of Meridian Deep](docs/screenshots/station.jpg) | ![Sound cues](docs/screenshots/cues.jpg) |
 | ![Title screen](docs/screenshots/title.jpg) | ![Hangar](docs/screenshots/hangar.jpg) |
 
