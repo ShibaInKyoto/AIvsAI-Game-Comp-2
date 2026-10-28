@@ -49,5 +49,7 @@ extends Resource
 @export var bulb_count := 5
 ## Erupting thermal vents per zone (see [ThermalVent]).
 @export var vent_count := 0
+## Loose stalactites per zone (see [Stalactite]).
+@export var stalactite_count := 0
 @export var cache_count := 3
 @export var music: StringName = &"shelf"

@@ -122,6 +122,36 @@ static func bubble_emitter() -> GPUParticles3D:
 	return p
 
 
+## Bioluminescent plankton that sparkles where something moves fast through
+## dark water. Particles stay where they were stirred, leaving a glowing wake;
+## drive it with [member GPUParticles3D.amount_ratio].
+static func plankton_wake(color: Color) -> GPUParticles3D:
+	var pm := ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pm.emission_box_extents = Vector3(1.6, 0.7, 0.8)
+	pm.direction = Vector3(0, 1, 0)
+	pm.spread = 180.0
+	pm.initial_velocity_min = 0.1
+	pm.initial_velocity_max = 0.6
+	pm.damping_min = 0.5
+	pm.damping_max = 1.0
+	pm.scale_min = 0.4
+	pm.scale_max = 1.2
+	pm.turbulence_enabled = true
+	pm.turbulence_noise_strength = 0.3
+	pm.turbulence_noise_scale = 1.5
+	var bright := color
+	bright.a = 0.0
+	var mid := color
+	mid.a = 0.9
+	var fade := color.darkened(0.4)
+	fade.a = 0.0
+	pm.color_ramp = _color_ramp(PackedColorArray([bright, mid, fade]), PackedFloat32Array([0.0, 0.12, 1.0]))
+	var p := _emitter(90, 1.8, pm, _quad(0.14, particle_material(soft_texture(), true, 3.0)), false)
+	p.emitting = false
+	return p
+
+
 ## A roaring column of scalding water and steam for an erupting thermal vent
 ## (local +Y is up the column). Toggle [member GPUParticles3D.emitting].
 static func vent_plume(height: float) -> GPUParticles3D:
@@ -291,6 +321,30 @@ static func shockwave(level: Node3D, at: Vector2, radius: float, color: Color, d
 		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
 	tween.tween_property(m, ^"albedo_color:a", 0.0, duration)
 	tween.chain().tween_callback(mi.queue_free)
+
+
+## Chunks of [param mesh] thrown out from [param at] that tumble, sink and shrink away.
+static func rubble(level: Node3D, at: Vector2, mesh: Mesh, material: Material, count := 6) -> void:
+	if level == null:
+		return
+	for i in count:
+		var mi := MeshInstance3D.new()
+		mi.mesh = mesh
+		mi.material_override = material
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		level.add_child(mi)
+		mi.scale = Vector3.ONE * randf_range(0.12, 0.24)
+		var start := Vector3(at.x, at.y + 0.3, randf_range(-0.5, 0.5))
+		mi.global_position = start
+		mi.rotation = Vector3(randf(), randf(), randf()) * TAU
+		var throw := Vector2.from_angle(randf_range(0.2, PI - 0.2)) * randf_range(2.0, 4.5)
+		var tween := mi.create_tween().set_parallel(true)
+		tween.tween_property(mi, ^"global_position", start + Vector3(throw.x, throw.y * 0.4 - 0.9, 0.0), 1.0) \
+			.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+		tween.tween_property(mi, ^"rotation", mi.rotation + Vector3(randf_range(-4.0, 4.0), randf_range(-4.0, 4.0),
+			0.0), 1.0)
+		tween.tween_property(mi, ^"scale", Vector3.ONE * 0.01, 0.5).set_delay(0.8)
+		tween.chain().tween_callback(mi.queue_free)
 
 
 ## A billboard label for floating "+N" gains; always drawn on top.

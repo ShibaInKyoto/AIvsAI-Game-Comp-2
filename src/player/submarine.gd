@@ -41,6 +41,8 @@ var tools: ToolBelt
 var bubbles: GPUParticles3D
 var engine_audio: AudioStreamPlayer
 var leak: GPUParticles3D
+## Glowing plankton stirred up by fast movement (dark biomes only).
+var wake: GPUParticles3D
 var beam: MeshInstance3D
 var _beam_mesh: CylinderMesh
 
@@ -120,6 +122,9 @@ func setup(p_level: Level, p_run: RunState, start: Vector2) -> void:
 	leak.position = Vector3(-0.2, 0.9, 0.2)
 	leak.emitting = false
 	model.add_child(leak)
+	if level.biome.sun_energy < 0.5:
+		wake = Fx.plankton_wake(Color(0.3, 0.85, 1.0).lerp(level.biome.glow_color, 0.25))
+		add_child(wake)
 
 	engine_audio = AudioStreamPlayer.new()
 	engine_audio.bus = &"SFX"
@@ -404,6 +409,9 @@ func _update_visuals(delta: float, move: Vector2) -> void:
 	bubbles.emitting = move.length() > 0.2
 	bubbles.amount_ratio = 1.0 if boosting else 0.5
 	var speed_frac := clampf(vel.length() / (stats.max_speed * stats.boost_mult), 0.0, 1.0)
+	if wake:
+		wake.amount_ratio = clampf((speed_frac - 0.3) / 0.5, 0.0, 1.0)
+		wake.emitting = wake.amount_ratio > 0.02
 	engine_audio.volume_db = lerpf(engine_audio.volume_db,
 			linear_to_db(0.08 + _thrust_amount * 0.35 + (0.2 if boosting else 0.0)), 1.0 - exp(-5.0 * delta))
 	engine_audio.pitch_scale = 0.75 + speed_frac * 0.6

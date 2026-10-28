@@ -11,6 +11,7 @@ const TIPS: PackedStringArray = [
 	"Fire the harpoon to spear creatures, drag caches open or pull salvage in. Hold to winch.",
 	"Harpoon a creature before it notices you for an AMBUSH: double damage.",
 	"Decoys stick to the rock and ping on their own. Hunters that hear them go there instead.",
+	"Loud noises shake loose stalactites down. Keep out from under them - or lure something beneath.",
 	"Find the descent marker to dive deeper. Between zones, pick a module and repair your hull.",
 	"Surface at a stop to bank salvage safely - implode and you keep only part of it.",
 	"Spend salvage in the hangar on upgrades; research from scans unlocks new submarines.",

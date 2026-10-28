@@ -120,6 +120,7 @@ static func _midnight() -> BiomeDef:
 	b.spire_count = 10
 	b.rock_tint = Color(0.3, 0.33, 0.4)
 	b.rock_tint_deep = Color(0.12, 0.14, 0.2)
+	b.stalactite_count = 7
 	b.sediment_tint = Color(0.35, 0.36, 0.42)
 	b.vein_color = Color(0.1, 0.8, 1.0)
 	b.vein_strength = 0.08
@@ -169,6 +170,7 @@ static func _vents() -> BiomeDef:
 	b.props = {&"tubeworm": 1.2, &"chimney": 0.6, &"rock": 1.0, &"crystal": 0.3}
 	b.bulb_count = 6
 	b.vent_count = 5
+	b.stalactite_count = 2
 	b.music = &"vents"
 	return b
 
@@ -205,5 +207,6 @@ static func _hadal() -> BiomeDef:
 	b.props = {&"crystal": 1.2, &"spine": 1.0, &"rock": 0.8, &"mushroom": 0.4}
 	b.bulb_count = 6
 	b.vent_count = 2
+	b.stalactite_count = 4
 	b.music = &"hadal"
 	return b

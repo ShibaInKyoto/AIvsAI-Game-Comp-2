@@ -34,6 +34,7 @@ static func populate(level: Level, run: RunState) -> void:
 	_spawn_creatures(level, run, used)
 	_spawn_bulbs(level, used)
 	_spawn_vents(level, used)
+	_spawn_stalactites(level, used)
 	_spawn_caches(level, used)
 	_spawn_debris(level)
 	PropScatter.scatter(level)
@@ -154,6 +155,35 @@ static func _spawn_bulbs(level: Level, used: PackedVector2Array) -> void:
 
 
 ## Thermal vents on open floor, spaced apart and clear of the entry and exit.
+## Loose spikes on open ceilings with a clear drop below, in loose clusters
+## so one falling can bring down the next.
+static func _spawn_stalactites(level: Level, used: PackedVector2Array) -> void:
+	var layout := level.layout
+	var rng := level.rng
+	var placed: Array[Vector2] = []
+	var guard := 0
+	while placed.size() < level.biome.stalactite_count and guard < 600 and not layout.anchors.is_empty():
+		guard += 1
+		var a: LevelLayout.Anchor = layout.anchors[rng.randi() % layout.anchors.size()]
+		if a.normal.y > -0.8 or a.pos.distance_to(layout.start) < 22.0 or a.pos.distance_to(layout.exit) < 15.0:
+			continue
+		var size := rng.randf_range(0.8, 1.3)
+		var half := Stalactite.LENGTH * 0.5 * size
+		var center := a.pos - Vector2(0.0, half - 0.5)
+		var drop_end := center - Vector2(0.0, half + 4.0)
+		if level.field.sample(center) < 0.4 or not level.field.line_of_sight(center, drop_end):
+			continue
+		if not layout.is_reachable(drop_end) or not _far_from(a.pos, used, 5.0):
+			continue
+		if placed.any(func(q: Vector2) -> bool: return q.distance_to(a.pos) < 7.0):
+			continue
+		var s := Stalactite.new()
+		s.size = size
+		s.pos = center
+		level.add_entity(s)
+		placed.append(a.pos)
+
+
 static func _spawn_vents(level: Level, used: PackedVector2Array) -> void:
 	var layout := level.layout
 	var rng := level.rng

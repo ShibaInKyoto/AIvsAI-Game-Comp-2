@@ -117,6 +117,30 @@ def impact_rock():
     return normalize(trim_silence(wet_dry(mix(body, crunch, grit), SMALL_ROOM, 0.35)), 0.9)
 
 
+def rock_loose():
+    # Gravel trickling out of a ceiling under a low groan of stone.
+    d = 1.1
+    groan = sine(_sweep(70, 52, d)) * env_adsr(d, 0.15, 0.3, 0.7, 0.5) * 0.7
+    out = np.zeros(seconds(d))
+    for _ in range(34):
+        s = seconds(RNG.uniform(0.0, d * 0.9))
+        c = bandpass(noise(0.02), RNG.uniform(1800, 4200), 2.0) * env_exp(0.02, 0.004) * RNG.uniform(0.2, 0.9)
+        out[s:s + len(c)] += c[: max(0, len(out) - s)]
+    return normalize(trim_silence(wet_dry(mix(groan, out * 0.6), BIG_WATER, 0.45)), 0.65)
+
+
+def rock_shatter():
+    d = 1.6
+    crack = highpass(noise(0.05), 1500) * env_exp(0.05, 0.01)
+    body = _thud(120, 32, d, 0.25)
+    crumble = np.zeros(seconds(d))
+    for _ in range(40):
+        s = seconds(RNG.uniform(0.02, d * 0.7))
+        c = lowpass(noise(0.05, "pink"), RNG.uniform(600, 2200)) * env_exp(0.05, 0.015) * RNG.uniform(0.2, 0.8)
+        crumble[s:s + len(c)] += c[: max(0, len(crumble) - s)]
+    return normalize(trim_silence(wet_dry(mix(crack, body, crumble * 0.7), BIG_WATER, 0.5)), 0.9)
+
+
 def scrape():
     d = 0.5
     n = bandpass(noise(d), 900, 1.2)

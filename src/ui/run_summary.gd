@@ -85,8 +85,8 @@ func show_result(run: RunState, outcome: RunState.Outcome) -> void:
 		Router.go_to(Router.DIVE), 260))
 	hangar.grab_focus()
 	if Autopilot.requested():
-		print("AUTOPILOT: run over outcome=%s zone=%d time=%.1f kills=%d banked=%d" % [
-			RunState.Outcome.keys()[outcome], run.zone, run.time, run.kills, banked])
+		print("AUTOPILOT: run over outcome=%s zone=%d time=%.1f kills=%d banked=%d cause=%s score=%d" % [
+			RunState.Outcome.keys()[outcome], run.zone, run.time, run.kills, banked, run.last_hit_by, Game.last_score])
 		get_tree().create_timer(1.0).timeout.connect(Router.quit)
 
 

@@ -50,6 +50,9 @@ itself. Every zone is a procedurally generated cave cross-section. Find the
 * **Thermal vents** in the deep vent fields rumble and glow, then erupt in a
   scalding column that shoves and burns whatever is inside, and roars loudly
   enough to bring hunters running. Creatures caught in it cook.
+* **Loose stalactites** hang in the caverns. A ping, a boost or a blast nearby
+  shakes them down onto whatever is below, and each one shatters loudly enough
+  to bring down its neighbours. Harpoon one to drop it on purpose.
 * **Salvage** comes from caches (ram them or drag them in with the harpoon),
   debris and creatures. **Glow bulbs** on the walls recharge your battery.
 * Between zones you dock at a **decompression stop**: install one of three
@@ -167,7 +170,7 @@ Requires Godot 4.5.1 with export templates installed.
 
 ```sh
 godot --headless --import                                       # first-time import
-godot --headless --path . -s res://tests/run_tests.gd           # 55 tests: generation, traversal, events, vents, bosses, frames, saves, assets
+godot --headless --path . -s res://tests/run_tests.gd           # 57 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
 godot --headless --path . res://tests/flow_test.tscn            # end-to-end menu and dive flow
 godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
 python3 tools/audio/generate.py                                 # regenerate all audio (numpy + ffmpeg)
