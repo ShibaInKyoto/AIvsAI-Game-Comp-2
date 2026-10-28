@@ -8,6 +8,8 @@ enum State { IDLE, FLYING, ANCHORED, ATTACHED, RETRACTING }
 const SPEED := 48.0
 const RETRACT_SPEED := 60.0
 const COOLDOWN := 0.3
+## A dragged catch that comes no closer for this long (snagged on rock) is let go.
+const DRAG_STALL := 1.2
 
 var state := State.IDLE
 var tip := Vector2.ZERO
@@ -19,6 +21,8 @@ var _sub: Submarine
 var _travelled := 0.0
 var _cooldown := 0.0
 var _stick_timer := 0.0
+var _drag_closest := INF
+var _drag_stall := 0.0
 var _target_offset := Vector2.ZERO
 var _cable: MeshInstance3D
 var _spear: Node3D
@@ -144,6 +148,8 @@ func _hit_entity(e: Entity) -> void:
 			_target_offset = Vector2.ZERO
 			tip = e.pos
 			state = State.ATTACHED
+			_drag_closest = INF
+			_drag_stall = 0.0
 			Audio.play_at(&"harpoon_hook", tip, -2.0)
 		Entity.HarpoonReaction.STICK:
 			Events.hitstop.emit(0.035)
@@ -188,7 +194,12 @@ func _drag(delta: float) -> void:
 		_retract()
 		return
 	target.vel = target.vel.lerp(to / dist * _sub.stats.harpoon_reel, 1.0 - exp(-5.0 * delta))
-	if dist > _sub.stats.harpoon_range * 2.0:
+	if dist < _drag_closest - 0.5:
+		_drag_closest = dist
+		_drag_stall = 0.0
+	else:
+		_drag_stall += delta
+	if dist > _sub.stats.harpoon_range * 2.0 or _drag_stall > DRAG_STALL:
 		_retract()
 
 
