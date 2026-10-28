@@ -116,6 +116,11 @@ func _generate_arena(layout: LevelLayout) -> LevelLayout:
 	_carve_path(layout.main_path, Vector2(5.0, 7.5))
 	_carve_ellipse(mid, Vector2(13.0, 9.0))
 	layout.chambers.append(LevelLayout.Chamber.new(mid, Vector2(13.0, 9.0), &"loot"))
+	# A flat-floored gallery off the middle chamber, away from the way down,
+	# where the ruins of Meridian Deep stand.
+	var side := 1.0 if mid.x >= size.x * 0.5 else -1.0
+	_carve_capsule(mid + Vector2(side * 6.0, -2.0), mid + Vector2(side * 33.0, -2.0), 6.0, 6.0)
+	layout.chambers.append(LevelLayout.Chamber.new(mid + Vector2(side * 20.0, -2.0), Vector2(14.0, 6.0), &"station"))
 	_carve_ellipse(arena, arena_r)
 	layout.chambers.append(LevelLayout.Chamber.new(arena, arena_r, &"arena"))
 	# A few broken columns of rock for cover.

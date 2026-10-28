@@ -35,6 +35,7 @@ static func populate(level: Level, run: RunState) -> void:
 	var used := PackedVector2Array([layout.start])
 	if not layout.has_exit:
 		_spawn_boss(level, used)
+		_spawn_station(level, used)
 	elif BiomeLibrary.is_lair(level.zone):
 		_spawn_guardian(level, used)
 	_spawn_creatures(level, run, used)
@@ -147,6 +148,30 @@ static func _spawn_boss(level: Level, used: PackedVector2Array) -> void:
 		var a := TAU * i / 16.0
 		used.append(arena.center + Vector2(cos(a) * arena.radius.x, sin(a) * arena.radius.y) * 0.6)
 	used.append(arena.center)
+
+
+## The ruins of Meridian Deep stand in the final zone's station gallery,
+## off the middle chamber on the way down to the Choir.
+static func _spawn_station(level: Level, used: PackedVector2Array) -> void:
+	var rooms := level.layout.chambers_of_kind(&"station")
+	if rooms.is_empty():
+		return
+	var room: LevelLayout.Chamber = rooms[0]
+	# The median floor under its span: one boulder must not lift it off the
+	# silt (rock rising round a module end looks like the trench growing).
+	var floors: Array[float] = []
+	for dx: float in [-7.0, -3.5, 0.0, 3.5, 7.0]:
+		var y := MeridianStation.floor_below(level.field, room.center + Vector2(dx, 0.0), room.radius.y + 6.0)
+		if y != -INF:
+			floors.append(y)
+	if floors.size() < 3:
+		return
+	floors.sort()
+	var station := MeridianStation.new()
+	@warning_ignore("integer_division")
+	station.pos = Vector2(room.center.x, floors[floors.size() / 2])
+	level.add_entity(station)
+	used.append(station.pos + Vector2(0.0, 3.0))
 
 
 static func _spawn_bulbs(level: Level, used: PackedVector2Array) -> void:
