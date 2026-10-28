@@ -1,5 +1,6 @@
 extends SceneTree
-## Loads every script and shader under res://src so parse errors surface in CI.
+## Loads every script and shader under res://src and res://tools so parse
+## errors surface in CI (tests are compiled by the test runner itself).
 ## Usage: godot --headless --path . -s res://tools/check_scripts.gd
 
 var _failures := 0
@@ -7,6 +8,7 @@ var _failures := 0
 
 func _initialize() -> void:
 	_scan("res://src")
+	_scan("res://tools")
 	print("check_scripts: %d failure(s)" % _failures)
 	quit(1 if _failures > 0 else 0)
 

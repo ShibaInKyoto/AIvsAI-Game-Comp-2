@@ -55,8 +55,7 @@ func _process(delta: float) -> void:
 	_sub.tick(dt)
 	_level.tick(dt)
 	_camera.tick(dt)
-	var want := [1.0, -1.0, -1.0]
-	var capture := (_shot == 0 and _t >= want[0]) or (_shot == 1 and _mother.state == BlindMother.State.LUNGE) \
+	var capture: bool = (_shot == 0 and _t >= 1.0) or (_shot == 1 and _mother.state == BlindMother.State.LUNGE) \
 		or (_shot == 2 and _mother.state == BlindMother.State.STUCK)
 	if capture:
 		get_viewport().get_texture().get_image().save_png(_out.path_join("mother_%d.png" % _shot))
