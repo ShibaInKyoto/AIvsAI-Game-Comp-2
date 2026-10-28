@@ -19,7 +19,7 @@ var _start_desc: Label
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	_backdrop = MenuBackdrop.new()
-	_backdrop.view_shift = -10.0
+	_backdrop.view_shift = -8.75
 	add_child(_backdrop)
 	Audio.play_music(&"title")
 	add_child(PostFx.new())
