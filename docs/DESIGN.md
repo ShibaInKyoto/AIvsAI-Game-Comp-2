@@ -65,6 +65,7 @@ Hangar (spend salvage & research) -> Dive -> Zone 1 -> Decompression stop
 | Space / A        | Sonar ping                                                           |
 | F / Y            | Toggle lamp                                                          |
 | Tab / Back       | Sonar map                                                            |
+| 1 / 2 / 3        | Pick a module at a decompression stop                                |
 
 Resources: **Hull** (health), **Battery** (lamp, sonar, boost and tools draw
 from it), **Salvage** (meta currency), **Research** (from scanning creatures by
@@ -84,6 +85,8 @@ impacts). Creatures with hearing investigate noise sources.
 | Gulper eel      | 3-5    | vibration    | Lunges from wall burrows when you pass fast.           |
 | Stalker         | 3-5    | hearing+light| Large hunter. Investigates noise, attacks light.       |
 | Vent isopod     | 4-5    | touch        | Crawls on walls, latches onto the hull, drains power.  |
+| Siphonophore    | 2,3,5  | touch        | A drifting chain of bells that stings along its length.|
+| Mimic           | 3-5    | touch        | Disguised as a salvage cache; wakes, lunges and chases.|
 | The Choir       | 5      | everything   | Final encounter.                                       |
 
 ## Replayability
@@ -93,7 +96,11 @@ impacts). Creatures with hearing investigate noise sources.
 * Meta upgrades (hull, battery, thrusters, lamp, sonar, cargo, tool unlocks).
 * Codex: scan every creature, collect every signal log.
 * **Pressure** levels after the first win (stacking difficulty modifiers).
-* Daily dive (date-seeded).
+* Daily dive (date-seeded), with today's best depth on the title screen.
+* Zone events (currents, blackout, frenzy, wrecks, dead calm, bloom) forecast
+  at the decompression stop.
+* Optional zone objectives for bonus salvage or research.
+* 14 milestones, each unlocking a hull paint.
 
 ## Technical approach
 
