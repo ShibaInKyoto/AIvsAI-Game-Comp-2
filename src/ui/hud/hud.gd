@@ -276,7 +276,7 @@ func _process(delta: float) -> void:
 	_overlay.queue_redraw()
 
 
-func toast(text: String, color := UiTheme.TEXT) -> void:
+func toast(text: String, color := UiTheme.TEXT, hold := 3.5) -> void:
 	var label := Label.new()
 	label.text = text
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
@@ -288,7 +288,7 @@ func toast(text: String, color := UiTheme.TEXT) -> void:
 	label.modulate.a = 0.0
 	var tween := label.create_tween()
 	tween.tween_property(label, ^"modulate:a", 1.0, 0.2)
-	tween.tween_interval(3.5)
+	tween.tween_interval(hold)
 	tween.tween_property(label, ^"modulate:a", 0.0, 0.8)
 	tween.tween_callback(label.queue_free)
 
@@ -312,6 +312,9 @@ func _on_scanned(id: StringName, first_time: bool) -> void:
 	var entry := CreatureCodex.entry(id)
 	var label_text := entry.name if entry else String(id)
 	toast("Scanned: %s%s" % [label_text, "  (new codex entry)" if first_time else ""], UiTheme.ACCENT)
+	# A first scan comes with a field note on how to handle the species.
+	if first_time and DeathTips.TIPS.has(id):
+		toast(DeathTips.tip(id), UiTheme.TEXT_DIM, 7.0)
 
 
 ## Anchors a control to a preset corner and offsets it from that anchor.
