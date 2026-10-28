@@ -99,7 +99,11 @@ has not noticed the sub can be **ambushed** (harpoon hits deal double), and
 |                 |        |              | flare, her scales open to attack.                      |
 | Blind Mother    | 3      | hearing only | Mid-run boss sealing the exit of zone 6. Lunges at     |
 |                 |        |              | sound; stuck in rock, her gills are open to attack.    |
-| The Choir       | 5      | everything   | Final encounter.                                       |
+| The Choir       | 5      | everything   | Final encounter. Sings in waves: a ping as a wave      |
+|                 |        |              | arrives answers it (free of battery cost) and opens    |
+|                 |        |              | its four voice organs to the harpoon for a moment. A   |
+|                 |        |              | missed wave hurts and drains the battery. Each organ   |
+|                 |        |              | lost speeds the song and calls in hunters.             |
 
 ## Replayability
 

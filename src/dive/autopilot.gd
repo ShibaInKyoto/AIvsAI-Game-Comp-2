@@ -134,9 +134,19 @@ func drive(delta: float) -> void:
 	if _stuck_timer > 3.0:
 		if sub.pos.distance_to(_last_pos) < 3.0:
 			_route = _plan_route(sub.pos)
-			_path_index = 0
+			_path_index = _nearest_index(_route, sub.pos)
 		_stuck_timer = 0.0
 		_last_pos = sub.pos
+
+
+## Index of the waypoint closest to [param p] (a fresh route starts there;
+## the zone's main path, the fallback, is picked up where the sub already is).
+static func _nearest_index(route: PackedVector2Array, p: Vector2) -> int:
+	var best := 0
+	for i in route.size():
+		if route[i].distance_squared_to(p) < route[best].distance_squared_to(p):
+			best = i
+	return best
 
 
 ## The roomiest route from [param from] to the exit: the shortest path keeps
@@ -155,21 +165,31 @@ func _fight_boss() -> void:
 	var eta := boss.next_arrival(sub.pos)
 	if eta < 0.12:
 		sub.try_ping()
+	# The nearest organ in sight; with none in sight, swim into the open arena
+	# (heading straight for a hidden organ wedges the sub on the rock between).
 	var organ: ChoirOrgan = null
 	for o in boss.organs:
-		if organ == null or o.pos.distance_to(sub.pos) < organ.pos.distance_to(sub.pos):
+		if level.field.line_of_sight(sub.pos, o.pos) \
+				and (organ == null or o.pos.distance_to(sub.pos) < organ.pos.distance_to(sub.pos)):
 			organ = o
 	if organ == null:
-		sub.external_move = Vector2.ZERO
-		return
-	var to := organ.pos - sub.pos
-	var want := organ.pos - to.normalized() * 9.0
-	sub.external_move = (want - sub.pos).limit_length(1.0)
-	sub.aim = to.normalized()
+		sub.external_move = (boss.center - sub.pos).limit_length(1.0) if not boss.organs.is_empty() else Vector2.ZERO
+	else:
+		var to := organ.pos - sub.pos
+		sub.external_move = (organ.pos - to.normalized() * 9.0 - sub.pos).limit_length(1.0)
+		sub.aim = to.normalized()
+	# Strike whatever the song summoned once it closes in, else the organs while they are open.
+	var target: Entity = _nearest_threat()
+	if target is ChoirOrgan or target and target.pos.distance_to(sub.pos) > 9.0:
+		target = null
+	if target == null and organ and boss.vulnerable > 0.3:
+		target = organ
+	if target:
+		sub.aim = (target.pos - sub.pos).normalized()
+		if sub.harpoon.state == Harpoon.State.IDLE and sub.pos.distance_to(target.pos) < sub.stats.harpoon_range:
+			sub.harpoon.fire(sub.aim)
+			sub.harpoon.release()
 	sub.facing = 1.0 if sub.aim.x >= 0.0 else -1.0
-	if boss.vulnerable > 0.3 and sub.harpoon.state == Harpoon.State.IDLE and to.length() < sub.stats.harpoon_range:
-		sub.harpoon.fire(sub.aim)
-		sub.harpoon.release()
 
 
 ## Against the Blind Mother: hold station near the lair floor and ping to draw

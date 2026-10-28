@@ -12,7 +12,7 @@ var _t := 0.0
 
 func setup() -> void:
 	species = &"choir"
-	max_hp = 110.0
+	max_hp = 150.0
 	radius = 1.9
 	mass = 99.0
 	contact_damage = 10.0

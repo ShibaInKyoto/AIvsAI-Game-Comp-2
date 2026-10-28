@@ -40,6 +40,9 @@ func _ready() -> void:
 	_column.add_theme_constant_override(&"separation", 18)
 	center.add_child(_column)
 	_sequence()
+	if Autopilot.requested():
+		print("AUTOPILOT: run over outcome=VICTORY banked=%d score=%d" % [Game.last_victory_banked, Game.last_score])
+		get_tree().create_timer(3.0).timeout.connect(Router.quit)
 
 
 func _sequence() -> void:

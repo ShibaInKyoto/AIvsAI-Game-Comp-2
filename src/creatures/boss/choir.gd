@@ -2,17 +2,22 @@ class_name ChoirBoss
 extends Entity
 ## The Choir: a colossal singer at the bottom of the trench.
 ##
-## It sings in expanding waves. A wave that reaches the submarine hurts,
-## unless the pilot answers it with a sonar ping as it arrives. Each answer
-## leaves the four voice organs open for a moment; destroy all four to end
-## the song. Every organ lost makes the song faster and denser.
+## It sings in expanding waves. A wave that reaches the submarine hurts and
+## drains the battery, unless the pilot answers it with a sonar ping as it
+## arrives (an answered ping costs nothing). Each answer leaves the four voice
+## organs open for a moment; destroy all four to end the song. Every organ
+## lost makes the song faster and denser.
 
 signal defeated
 
 const ANSWER_EARLY := 0.5
 const ANSWER_LATE := 0.32
-const OPEN_TIME := 4.5
+## Shorter than the gap between waves, so the organs open and close to the song.
+const OPEN_TIME := 3.0
 const WAVE_DAMAGE := 14.0
+## Summoned hunters arrive at least this far from the sub, dazed for this long.
+const SUMMON_CLEARANCE := 16.0
+const SUMMON_DAZE := 1.5
 const RING_SHADER := preload("res://src/fx/shaders/song_ring.gdshader")
 ## Per phase (organs destroyed): seconds between waves, wave speed, chance of a double wave.
 const INTERVAL: Array[float] = [3.6, 3.2, 2.8, 2.5]
@@ -225,8 +230,11 @@ func _answer(w: Dictionary) -> void:
 	(w.mat as ShaderMaterial).set_shader_parameter(&"ring_color", Color(0.5, 1.0, 1.0))
 	vulnerable = OPEN_TIME
 	_answer_streak += 1
+	# The answering resonance gives back what the ping cost: only misses drain the cells.
+	var sub := level.player
+	sub.run.battery = minf(sub.run.battery + sub.stats.sonar_cost, sub.stats.max_battery)
 	Audio.play(&"choir_answer", 0.0, 1.0 + minf(_answer_streak, 6) * 0.04)
-	Fx.shockwave(level, level.player.pos, 4.0, Color(0.3, 0.7, 0.7))
+	Fx.shockwave(level, sub.pos, 4.0, Color(0.3, 0.7, 0.7))
 	if not _hinted:
 		_hinted = true
 		Events.toast.emit("Answered! Its organs are open - harpoon them!", UiTheme.GOOD)
@@ -269,13 +277,23 @@ func on_organ_destroyed(organ: ChoirOrgan) -> void:
 	_summon(phase)
 
 
+## The song calls hunters out of the dark: never on top of the pilot, and
+## dazed for a moment as they arrive, so each one can be seen coming.
 func _summon(p: int) -> void:
 	var count := 1 + p
+	var sub := level.player
 	for i in count:
 		var c: Creature = Lancer.new() if i % 2 == 0 else Jelly.new()
-		var a := level.rng.randf() * TAU
-		c.pos = level.field.resolve_circle(center + Vector2(cos(a), sin(a) * 0.6) * arena_radius * 0.6, 1.0)
+		var spot := Vector2.ZERO
+		for _try in 6:
+			var a := level.rng.randf() * TAU
+			spot = level.field.resolve_circle(center + Vector2(cos(a), sin(a) * 0.6) * arena_radius * 0.6, 1.0)
+			if sub == null or spot.distance_to(sub.pos) > SUMMON_CLEARANCE:
+				break
+		c.pos = spot
 		level.add_entity(c)
+		c.stun(SUMMON_DAZE)
+		Fx.shockwave(level, spot, 3.0, Color(1.0, 0.35, 0.85))
 
 
 func _defeat() -> void:

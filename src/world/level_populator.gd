@@ -16,6 +16,8 @@ const SPECIES: Dictionary[StringName, Script] = {
 	&"puffer": preload("res://src/creatures/puffer.gd"),
 	&"ghostfin": preload("res://src/creatures/ghostfin.gd"),
 }
+## Hunters left out of the Choir's arena (see [method _spawn_creatures]).
+const ARENA_EXCLUDED: Array[StringName] = [&"lancer", &"ghostfin", &"stalker"]
 ## Species that hunt in packs: how many spawn together (one budget cost each pack).
 const PACKS: Dictionary[StringName, int] = {&"ghostfin": 3}
 const WALL_DWELLERS: Array[StringName] = [&"gulper", &"lurelight", &"isopod"]
@@ -74,6 +76,10 @@ static func _spawn_creatures(level: Level, run: RunState, used: PackedVector2Arr
 	while budget > 0.0 and guard < 80:
 		guard += 1
 		var id := ids[rng.rand_weighted(weights)]
+		# The Choir's arena is a duel of song and answering pings: nothing that
+		# hunts the pinging (or the lamp) waits there, beyond what the Choir summons.
+		if not level.layout.has_exit and ARENA_EXCLUDED.has(id):
+			continue
 		if id == &"stalker":
 			# One Stalker at most, and never alongside a boss.
 			if stalkers >= 1 or not level.layout.has_exit or BiomeLibrary.is_lair(level.zone):
@@ -163,7 +169,6 @@ static func _spawn_bulbs(level: Level, used: PackedVector2Array) -> void:
 		placed += 1
 
 
-## Thermal vents on open floor, spaced apart and clear of the entry and exit.
 ## Loose spikes on open ceilings with a clear drop below, in loose clusters
 ## so one falling can bring down the next.
 static func _spawn_stalactites(level: Level, used: PackedVector2Array) -> void:
@@ -174,7 +179,8 @@ static func _spawn_stalactites(level: Level, used: PackedVector2Array) -> void:
 	while placed.size() < level.biome.stalactite_count and guard < 600 and not layout.anchors.is_empty():
 		guard += 1
 		var a: LevelLayout.Anchor = layout.anchors[rng.randi() % layout.anchors.size()]
-		if a.normal.y > -0.8 or a.pos.distance_to(layout.start) < 22.0 or a.pos.distance_to(layout.exit) < 15.0:
+		if a.normal.y > -0.8 or a.pos.distance_to(layout.start) < 22.0 \
+				or a.pos.distance_to(layout.exit) < _exit_clear(level, 15.0):
 			continue
 		var size := rng.randf_range(0.8, 1.3)
 		var half := Stalactite.LENGTH * 0.5 * size
@@ -191,6 +197,16 @@ static func _spawn_stalactites(level: Level, used: PackedVector2Array) -> void:
 		s.pos = center
 		level.add_entity(s)
 		placed.append(a.pos)
+
+
+## How far hazards keep from the exit: [param clear], or the whole of the
+## Choir's arena (an organ cooked by a vent or crushed by falling rock would
+## end the song without the pilot).
+static func _exit_clear(level: Level, clear: float) -> float:
+	if level.layout.has_exit:
+		return clear
+	var arena: LevelLayout.Chamber = level.layout.chambers_of_kind(&"arena")[0]
+	return maxf(arena.radius.x, arena.radius.y) + 6.0
 
 
 ## The pilot's last sub lies on the floor somewhere away from the start.
@@ -215,6 +231,7 @@ static func _spawn_lost_wreck(level: Level, used: PackedVector2Array) -> void:
 		return
 
 
+## Thermal vents on open floor, spaced apart and clear of the entry and exit.
 static func _spawn_vents(level: Level, used: PackedVector2Array) -> void:
 	var layout := level.layout
 	var rng := level.rng
@@ -223,7 +240,8 @@ static func _spawn_vents(level: Level, used: PackedVector2Array) -> void:
 	while placed.size() < level.biome.vent_count and guard < 400 and not layout.anchors.is_empty():
 		guard += 1
 		var a: LevelLayout.Anchor = layout.anchors[rng.randi() % layout.anchors.size()]
-		if a.normal.y < 0.75 or a.pos.distance_to(layout.start) < 25.0 or a.pos.distance_to(layout.exit) < 18.0:
+		if a.normal.y < 0.75 or a.pos.distance_to(layout.start) < 25.0 \
+				or a.pos.distance_to(layout.exit) < _exit_clear(level, 18.0):
 			continue
 		if not layout.is_reachable(a.pos + a.normal * 3.0) or not _far_from(a.pos, used, 8.0):
 			continue

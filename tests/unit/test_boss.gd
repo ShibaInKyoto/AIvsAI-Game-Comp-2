@@ -76,3 +76,37 @@ func test_missed_waves_hurt() -> void:
 	check(level.boss.active, "fight starts when the sub is in the arena")
 	check(run.hull < start_hull, "unanswered waves damage the hull")
 	level.free()
+
+
+func test_answered_waves_cost_no_battery() -> void:
+	var parts := _setup()
+	var level: Level = parts[0]
+	var sub: Submarine = parts[1]
+	var run: RunState = parts[2]
+	var answered := 0
+	var before := 0.0
+	for i in 60 * 30:
+		var boss := level.boss
+		if boss.active and boss.next_arrival(sub.pos) < 0.1 and sub.sonar_cooldown <= 0.0:
+			before = run.battery
+			sub.try_ping()
+		var was := boss.vulnerable
+		sub.lamp_on = false
+		sub.tick(DT)
+		level.tick(DT)
+		if boss.vulnerable > was + 1.0:
+			answered += 1
+	check(answered >= 3, "waves answered (%d)" % answered)
+	check(run.battery > sub.stats.max_battery - 3.0, "answers refund their pings (battery %.0f)" % run.battery)
+	check(before >= 0.0, "pinged")
+	level.free()
+
+
+func test_no_hazards_in_the_arena() -> void:
+	var parts := _setup()
+	var level: Level = parts[0]
+	var arena: LevelLayout.Chamber = level.layout.chambers_of_kind(&"arena")[0]
+	for e in level.entities:
+		if e is ThermalVent or e is Stalactite:
+			check(e.pos.distance_to(arena.center) > arena.radius.x, "%s clear of the arena" % e.get_class())
+	level.free()
