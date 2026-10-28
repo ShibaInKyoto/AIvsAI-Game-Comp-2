@@ -13,6 +13,7 @@ const TIPS: PackedStringArray = [
 	"Decoys stick to the rock and ping on their own. Hunters that hear them go there instead.",
 	"Loud noises shake loose stalactites down. Keep out from under them - or lure something beneath.",
 	"Find the descent marker to dive deeper. Between zones, pick a module and repair your hull.",
+	"Guardians seal the way down out of three biomes. Each has one weakness - scan it, and the codex records it.",
 	"Surface at a stop to bank salvage safely - implode and you keep only part of it.",
 	"Spend salvage in the hangar on upgrades; research from scans unlocks new submarines.",
 ]
