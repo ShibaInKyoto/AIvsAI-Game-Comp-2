@@ -59,18 +59,25 @@ func test_beacon_pings_and_the_survey_pays_once() -> void:
 	var level: Level = parts[0]
 	var run: RunState = parts[1]
 	var station := _station(level)
+	var sub := Submarine.new()
+	level.add_child(sub)
+	sub.setup(level, run, station.pos + Vector2(0.0, 6.0))
+	sub.input_enabled = false
+	level.player = sub
 	var pings: Array[Vector2] = []
 	var on_ping := func(origin: Vector2, _r: float) -> void: pings.append(origin)
 	Events.sonar_pinged.connect(on_ping)
 	for i in int(MeridianStation.BEACON_PERIOD / DT) + 2:
 		station.tick(DT)
 	check(not pings.is_empty() and pings[0].distance_to(station.beacon_pos()) < 0.1, "the beacon pings")
+	pings.clear()
+	level.boss.active = true
+	for i in int(MeridianStation.BEACON_PERIOD / DT) + 2:
+		station.tick(DT)
+	check(pings.is_empty(), "and falls quiet while the Choir sings")
+	level.boss.active = false
 	Events.sonar_pinged.disconnect(on_ping)
-	var sub := Submarine.new()
-	level.add_child(sub)
-	sub.setup(level, run, station.pos + Vector2(0.0, 6.0))
-	sub.input_enabled = false
-	level.player = sub
+	station.greeted = false
 	var research := run.research
 	station.tick(DT)
 	check(station.greeted, "coming near announces the station")

@@ -14,6 +14,8 @@ const DEPTH := -7.0
 const BEACON_PERIOD := 7.0
 const BEACON_RANGE := 28.0
 const ARRIVE_RANGE := 16.0
+## The beacon only pings while the sub is this close.
+const HEARING := 70.0
 const SURVEY_RESEARCH := 10
 const HULL := Color(0.78, 0.76, 0.68)
 const BAND := Color(0.86, 0.42, 0.12)
@@ -116,6 +118,11 @@ func tick(delta: float) -> void:
 
 func _ping() -> void:
 	var at := beacon_pos()
+	# Quiet while the Choir sings (its duel needs every ping slot for the
+	# pilot's answers) and when nobody is near enough to hear it.
+	var sub := level.player
+	if level.boss and level.boss.active or sub == null or sub.pos.distance_to(at) > HEARING:
+		return
 	Audio.play_at(&"beacon_ping", at, -1.0, 0.02, 0.8)
 	level.ping(at, BEACON_RANGE, 2.5)
 	level.emit_noise(at, 12.0, self)
