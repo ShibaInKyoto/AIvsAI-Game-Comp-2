@@ -2,7 +2,8 @@ class_name Shoal
 extends Creature
 ## A school of small glowing fish simulated as boids and drawn with one
 ## MultiMesh. The shoal is scannable but not targetable; it scatters from
-## fast-moving submarines and flashes when startled.
+## fast-moving submarines and lunging hunters, and flashes when startled.
+## Lancers pick fish off it.
 
 const FISH_SPEED := 4.0
 const PANIC_SPEED := 9.0
@@ -13,6 +14,8 @@ var _multimesh: MultiMesh
 var _goal := Vector2.ZERO
 var _panic := 0.0
 var _home := Vector2.ZERO
+## Where the last hunter lunged from (Vector2.INF if none).
+var _scare_from := Vector2.INF
 
 
 func setup() -> void:
@@ -78,6 +81,26 @@ func think() -> void:
 		_panic = 1.5
 
 
+## Startles the school away from [param from], e.g. a hunter lunging at it.
+func scare(from: Vector2) -> void:
+	if _panic <= 0.0:
+		Audio.play_at(&"shoal_scatter", pos, -8.0)
+	_panic = 1.5
+	_scare_from = from
+
+
+## A hunter catches one fish; the school is gone when the last one is.
+func lose_fish() -> void:
+	if fish_pos.is_empty():
+		return
+	var i := level.rng.randi() % fish_pos.size()
+	fish_pos.remove_at(i)
+	fish_vel.remove_at(i)
+	_multimesh.visible_instance_count = fish_pos.size()
+	if fish_pos.is_empty():
+		despawn()
+
+
 func behave(delta: float) -> void:
 	_panic = maxf(_panic - delta, 0.0)
 	var n := fish_pos.size()
@@ -87,7 +110,11 @@ func behave(delta: float) -> void:
 	center /= maxf(n, 1)
 	pos = center
 	var sub := level.player
-	var threat := sub.pos if sub and sub.alive else Vector2.INF
+	var threats := PackedVector2Array()
+	if sub and sub.alive:
+		threats.append(sub.pos)
+	if _panic > 0.0 and _scare_from != Vector2.INF:
+		threats.append(_scare_from)
 	var field := level.field
 	var max_speed := PANIC_SPEED if _panic > 0.0 else FISH_SPEED
 	for i in n:
@@ -105,7 +132,7 @@ func behave(delta: float) -> void:
 			if dl < 6.0:
 				align += fish_vel[j]
 		var steer_v := (center - p) * 0.6 + sep * 1.2 + align.normalized() * 0.8 + (_goal - center).normalized() * 1.2
-		if threat != Vector2.INF:
+		for threat in threats:
 			var away := p - threat
 			var dist := away.length()
 			if dist < 8.0:

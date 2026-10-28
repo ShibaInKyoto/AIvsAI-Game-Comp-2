@@ -81,9 +81,7 @@ func bind(p_sub: Submarine, p_level: Level) -> void:
 	_guardian_seen = false
 	_path_index = 0
 	_last_pos = sub.pos
-	_route = level.layout.find_path(sub.pos, level.layout.exit)
-	if _route.is_empty():
-		_route = level.layout.main_path
+	_route = _plan_route(sub.pos)
 
 
 func drive(delta: float) -> void:
@@ -107,7 +105,7 @@ func drive(delta: float) -> void:
 		sub.lamp_on = true
 	var path := _route
 	# Advance along the path once we are close to the current waypoint.
-	while _path_index < path.size() - 1 and sub.pos.distance_to(path[_path_index]) < 6.0:
+	while _path_index < path.size() - 1 and sub.pos.distance_to(path[_path_index]) < 4.0:
 		_path_index += 1
 	var target := path[mini(_path_index + 1, path.size() - 1)]
 	if _path_index >= path.size() - 2:
@@ -131,13 +129,24 @@ func drive(delta: float) -> void:
 		_ping_timer = ping_interval
 		sub.try_ping()
 
-	# Unstick: if we have not moved for a while, skip ahead on the path.
+	# Unstick: if we have not moved for a while, plan again from here.
 	_stuck_timer += delta
 	if _stuck_timer > 3.0:
 		if sub.pos.distance_to(_last_pos) < 3.0:
-			_path_index = mini(_path_index + 3, path.size() - 1)
+			_route = _plan_route(sub.pos)
+			_path_index = 0
 		_stuck_timer = 0.0
 		_last_pos = sub.pos
+
+
+## The roomiest route from [param from] to the exit: the shortest path keeps
+## only just enough clearance, so it can hug a wall round a sharp corner.
+func _plan_route(from: Vector2) -> PackedVector2Array:
+	for clearance: float in [2.2, 1.7, 1.3]:
+		var route := level.layout.find_path(from, level.layout.exit, clearance)
+		if not route.is_empty():
+			return route
+	return level.layout.main_path
 
 
 ## Holds position near an organ, answers every wave and strikes open organs.

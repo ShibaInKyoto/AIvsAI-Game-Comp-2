@@ -1,19 +1,26 @@
 class_name Lancer
 extends Creature
 ## Needle-nosed hunter that strikes at sound. Investigates noise, winds up
-## (its stripe flares as a tell) and dashes in a straight line.
+## (its stripe flares as a tell) and dashes in a straight line. Left alone it
+## hunts shoals, and while it feeds it pays the sub no attention.
 
 enum State { WANDER, INVESTIGATE, WINDUP, DASH, RECOVER }
 
 const DASH_SPEED := 23.0
 const WINDUP_TIME := 0.55
 const DASH_TIME := 0.55
+const HUNT_RANGE := 12.0
+## Seconds spent swallowing a caught fish.
+const FEED_TIME := 3.0
 
 var state := State.WANDER
 var _timer := 0.0
 var _target := Vector2.ZERO
 var _dash_dir := Vector2.RIGHT
 var _home := Vector2.ZERO
+## The shoal it is lunging at, if the dash is a hunt rather than an attack.
+var _prey: Shoal
+var _hunt_cooldown := 0.0
 
 
 func setup() -> void:
@@ -29,6 +36,7 @@ func setup() -> void:
 	super.setup()
 	_home = pos
 	_target = wander_point(_home, 12.0)
+	_hunt_cooldown = level.rng.randf_range(3.0, 10.0)
 
 
 func build_model() -> void:
@@ -66,6 +74,13 @@ func think() -> void:
 			if player_in_range(13.0) and (can_see_player(13.0) or level.player.noise_radius > 4.0):
 				_begin_windup(level.player.pos)
 				return
+			_hunt_cooldown -= THINK_INTERVAL
+			if state == State.WANDER and _hunt_cooldown <= 0.0:
+				_hunt_cooldown = level.rng.randf_range(8.0, 14.0)
+				var prey := _nearest_shoal()
+				if prey:
+					_begin_hunt(prey)
+					return
 			var heard := heard_noise()
 			if heard != Vector2.INF:
 				state = State.INVESTIGATE
@@ -74,7 +89,28 @@ func think() -> void:
 				_target = wander_point(_home, 14.0)
 
 
+func _nearest_shoal() -> Shoal:
+	for e in level.entities:
+		var shoal := e as Shoal
+		if shoal and shoal.alive and shoal.pos.distance_to(pos) < HUNT_RANGE \
+				and level.field.line_of_sight(pos, shoal.pos):
+			return shoal
+	return null
+
+
+## Winds up at a shoal. Unlike an attack this is not noticing the sub, so a
+## hunting or feeding lancer can still be ambushed.
+func _begin_hunt(prey: Shoal) -> void:
+	_prey = prey
+	state = State.WINDUP
+	lock_facing = true
+	_timer = WINDUP_TIME
+	_target = prey.pos
+	Audio.play_at(&"lancer_windup", pos, -6.0)
+
+
 func _begin_windup(at: Vector2) -> void:
+	_prey = null
 	alert()
 	state = State.WINDUP
 	lock_facing = true
@@ -95,7 +131,9 @@ func behave(delta: float) -> void:
 		State.WINDUP:
 			_timer -= delta
 			# Track the target while winding up, drifting backwards slightly.
-			if level.player and level.player.alive:
+			if is_instance_valid(_prey) and _prey.alive:
+				_target = _prey.pos
+			elif level.player and level.player.alive:
 				_target = level.player.pos
 			var to := (_target - pos).normalized()
 			facing = facing.slerp(to, 1.0 - exp(-10.0 * delta)).normalized()
@@ -108,10 +146,15 @@ func behave(delta: float) -> void:
 				_dash_dir = to
 				Audio.play_at(&"lancer_dash", pos, 0.0)
 				level.emit_noise(pos, 10.0, self)
+				if is_instance_valid(_prey):
+					_prey.scare(pos)
 		State.DASH:
 			_timer -= delta
 			vel = _dash_dir * DASH_SPEED
-			if _timer <= 0.0 or level.field.sample(pos + _dash_dir * (radius + 0.6)) < 0.3:
+			if is_instance_valid(_prey) and _prey.alive and pos.distance_to(_prey.pos) < 2.5:
+				_catch()
+			elif _timer <= 0.0 or level.field.sample(pos + _dash_dir * (radius + 0.6)) < 0.3:
+				_prey = null
 				state = State.RECOVER
 				_timer = 1.3
 				_set_glow(1.0)
@@ -121,6 +164,16 @@ func behave(delta: float) -> void:
 			if _timer <= 0.0:
 				state = State.WANDER
 				_target = wander_point(pos, 10.0)
+
+
+## Snaps a fish out of the shoal and drifts while it swallows.
+func _catch() -> void:
+	_prey.lose_fish()
+	Fx.ichor(level, pos + _dash_dir, _prey.glow_color, 8)
+	_prey = null
+	state = State.RECOVER
+	_timer = FEED_TIME
+	_set_glow(1.0)
 
 
 func on_touch_player(sub: Submarine) -> void:

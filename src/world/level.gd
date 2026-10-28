@@ -33,7 +33,8 @@ var flares: Array[Entity] = []
 var exit_known := false
 ## The final encounter, present only on the hadal floor.
 var boss: ChoirBoss
-## The Blind Mother, in the lair zone; the exit stays sealed while she lives.
+## The lair guardian (the Lamplighter or the Blind Mother) where there is
+## one; the exit stays sealed while it lives.
 var guardian: Guardian
 var exit_sealed := false
 var descent_marker: DescentMarker
@@ -41,6 +42,7 @@ var descent_marker: DescentMarker
 var _pending_remove: Array[Entity] = []
 var _ping_slot := 0
 var _exit_triggered := false
+var _told_sealed := false
 
 
 func build(zone_layout: LevelLayout, quality: int, pressure_level := 0, zone_event: StringName = &"") -> void:
@@ -134,6 +136,10 @@ func tick(delta: float) -> void:
 			and player.pos.distance_to(layout.exit) < 5.0:
 		_exit_triggered = true
 		exit_reached.emit()
+	elif exit_sealed and not _told_sealed and player and player.pos.distance_to(layout.exit) < 8.0:
+		_told_sealed = true
+		var who := guardian.title.capitalize() if is_instance_valid(guardian) else "Its guardian"
+		Events.toast.emit("The way down is sealed. %s must fall first." % who, UiTheme.DANGER)
 
 
 func seal_exit() -> void:
