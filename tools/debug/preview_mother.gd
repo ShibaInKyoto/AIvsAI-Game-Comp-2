@@ -40,6 +40,10 @@ func _ready() -> void:
 	_camera.zoom = 1.3
 	_sub.set_camera(_camera)
 	_camera.snap()
+	var hud := Hud.new()
+	add_child(hud)
+	hud.bind(_sub, _level, _camera)
+	add_child(PostFx.new())
 	_mother.take_damage(0.1, _mother.pos)
 
 

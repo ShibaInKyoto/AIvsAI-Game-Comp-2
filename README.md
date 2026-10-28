@@ -13,8 +13,9 @@ singing at the bottom of the world.
 | | |
 |---|---|
 | ![Sunlit Shelf](docs/screenshots/shelf.jpg) | ![Twilight Reef](docs/screenshots/reef.jpg) |
-| ![Abyssal Vents](docs/screenshots/vents.jpg) | ![The Choir](docs/screenshots/choir.jpg) |
-| ![Decompression stop](docs/screenshots/stop.jpg) | ![Hangar](docs/screenshots/hangar.jpg) |
+| ![Abyssal Vents](docs/screenshots/vents.jpg) | ![The Blind Mother](docs/screenshots/mother.jpg) |
+| ![The Choir](docs/screenshots/choir.jpg) | ![Decompression stop](docs/screenshots/stop.jpg) |
+| ![Title screen](docs/screenshots/title.jpg) | ![Hangar](docs/screenshots/hangar.jpg) |
 
 ## Quick start (Windows 10/11)
 
