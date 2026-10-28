@@ -81,11 +81,22 @@ func bind(p_level: Level, p_sub: Submarine) -> void:
 func _on_ping(origin: Vector2, ping_range: float) -> void:
 	reveal(origin, ping_range)
 	for e in level.entities:
-		if e.alive and e.pos.distance_to(origin) < ping_range:
-			if e is SalvageCache:
-				_marks.append({"pos": e.pos, "color": UiTheme.WARN, "node": e})
-			elif e is LogBeacon:
-				_marks.append({"pos": e.pos, "color": UiTheme.GOOD, "node": e})
+		if not e.alive or e.pos.distance_to(origin) >= ping_range or _marked(e):
+			continue
+		if e is SalvageCache:
+			_marks.append({"pos": e.pos, "color": UiTheme.WARN, "node": e})
+		elif e is LogBeacon:
+			_marks.append({"pos": e.pos, "color": UiTheme.GOOD, "node": e})
+		elif e is MeridianStation or e is WhaleFall:
+			# Landmarks are drawn as rings.
+			_marks.append({"pos": e.pos, "color": UiTheme.TEXT, "node": e, "ring": true})
+
+
+func _marked(e: Entity) -> bool:
+	for m in _marks:
+		if m.node == e:
+			return true
+	return false
 
 
 ## Marks a circle of the chart as charted.
@@ -129,7 +140,11 @@ func _draw_marks() -> void:
 	if level == null:
 		return
 	for m in _marks:
-		if is_instance_valid(m.node) and (m.node as Entity).alive:
+		if not is_instance_valid(m.node) or not (m.node as Entity).alive:
+			continue
+		if m.get("ring", false):
+			_overlay.draw_arc(_to_map(m.pos), 4.0, 0, TAU, 12, m.color, 1.5)
+		else:
 			_overlay.draw_circle(_to_map(m.pos), 3.0, m.color)
 	if level.exit_known or sub.stats.always_compass:
 		_overlay.draw_arc(_to_map(level.layout.exit), 5.0, 0, TAU, 16, UiTheme.GOOD, 2.0)

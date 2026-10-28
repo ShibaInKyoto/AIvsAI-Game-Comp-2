@@ -67,3 +67,24 @@ func test_noise_by_a_wall_makes_her_stick_and_open_up() -> void:
 	check(opened[0], "she dies")
 	check(not level.exit_sealed, "the way down opens")
 	level.free()
+
+
+func test_guarded_rooms_hold_no_other_hunters() -> void:
+	for zone in [BiomeLibrary.ANGLER_ZONE, BiomeLibrary.LAIR_ZONE, BiomeLibrary.TOTAL_ZONES - 1]:
+		for run_seed in [11, 22, 33]:
+			var run := RunState.new()
+			run.run_seed = run_seed
+			run.rebuild_stats({})
+			var layout := LevelGenerator.new().generate(BiomeLibrary.biome_for_zone(zone), run.zone_seed(zone), zone)
+			var level := Level.new()
+			(Engine.get_main_loop() as SceneTree).root.add_child(level)
+			level.build(layout, 0)
+			LevelPopulator.populate(level, run)
+			for e in level.entities:
+				var c := e as Creature
+				if c == null or c is Guardian or c is ChoirOrgan or c is Shoal:
+					continue
+				if LevelPopulator.in_guarded_room(level, c.pos):
+					check(false, "zone %d seed %d: a %s waits in the guarded room" % [zone, run_seed, c.species])
+			level.free()
+	check(true, "checked")

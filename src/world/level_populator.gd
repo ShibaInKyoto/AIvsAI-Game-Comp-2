@@ -99,6 +99,11 @@ static func _spawn_creatures(level: Level, run: RunState, used: PackedVector2Arr
 			if p.has("normal"):
 				c.set(&"wall_normal", p.normal)
 			level.add_entity(c)
+			# Some settle away from their spawn point (lurelights drop off the
+			# wall); any that end up in a guarded room go.
+			if id != &"shoal" and in_guarded_room(level, c.pos):
+				level.entities.erase(c)
+				c.free()
 		used.append(p.pos)
 		budget -= COST.get(id, 1.0)
 
@@ -107,20 +112,35 @@ static func _spawn_creatures(level: Level, run: RunState, used: PackedVector2Arr
 static func _creature_spot(level: Level, id: StringName, used: PackedVector2Array) -> Dictionary:
 	var layout := level.layout
 	var rng := level.rng
+	var guarded := id != &"shoal"
 	if WALL_DWELLERS.has(id):
 		for _i in 30:
 			var a: LevelLayout.Anchor = layout.anchors[rng.randi() % layout.anchors.size()]
 			if a.pos.distance_to(layout.start) < SAFE_RADIUS or a.pos.distance_to(layout.exit) < 10.0:
 				continue
-			if not _far_from(a.pos, used, 7.0):
+			if not _far_from(a.pos, used, 7.0) or guarded and in_guarded_room(level, a.pos):
 				continue
 			return {"pos": a.pos + a.normal * 0.6, "normal": a.normal}
 		return {}
 	var clearance := 5.0 if id == &"stalker" or id == &"siphon" else 2.5
 	var spot := layout.random_open_point(rng, clearance, PackedVector2Array([layout.start]), SAFE_RADIUS)
-	if spot == Vector2.INF or not _far_from(spot, used, 5.0):
+	if spot == Vector2.INF or not _far_from(spot, used, 5.0) or guarded and in_guarded_room(level, spot):
 		return {}
 	return {"pos": spot}
+
+
+## Whether [param p] lies in a guardian's lair or the Choir's arena (with a
+## few metres to spare). Those fights are duels: no other hunters wait
+## inside, though shoals still drift through and noise still draws hunters
+## in from outside.
+static func in_guarded_room(level: Level, p: Vector2) -> bool:
+	var kind := &"arena" if not level.layout.has_exit else (&"exit" if BiomeLibrary.is_lair(level.zone) else &"")
+	if kind == &"":
+		return false
+	for room in level.layout.chambers_of_kind(kind):
+		if ((p - room.center) / (room.radius + Vector2(4.0, 4.0))).length() < 1.0:
+			return true
+	return false
 
 
 ## A guardian (the Lamplighter or the Blind Mother) lairs in the exit
@@ -340,7 +360,7 @@ static func _spawn_caches(level: Level, used: PackedVector2Array) -> void:
 		var p := layout.random_open_point(rng, 2.0, used, 12.0)
 		if p == Vector2.INF:
 			continue
-		if level.zone >= 4 and rng.randf() < 0.35:
+		if level.zone >= 4 and rng.randf() < 0.35 and not in_guarded_room(level, p):
 			var mimic := Mimic.new()
 			mimic.pos = p
 			level.add_entity(mimic)
