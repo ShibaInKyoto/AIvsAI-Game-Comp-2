@@ -4,7 +4,7 @@ extends Node
 ## pings and fires at threats. Used by the smoke test and screenshot tooling.
 ##
 ## Enabled with user args:  -- --autopilot [--shots=<dir>] [--time=<seconds>]
-## [--zone=<n>]. Exits the game when time runs out and prints a summary.
+## [--zone=<n>] [--frame=<id>]. Exits the game when time runs out and prints a summary.
 
 var sub: Submarine
 var level: Level
@@ -21,6 +21,7 @@ var _elapsed := 0.0
 var _shot_timer := 1.5
 var _path_index := 0
 var _ping_timer := 0.0
+var _tool_timer := 4.0
 var _shots := 0
 var _stuck_timer := 0.0
 var _last_pos := Vector2.ZERO
@@ -57,6 +58,11 @@ func _ready() -> void:
 	var zone := int(arg("zone", "-1"))
 	if zone >= 0 and Game.run:
 		Game.run.zone = zone
+	var frame := StringName(arg("frame", ""))
+	if Catalog.frame(frame) and Game.run:
+		Game.run.frame_id = frame
+		Game.run.rebuild_stats(Game.meta.upgrades)
+		Game.run.refill()
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 
@@ -101,6 +107,7 @@ func drive(delta: float) -> void:
 		sub.aim = sub.aim.slerp(move, 0.1).normalized()
 	sub.facing = 1.0 if sub.aim.x >= 0.0 else -1.0
 	sub.external_move = move
+	_use_tools(threat, move, delta)
 
 	_ping_timer -= delta
 	if _ping_timer <= 0.0:
@@ -168,6 +175,18 @@ func _fight_guardian(delta: float) -> void:
 			if _ping_timer <= 0.0:
 				_ping_timer = 3.0
 				sub.try_ping()
+
+
+## Every few seconds near a threat, uses the current tool and cycles to the
+## next: weapons at the threat, lures (flares, decoys) back along the route.
+func _use_tools(threat: Creature, move: Vector2, delta: float) -> void:
+	_tool_timer -= delta
+	if threat == null or _tool_timer > 0.0:
+		return
+	_tool_timer = 8.0
+	var tool := sub.tools.current()
+	sub.tools.use(sub.aim if tool == &"torpedo" or tool == &"shock" else -move)
+	sub.tools.cycle()
 
 
 func _nearest_threat() -> Creature:

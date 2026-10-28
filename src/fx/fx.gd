@@ -268,7 +268,7 @@ static func flash(level: Node3D, at: Vector2, color: Color, light_range: float, 
 
 
 ## Expanding additive ring on the gameplay plane.
-static func shockwave(level: Node3D, at: Vector2, radius: float, color: Color) -> void:
+static func shockwave(level: Node3D, at: Vector2, radius: float, color: Color, duration := 0.45) -> void:
 	if level == null:
 		return
 	var mi := MeshInstance3D.new()
@@ -287,12 +287,12 @@ static func shockwave(level: Node3D, at: Vector2, radius: float, color: Color) -
 	mi.global_position = Vector3(at.x, at.y, 0.5)
 	mi.scale = Vector3.ONE * 0.2
 	var tween := mi.create_tween().set_parallel(true)
-	tween.tween_property(mi, ^"scale", Vector3.ONE * radius, 0.45).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
-	tween.tween_property(m, ^"albedo_color:a", 0.0, 0.45)
+	tween.tween_property(mi, ^"scale", Vector3.ONE * radius, duration) \
+		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+	tween.tween_property(m, ^"albedo_color:a", 0.0, duration)
 	tween.chain().tween_callback(mi.queue_free)
 
 
-## Little burst when collecting a pickup.
 ## A billboard label for floating "+N" gains; always drawn on top.
 static func float_label(color: Color) -> Label3D:
 	var l := Label3D.new()
@@ -323,6 +323,7 @@ static func float_text(level: Node3D, at: Vector2, text: String, color: Color) -
 	tween.tween_callback(l.queue_free)
 
 
+## Little burst when collecting a pickup.
 static func sparkle(level: Node3D, at: Vector2, color: Color) -> void:
 	var pm := ParticleProcessMaterial.new()
 	pm.direction = Vector3(0, 1, 0)

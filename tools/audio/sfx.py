@@ -64,6 +64,17 @@ def beacon_ping():
     return normalize(trim_silence(wet_dry(tone, BIG_WATER, 0.5)), 0.5)
 
 
+def decoy_ping():
+    # A hard mechanical double chirp: easy to tell from the sub's own sonar.
+    out = np.zeros(seconds(1.4))
+    for i, (f0, f1) in enumerate([(820, 760), (1240, 1150)]):
+        d = 0.22
+        chirp = square(_sweep(f0, f1, d), n_harm=5) * env_exp(d, 0.05, 0.002)
+        s = seconds(0.11 * i)
+        out[s:s + len(chirp)] += lowpass(chirp, 3200) * (0.8 if i == 0 else 0.6)
+    return normalize(trim_silence(wet_dry(out, BIG_WATER, 0.5)), 0.65)
+
+
 # --- Submarine ---------------------------------------------------------------------------
 
 def lamp_toggle():

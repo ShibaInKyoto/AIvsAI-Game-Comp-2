@@ -4,6 +4,7 @@ extends RefCounted
 ## unlocked frames, codex and statistics. Serialized to JSON by [SaveSystem].
 
 const VERSION := 1
+const MAX_RECORDS := 5
 
 var salvage := 0
 var research := 0
@@ -35,6 +36,8 @@ var daily_date := ""
 var daily_best_depth := 0
 var daily_attempts := 0
 var daily_won := false
+## Best dives, highest score first (see [method DiveScore.record]).
+var records: Array[Dictionary] = []
 
 
 func upgrade_level(id: StringName) -> int:
@@ -59,6 +62,28 @@ func buy_upgrade(id: StringName) -> bool:
 	salvage -= cost
 	upgrades[String(id)] = level + 1
 	return true
+
+
+## Files a finished dive. Returns its place in the records (0 = new best),
+## or -1 if it did not make the table.
+func record_dive(entry: Dictionary) -> int:
+	if int(entry.get("score", 0)) <= 0:
+		return -1
+	var rank := records.size()
+	for i in records.size():
+		if int(entry.score) > int(records[i].score):
+			rank = i
+			break
+	if rank >= MAX_RECORDS:
+		return -1
+	records.insert(rank, entry)
+	if records.size() > MAX_RECORDS:
+		records.resize(MAX_RECORDS)
+	return rank
+
+
+func best_score() -> int:
+	return int(records[0].score) if not records.is_empty() else 0
 
 
 func is_frame_unlocked(id: StringName) -> bool:
@@ -127,6 +152,7 @@ func to_dict() -> Dictionary:
 		"daily_best_depth": daily_best_depth,
 		"daily_attempts": daily_attempts,
 		"daily_won": daily_won,
+		"records": records,
 	}
 
 
@@ -171,4 +197,20 @@ static func from_dict(d: Dictionary) -> MetaState:
 	m.daily_best_depth = int(d.get("daily_best_depth", 0))
 	m.daily_attempts = int(d.get("daily_attempts", 0))
 	m.daily_won = bool(d.get("daily_won", false))
+	for r: Variant in d.get("records", []):
+		if r is Dictionary:
+			m.records.append(_clean_record(r))
+	m.records.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a.score > b.score)
+	if m.records.size() > MAX_RECORDS:
+		m.records.resize(MAX_RECORDS)
 	return m
+
+
+## A records entry with every field present and of the right type.
+static func _clean_record(r: Dictionary) -> Dictionary:
+	return {
+		"score": int(r.get("score", 0)), "frame": String(r.get("frame", "lantern")),
+		"depth": int(r.get("depth", 0)), "zone": int(r.get("zone", 0)), "outcome": String(r.get("outcome", "")),
+		"pressure": int(r.get("pressure", 0)), "daily": bool(r.get("daily", false)),
+		"date": String(r.get("date", "")),
+	}

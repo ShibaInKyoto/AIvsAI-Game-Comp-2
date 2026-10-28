@@ -1,11 +1,11 @@
 class_name ToolBelt
 extends Node
-## The submarine's secondary tools: flares, torpedoes and the shock pulse.
+## The submarine's secondary tools: flares, torpedoes, decoys and the shock pulse.
 ## The available set and ammunition come from [SubStats] and [RunState].
 
 signal changed
 
-const COOLDOWNS: Dictionary[StringName, float] = {&"flare": 0.6, &"torpedo": 0.9, &"shock": 1.2}
+const COOLDOWNS: Dictionary[StringName, float] = {&"flare": 0.6, &"torpedo": 0.9, &"shock": 1.2, &"decoy": 0.8}
 
 var index := 0
 var _sub: Submarine
@@ -40,6 +40,8 @@ func ammo(tool: StringName) -> int:
 			return _sub.run.flares
 		&"torpedo":
 			return _sub.run.torpedoes
+		&"decoy":
+			return _sub.run.decoys
 	return -1
 
 
@@ -59,6 +61,8 @@ func use(aim: Vector2) -> void:
 			ok = _fire_torpedo(aim)
 		&"shock":
 			ok = _shock()
+		&"decoy":
+			ok = _launch_decoy(aim)
 	if ok:
 		_cooldown = COOLDOWNS.get(tool, 0.5)
 		changed.emit()
@@ -76,6 +80,19 @@ func _fire_flare(aim: Vector2) -> bool:
 	flare.vel = aim * 17.0 + _sub.vel * 0.5
 	_sub.level.add_entity(flare)
 	Audio.play_at(&"flare_launch", _sub.pos, -2.0)
+	return true
+
+
+func _launch_decoy(aim: Vector2) -> bool:
+	if _sub.run.decoys <= 0:
+		Events.toast.emit("Out of decoys", Color(1.0, 0.5, 0.3))
+		return false
+	_sub.run.decoys -= 1
+	var decoy := Decoy.new()
+	decoy.pos = _sub.pos + aim * 1.4
+	decoy.vel = aim * 13.0 + _sub.vel * 0.5
+	_sub.level.add_entity(decoy)
+	Audio.play_at(&"flare_launch", _sub.pos, -4.0, 0.05, 0.7)
 	return true
 
 

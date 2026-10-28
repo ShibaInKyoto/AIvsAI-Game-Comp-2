@@ -61,7 +61,7 @@ Hangar (spend salvage & research) -> Dive -> Zone 1 -> Decompression stop
 | Mouse / R-stick  | Aim lamp & tools                                                     |
 | Shift / LT       | Boost (fast, loud, drains battery)                                   |
 | LMB / RT         | Harpoon: spear creatures, hook caches and drag them, grapple walls    |
-| RMB / RB         | Tool: torpedo / flare / shock pulse (cycle with Q / LB)              |
+| RMB / RB         | Tool: torpedo / flare / decoy / shock pulse (cycle with Q / LB)      |
 | Space / A        | Sonar ping                                                           |
 | F / Y            | Toggle lamp                                                          |
 | Tab / Back       | Sonar map                                                            |
@@ -72,7 +72,9 @@ from it), **Salvage** (meta currency), **Research** (from scanning creatures by
 holding the lamp on them; unlocks modules and subs).
 
 **Noise**: every action emits noise (thrust ~ speed, boost, ping, explosions,
-impacts). Creatures with hearing investigate noise sources.
+impacts). Creatures with hearing investigate noise sources. A creature that
+has not noticed the sub can be **ambushed** (harpoon hits deal double), and
+**sonar decoys** ping on their own to pull hunters somewhere else.
 
 ## Creatures
 
@@ -102,7 +104,9 @@ impacts). Creatures with hearing investigate noise sources.
 * Zone events (currents, blackout, frenzy, wrecks, dead calm, bloom) forecast
   at the decompression stop.
 * Optional zone objectives for bonus salvage or research.
-* 15 milestones, each unlocking a hull paint.
+* 16 milestones, each unlocking a hull paint.
+* A dive score (depth, kills, ambushes, scans, logs, salvage, outcome, x pressure)
+  and a top-five records table on the title screen.
 
 ## Technical approach
 

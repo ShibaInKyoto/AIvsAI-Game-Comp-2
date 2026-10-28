@@ -13,9 +13,12 @@ var hull := 100.0
 var battery := 100.0
 var torpedoes := 0
 var flares := 0
+var decoys := 0
 var salvage := 0
 var research := 0
 var kills := 0
+## Harpoon hits on creatures that had not noticed the sub.
+var ambushes := 0
 var scans := 0
 var logs := 0
 var time := 0.0
@@ -41,12 +44,14 @@ func rebuild_stats(upgrades: Dictionary) -> void:
 	var old_max_battery := stats.max_battery if stats else 0.0
 	var old_torpedo_cap := stats.torpedo_capacity if stats else 0
 	var old_flare_cap := stats.flare_capacity if stats else 0
+	var old_decoy_cap := stats.decoy_capacity if stats else 0
 	stats = SubStats.build(frame_id, upgrades, modules)
 	if old_max_hull > 0.0:
 		hull += maxf(stats.max_hull - old_max_hull, 0.0)
 		battery += maxf(stats.max_battery - old_max_battery, 0.0)
 		torpedoes += maxi(stats.torpedo_capacity - old_torpedo_cap, 0)
 		flares += maxi(stats.flare_capacity - old_flare_cap, 0)
+		decoys += maxi(stats.decoy_capacity - old_decoy_cap, 0)
 	hull = minf(hull, stats.max_hull)
 	battery = minf(battery, stats.max_battery)
 
@@ -56,6 +61,7 @@ func refill() -> void:
 	battery = stats.max_battery
 	torpedoes = stats.torpedo_capacity
 	flares = stats.flare_capacity
+	decoys = stats.decoy_capacity
 
 
 func add_module(id: StringName, upgrades: Dictionary) -> void:
@@ -67,8 +73,8 @@ func add_module(id: StringName, upgrades: Dictionary) -> void:
 func to_dict() -> Dictionary:
 	return {
 		"run_seed": run_seed, "frame_id": frame_id, "zone": zone, "modules": modules,
-		"hull": hull, "battery": battery, "torpedoes": torpedoes, "flares": flares,
-		"salvage": salvage, "research": research, "kills": kills, "scans": scans, "logs": logs,
+		"hull": hull, "battery": battery, "torpedoes": torpedoes, "flares": flares, "decoys": decoys,
+		"salvage": salvage, "research": research, "kills": kills, "ambushes": ambushes, "scans": scans, "logs": logs,
 		"time": time, "pressure": pressure, "daily": daily, "daily_event": daily_event,
 		"deepest_depth": deepest_depth, "last_hit_by": last_hit_by,
 	}
@@ -89,9 +95,11 @@ static func from_dict(d: Dictionary, upgrades: Dictionary) -> RunState:
 	r.battery = clampf(float(d.get("battery", r.stats.max_battery)), 0.0, r.stats.max_battery)
 	r.torpedoes = clampi(int(d.get("torpedoes", 0)), 0, r.stats.torpedo_capacity)
 	r.flares = clampi(int(d.get("flares", 0)), 0, r.stats.flare_capacity)
+	r.decoys = clampi(int(d.get("decoys", 0)), 0, r.stats.decoy_capacity)
 	r.salvage = int(d.get("salvage", 0))
 	r.research = int(d.get("research", 0))
 	r.kills = int(d.get("kills", 0))
+	r.ambushes = int(d.get("ambushes", 0))
 	r.scans = int(d.get("scans", 0))
 	r.logs = int(d.get("logs", 0))
 	r.time = float(d.get("time", 0.0))

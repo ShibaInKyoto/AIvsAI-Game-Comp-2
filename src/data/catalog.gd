@@ -67,11 +67,13 @@ class ModuleDef:
 const RARITY_NAMES: PackedStringArray = ["Common", "Uncommon", "Rare"]
 const RARITY_COLORS: Array[Color] = [Color(0.7, 0.85, 0.9), Color(0.4, 1.0, 0.6), Color(1.0, 0.7, 0.25)]
 const TOOL_NAMES: Dictionary[StringName, String] = {
-	&"flare": "Flare", &"torpedo": "Torpedo", &"shock": "Shock Pulse",
+	&"flare": "Flare", &"torpedo": "Torpedo", &"shock": "Shock Pulse", &"decoy": "Decoy",
 }
 
 ## Modules that install a tool; only offered to subs that lack it.
-const KIT_TOOLS: Dictionary[StringName, StringName] = {&"flare_kit": &"flare", &"torpedo_kit": &"torpedo"}
+const KIT_TOOLS: Dictionary[StringName, StringName] = {
+	&"flare_kit": &"flare", &"torpedo_kit": &"torpedo", &"decoy_kit": &"decoy",
+}
 
 static var _frames: Array[FrameDef] = []
 static var _upgrades: Array[UpgradeDef] = []
@@ -170,7 +172,7 @@ static func _build_frames() -> void:
 				s.add_tool(&"flare")
 				s.flare_capacity = 2),
 		FrameDef.new(&"whisper", "Whisper",
-			"A silent stealth drone. Almost no engine noise, a narrow lamp and quick scanners.",
+			"A silent stealth drone. Almost no engine noise, a narrow lamp, quick scanners and sonar decoys.",
 			150, Color(0.55, 0.5, 0.95), func(s: SubStats) -> void:
 				s.max_hull = 85.0
 				s.noise_mult = 0.4
@@ -178,8 +180,10 @@ static func _build_frames() -> void:
 				s.lamp_range *= 1.15
 				s.scan_speed = 1.8
 				s.sonar_cost *= 0.6
+				s.add_tool(&"decoy")
+				s.decoy_capacity = 3
 				s.add_tool(&"flare")
-				s.flare_capacity = 5),
+				s.flare_capacity = 3),
 	]
 
 
@@ -225,6 +229,10 @@ static func _build_upgrades() -> void:
 			PackedInt32Array([180, 280]), func(s: SubStats, l: int) -> void:
 				s.add_tool(&"shock")
 				s.shock_cost *= 1.0 - 0.15 * (l - 1)),
+		UpgradeDef.new(&"decoys", "Decoy Launcher", "Unlocks sonar decoys on every frame. More decoys per level.",
+			PackedInt32Array([120, 220]), func(s: SubStats, l: int) -> void:
+				s.add_tool(&"decoy")
+				s.decoy_capacity = maxi(s.decoy_capacity, 1) + l),
 	]
 
 
@@ -311,6 +319,12 @@ static func _build_modules() -> void:
 			func(s: SubStats) -> void:
 				s.add_tool(&"flare")
 				s.flare_capacity += 3),
+		ModuleDef.new(&"decoy_rack", "Decoy Rack", "+2 decoys.", 0, 3, sonar,
+			func(s: SubStats) -> void: s.decoy_capacity += 2, &"decoy"),
+		ModuleDef.new(&"decoy_kit", "Sonar Decoys", "Adds a decoy launcher with 2 decoys.", 1, 1, sonar,
+			func(s: SubStats) -> void:
+				s.add_tool(&"decoy")
+				s.decoy_capacity += 2),
 		ModuleDef.new(&"torpedo_kit", "Salvaged Torpedo Tube", "Adds a torpedo tube with 2 torpedoes.", 2, 1, weapon,
 			func(s: SubStats) -> void:
 				s.add_tool(&"torpedo")

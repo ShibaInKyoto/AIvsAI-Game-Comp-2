@@ -60,6 +60,8 @@ static func all() -> Array[Milestone]:
 				Color(0.75, 0.05, 0.12), func(m: MetaState, _r: RunState) -> bool: return m.best_pressure_win >= 3),
 			Milestone.new("veteran", "Veteran", "Complete 15 dives.", "Navy",
 				Color(0.12, 0.16, 0.35), func(m: MetaState, _r: RunState) -> bool: return m.dives >= 15),
+			Milestone.new("ambusher", "Silent Hunter", "Land 8 ambushes in a single dive.", "Ink",
+				Color(0.09, 0.1, 0.14), func(_m: MetaState, r: RunState) -> bool: return r != null and r.ambushes >= 8),
 		]
 	return _all
 

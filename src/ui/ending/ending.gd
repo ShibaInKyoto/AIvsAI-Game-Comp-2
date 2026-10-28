@@ -56,6 +56,11 @@ func _sequence() -> void:
 			meta.dives, meta.wins], &"MonoLabel", 22)
 	stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	await _reveal(stats, 1.0)
+	var best := "   -   NEW PERSONAL BEST" if Game.last_rank == 0 and meta.records.size() > 1 else ""
+	var score := UiUtil.label("SCORE  %s%s" % [UiUtil.thousands(Game.last_score), best], &"MonoLabel", 30,
+			UiTheme.WARN if best != "" else UiTheme.ACCENT)
+	score.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	await _reveal(score, 1.0)
 	if meta.pressure_unlocked > 0:
 		var unlock := "PRESSURE %d UNLOCKED  -  the trench remembers you. Choose it in the hangar for a harder dive."
 		var p := UiUtil.label(unlock % meta.pressure_unlocked, &"", 22, UiTheme.WARN)

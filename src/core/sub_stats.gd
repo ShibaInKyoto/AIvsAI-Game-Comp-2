@@ -35,6 +35,7 @@ var harpoon_leech := 0.0
 var torpedo_capacity := 0
 var torpedo_damage := 70.0
 var flare_capacity := 0
+var decoy_capacity := 0
 var shock_cost := 22.0
 var shock_radius := 9.0
 var shock_damage := 18.0

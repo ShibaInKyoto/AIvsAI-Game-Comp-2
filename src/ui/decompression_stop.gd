@@ -25,6 +25,7 @@ func open(run: RunState) -> void:
 	run.battery = run.stats.max_battery
 	run.torpedoes = mini(run.torpedoes + 1, run.stats.torpedo_capacity)
 	run.flares = mini(run.flares + 2, run.stats.flare_capacity)
+	run.decoys = mini(run.decoys + 1, run.stats.decoy_capacity)
 	Audio.play(&"dock", -2.0)
 	_build()
 

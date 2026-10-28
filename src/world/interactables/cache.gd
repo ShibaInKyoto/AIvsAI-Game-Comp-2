@@ -96,9 +96,11 @@ func open(sub: Submarine) -> void:
 
 func _resupply(sub: Submarine) -> void:
 	var run := sub.run
-	if run.stats.torpedo_capacity > run.torpedoes or run.stats.flare_capacity > run.flares:
+	if run.stats.torpedo_capacity > run.torpedoes or run.stats.flare_capacity > run.flares \
+			or run.stats.decoy_capacity > run.decoys:
 		run.torpedoes = mini(run.torpedoes + 2, run.stats.torpedo_capacity)
 		run.flares = mini(run.flares + 2, run.stats.flare_capacity)
+		run.decoys = mini(run.decoys + 1, run.stats.decoy_capacity)
 		Events.toast.emit("Ammunition resupplied", UiTheme.WARN)
 	else:
 		Pickup.scatter(level, pos, &"salvage", int(salvage * 0.5), 1.2)

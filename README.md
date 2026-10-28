@@ -45,7 +45,8 @@ itself. Every zone is a procedurally generated cave cross-section. Find the
   you can be heard. Lancers dash at sound, gulper eels feel vibration through
   the rock, and the Stalker hears everything. When it starts hunting you,
   you will hear your own heartbeat. Harpoon a creature before it notices you
-  for an **ambush** that deals double damage.
+  for an **ambush** that deals double damage. A **sonar decoy** sticks to the
+  rock and pings on its own, drawing every hunter that hears it.
 * **Thermal vents** in the deep vent fields rumble and glow, then erupt in a
   scalding column that shoves and burns whatever is inside, and roars loudly
   enough to bring hunters running. Creatures caught in it cook.
@@ -72,7 +73,7 @@ itself. Every zone is a procedurally generated cave cross-section. Find the
 | Thrust | `W A S D` / arrows | Left stick |
 | Aim lamp and tools | Mouse | Right stick |
 | Harpoon (hold on rock to winch) | Left mouse | RT |
-| Use tool (flare / torpedo / shock) | Right mouse | RB |
+| Use tool (flare / torpedo / decoy / shock) | Right mouse | RB |
 | Cycle tool | `Q` | LB |
 | Sonar ping | `Space` | A |
 | Boost (loud) | `Shift` | LT |
@@ -92,16 +93,19 @@ rumble and four graphics presets.
 * A new trench every dive, plus a **daily dive** with a shared, date-based seed
   and a condition of the day (blackout, frenzy, currents...) in every zone.
   The title screen tracks your best result for today.
-* 30 modules to draft into a build. Their stats stack.
+* Every dive ends with a **score** (depth, kills, ambushes, scans, logs and
+  salvage, multiplied by pressure), and the title screen keeps your five best
+  in **Records**.
+* 32 modules to draft into a build. Their stats stack.
 * 4 submarine frames: **Lantern** (balanced, flares), **Mako** (fast, torpedoes,
   fragile), **Bathysphere** (armored, long sonar, shock pulse), **Whisper**
-  (near silent, quick scanner).
-* 11 hangar upgrades, a creature codex and 11 story logs to recover.
+  (near silent, quick scanner, sonar decoys).
+* 12 hangar upgrades, a creature codex and 11 story logs to recover.
 * Nine creature species with their own senses and tells: drifting jellies,
   dashing lancers, angler-like lurelights, burrowing gulper eels, wall-crawling
   isopods, stinging siphonophore chains, caches that turn out to be mimics,
   shoals, and the Stalker, which hunts by sound across the whole zone.
-* 15 milestones (silence the Choir, scan every species, kill a Stalker...), each
+* 16 milestones (silence the Choir, scan every species, kill a Stalker...), each
   unlocking a hull paint.
 * **Zone objectives** for bonus salvage or research: open caches, hunt, scan
   species, stay silent, harvest bulbs, recover a log.
@@ -163,14 +167,14 @@ Requires Godot 4.5.1 with export templates installed.
 
 ```sh
 godot --headless --import                                       # first-time import
-godot --headless --path . -s res://tests/run_tests.gd           # 50 tests: generation, traversal, events, vents, bosses, frames, saves, assets
+godot --headless --path . -s res://tests/run_tests.gd           # 55 tests: generation, traversal, events, vents, bosses, frames, saves, assets
 godot --headless --path . res://tests/flow_test.tscn            # end-to-end menu and dive flow
 godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
 python3 tools/audio/generate.py                                 # regenerate all audio (numpy + ffmpeg)
 ```
 
-Debugging helpers: `-- --autopilot --zone=4 --shots=<dir>` flies a bot through
-a zone and saves screenshots. `-- --capture=<dir> --capture-at=5` screenshots
+Debugging helpers: `-- --autopilot --zone=4 --frame=whisper --shots=<dir>` flies
+a bot through a zone (it uses tools too) and saves screenshots. `-- --capture=<dir> --capture-at=5` screenshots
 any screen. `godot --headless --fixed-fps 20 --path . -- --autopilot --time=900`
 soak-tests whole dives far faster than real time.
 

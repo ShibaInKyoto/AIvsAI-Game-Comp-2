@@ -14,6 +14,9 @@ var run: RunState
 var last_victory_banked := 0
 ## Milestones unlocked when the last run ended (shown by the summary).
 var last_milestones: Array[Milestones.Milestone] = []
+## Score of the dive that just ended and its place in the records (-1 = unplaced).
+var last_score := 0
+var last_rank := -1
 
 
 func _ready() -> void:
@@ -186,6 +189,8 @@ func end_run(outcome: RunState.Outcome) -> int:
 		meta.daily_best_depth = maxi(meta.daily_best_depth, run.deepest_depth)
 		meta.daily_won = meta.daily_won or outcome == RunState.Outcome.VICTORY
 	last_milestones = Milestones.check(meta, run)
+	last_score = DiveScore.total(run)
+	last_rank = meta.record_dive(DiveScore.record(run, today()))
 	clear_saved_run()
 	save_game()
 	return kept

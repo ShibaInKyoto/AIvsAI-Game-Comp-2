@@ -233,6 +233,8 @@ func on_harpoon_hit(_harpoon: Node, damage: float) -> HarpoonReaction:
 	if is_unaware():
 		damage *= AMBUSH_MULT
 		Fx.float_text(level, pos + Vector2(0.0, radius + 1.0), "AMBUSH", UiTheme.WARN)
+		if level.player:
+			level.player.run.ambushes += 1
 	take_damage(damage, level.player.pos if level.player else pos, &"harpoon")
 	if not alive:
 		return HarpoonReaction.IGNORE

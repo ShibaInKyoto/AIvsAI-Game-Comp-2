@@ -4,7 +4,7 @@ extends RefCounted
 ## end-of-dive report.
 
 const TIPS: Dictionary[StringName, String] = {
-	&"stalker": "The Stalker hunts by sound. Drift slowly, kill the lamp, and fire a flare to send it elsewhere.",
+	&"stalker": "The Stalker hunts by sound. Drift slowly, kill the lamp, and send it elsewhere with a flare or a decoy.",
 	&"lancer": "Lancers glow before they dash. Sidestep the charge, then harpoon them while they recover.",
 	&"jelly": "Drifter jellies are drawn to light. Swing the lamp away, or switch it off, as you pass.",
 	&"lurelight": "A lone light in the dark is usually a lure. Ping first: the sonar shows what is holding it.",
@@ -13,7 +13,7 @@ const TIPS: Dictionary[StringName, String] = {
 	&"siphon": "Lantern chains sting along their whole length. Go around the colony, never through it.",
 	&"mimic": "Deep caches sometimes bite. Hook one with the harpoon from a distance before you ram it.",
 	&"mother": "The Blind Mother strikes at sound. Ping beside a wall, slip away slowly, and hit her gills while " +
-		"she is stuck. Torpedo blasts make good decoys.",
+		"she is stuck. Torpedo blasts and sonar decoys lure her into the rock.",
 	&"choir": "Answer each wave with a ping just as it reaches you. The ring around your sub shows when.",
 	&"rock": "Ramming rock at speed cracks the hull. Ease off the boost in tight tunnels.",
 	&"torpedo": "Torpedoes do not care who fired them. Keep your distance from the blast.",

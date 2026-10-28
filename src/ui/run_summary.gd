@@ -34,6 +34,7 @@ func show_result(run: RunState, outcome: RunState.Outcome) -> void:
 			color = UiTheme.ACCENT
 	column.add_child(UiUtil.label(title, &"TitleLabel", 72, color))
 	column.add_child(UiUtil.label(subtitle, &"HeaderLabel"))
+	_add_score(column, run)
 	var panel := PanelContainer.new()
 	column.add_child(panel)
 	var grid := GridContainer.new()
@@ -87,3 +88,25 @@ func show_result(run: RunState, outcome: RunState.Outcome) -> void:
 		print("AUTOPILOT: run over outcome=%s zone=%d time=%.1f kills=%d banked=%d" % [
 			RunState.Outcome.keys()[outcome], run.zone, run.time, run.kills, banked])
 		get_tree().create_timer(1.0).timeout.connect(Router.quit)
+
+
+## The dive's score, counting up, with how it was earned and where it places.
+func _add_score(column: VBoxContainer, run: RunState) -> void:
+	var score := UiUtil.label("SCORE  0", &"MonoLabel", 44, UiTheme.ACCENT)
+	column.add_child(score)
+	var total := Game.last_score
+	var count := func(v: float) -> void: score.text = "SCORE  %s" % UiUtil.thousands(int(v))
+	create_tween().tween_method(count, 0.0, float(total), clampf(total / 4000.0, 0.4, 1.6)) \
+		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+	var how := UiUtil.label(DiveScore.describe(run), &"DimLabel", 17)
+	how.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	column.add_child(how)
+	var place := ""
+	if Game.last_rank == 0:
+		place = "NEW PERSONAL BEST" if Game.meta.records.size() > 1 else "Your first entry in the records"
+	elif Game.last_rank > 0:
+		place = "#%d in your records" % (Game.last_rank + 1)
+	if place != "":
+		column.add_child(UiUtil.label(place, &"HeaderLabel", 26, UiTheme.WARN))
+		if Game.last_rank == 0 and Game.meta.records.size() > 1:
+			Audio.play_ui(&"purchase")

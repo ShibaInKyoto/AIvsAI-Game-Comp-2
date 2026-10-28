@@ -61,6 +61,7 @@ func _ready() -> void:
 		daily += "   (%s)" % record
 	_menu.add_child(UiUtil.button(daily, _on_daily, 360))
 	_menu.add_child(UiUtil.button("Hangar", func() -> void: Router.go_to(Router.HANGAR), 360))
+	_menu.add_child(UiUtil.button("Records", func() -> void: add_child(RecordsPanel.new()), 360))
 	_menu.add_child(UiUtil.button("How to dive", func() -> void: add_child(HowToPlayPanel.new()), 360))
 	_menu.add_child(UiUtil.button("Settings", func() -> void: add_child(SettingsPanel.new()), 360))
 	_menu.add_child(UiUtil.button("Credits", func() -> void: add_child(CreditsPanel.new()), 360))
@@ -72,6 +73,8 @@ func _ready() -> void:
 	var meta := Game.meta
 	var stats := "Dives %d   -   Deepest %s m   -   Salvage %d   -   Research %d" % [
 		meta.dives, UiUtil.thousands(meta.deepest_depth), meta.salvage, meta.research]
+	if meta.best_score() > 0:
+		stats += "   -   Best score %s" % UiUtil.thousands(meta.best_score())
 	column.add_child(UiUtil.label(stats, &"DimLabel"))
 	if saved:
 		column.add_child(UiUtil.label("Starting a new dive abandons the interrupted one (insurance still pays).",
