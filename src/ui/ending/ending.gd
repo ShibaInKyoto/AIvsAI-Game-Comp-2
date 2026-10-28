@@ -18,7 +18,8 @@ func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	var backdrop := MenuBackdrop.new()
 	backdrop.force_zone = 0
-	backdrop.view_shift = 0.0
+	# Keep the sub off to the side of the centred epilogue text.
+	backdrop.view_shift = -19.0
 	add_child(backdrop)
 	Audio.play_music(&"ending", 3.0)
 	var layer := CanvasLayer.new()

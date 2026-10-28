@@ -11,4 +11,6 @@ func _ready() -> void:
 		target = Router.DIVE
 	elif OS.get_cmdline_user_args().has("--hangar"):
 		target = Router.HANGAR
+	elif OS.get_cmdline_user_args().has("--ending"):
+		target = Router.ENDING
 	get_tree().change_scene_to_file.call_deferred(target)
