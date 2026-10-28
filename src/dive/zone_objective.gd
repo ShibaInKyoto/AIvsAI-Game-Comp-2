@@ -130,6 +130,10 @@ func _advance(amount := 1) -> void:
 		done = true
 		_sub.run.salvage += reward_salvage
 		_sub.run.research += reward_research
+		if reward_salvage > 0:
+			_sub.show_gain(reward_salvage)
+		else:
+			_sub.show_gain(reward_research, " research", UiTheme.ACCENT)
 		Audio.play(&"module_install", -2.0)
 		Events.toast.emit("Objective complete  %s" % reward_text(), UiTheme.GOOD)
 		completed.emit()

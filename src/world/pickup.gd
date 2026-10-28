@@ -76,6 +76,7 @@ func _collect(sub: Submarine) -> void:
 		&"salvage":
 			var gained := ceili(amount * sub.stats.salvage_mult * Pressure.salvage(sub.run.pressure))
 			sub.run.salvage += gained
+			sub.show_gain(gained)
 			var now := Time.get_ticks_msec()
 			_streak = _streak + 1 if now - _streak_time < 700 else 0
 			_streak_time = now

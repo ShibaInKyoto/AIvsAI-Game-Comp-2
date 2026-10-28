@@ -267,6 +267,21 @@ static func shockwave(level: Node3D, at: Vector2, radius: float, color: Color) -
 
 
 ## Little burst when collecting a pickup.
+## A billboard label for floating "+N" gains; always drawn on top.
+static func float_label(color: Color) -> Label3D:
+	var l := Label3D.new()
+	l.font = UiTheme.BOLD_FONT
+	l.font_size = 56
+	l.outline_size = 14
+	l.pixel_size = 0.012
+	l.modulate = color
+	l.outline_modulate = Color(0.0, 0.03, 0.06, 0.85)
+	l.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	l.no_depth_test = true
+	l.shaded = false
+	return l
+
+
 static func sparkle(level: Node3D, at: Vector2, color: Color) -> void:
 	var pm := ParticleProcessMaterial.new()
 	pm.direction = Vector3(0, 1, 0)

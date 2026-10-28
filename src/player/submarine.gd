@@ -56,6 +56,10 @@ var _time := 0.0
 var _camera: Camera3D
 var _alarm_timer := 0.0
 var _creak_timer := 12.0
+var _gain_label: Label3D
+var _gain_total := 0
+var _gain_suffix := ""
+var _gain_tween: Tween
 
 
 func setup(p_level: Level, p_run: RunState, start: Vector2) -> void:
@@ -382,6 +386,7 @@ func _complete_scan(c: Creature) -> void:
 	var first := Game.meta.record_scan(c.species)
 	run.scans += 1
 	run.research += 10 if first else 3
+	show_gain(10 if first else 3, " research", UiTheme.ACCENT)
 	scan_target = null
 	scan_progress = 0.0
 	Audio.play(&"scan_complete", -3.0)
@@ -464,6 +469,31 @@ func drain(hull_amount: float, battery_amount: float) -> void:
 	if run.hull <= 0.0:
 		run.hull = 0.0
 		_die()
+
+
+## Floating "+N" above the sub. Gains of the same kind in quick succession
+## add up in one label instead of stacking a pile of them.
+func show_gain(amount: int, suffix := "", color := UiTheme.WARN) -> void:
+	if amount <= 0:
+		return
+	if is_instance_valid(_gain_label) and _gain_suffix == suffix:
+		_gain_total += amount
+	else:
+		if is_instance_valid(_gain_label):
+			_gain_label.queue_free()
+		_gain_label = Fx.float_label(color)
+		add_child(_gain_label)
+		_gain_total = amount
+		_gain_suffix = suffix
+	_gain_label.text = "+%d%s" % [_gain_total, suffix]
+	_gain_label.position = Vector3(0.0, 2.0, 1.0)
+	_gain_label.modulate.a = 1.0
+	if _gain_tween:
+		_gain_tween.kill()
+	_gain_tween = _gain_label.create_tween()
+	_gain_tween.tween_property(_gain_label, ^"position:y", 3.0, 1.2)
+	_gain_tween.parallel().tween_property(_gain_label, ^"modulate:a", 0.0, 0.5).set_delay(0.8)
+	_gain_tween.tween_callback(_gain_label.queue_free)
 
 
 func heal(amount: float) -> void:

@@ -77,6 +77,7 @@ func _collect(sub: Submarine) -> void:
 	_collected = true
 	sub.run.logs += 1
 	sub.run.research += 5
+	sub.show_gain(5, " research", UiTheme.ACCENT)
 	if not Game.meta.logs_found.has(String(log_id)):
 		Game.meta.logs_found.append(String(log_id))
 	Audio.play(&"log_found", -2.0)
