@@ -339,6 +339,36 @@ def angler() -> np.ndarray:
     return normalize(soft_clip(normalize(render_loop(length, ev, DEEP, 0.5), 0.9), 1.2), 0.6)
 
 
+def furnace() -> np.ndarray:
+    """The Ironclad's lair: a forge. Heavy, uneven stomps, metallic FM anvil
+    strikes on a Phrygian root, a grinding low drone under a minor-second pad,
+    and swells that rise like heat off the vents."""
+    rng = np.random.default_rng(31)
+    length = 52.0
+    beat = 60.0 / 70.0
+    root = 31
+    anvil = [36, 37, 36, 43, 36, 37, 39, 36]
+    ev = []
+    for b in range(int(length / beat)):
+        if b % 4 == 0:
+            ev.append((b * beat, to_stereo(thump(36))))
+        if b % 4 == 3:
+            ev.append((b * beat + beat * 0.5, to_stereo(thump(44) * 0.6)))
+        if b % 8 in (2, 6):
+            n = root + anvil[(b // 4) % len(anvil)]
+            strike = bell(midi_to_hz(n), 1.4, 1.41, 4.5) * 0.3
+            ev.append((b * beat, to_stereo(strike, float(rng.uniform(-0.5, 0.5)))))
+            # The ring of the metal cooling after each strike.
+            ev.append((b * beat + 0.09, to_stereo(bell(midi_to_hz(n + 12), 2.0, 2.76, 1.2) * 0.1, 0.0)))
+    for i in range(4):
+        dur = 13.0
+        ev.append((i * dur, to_stereo(sub_drone(midi_to_hz(root - 12), dur))))
+        ev.append((i * dur, pad(midi_to_hz(root), dur, 0.18, 3.0, 4.0) * 0.75))
+        ev.append((i * dur + 2.0, pad(midi_to_hz(root + 1), dur - 3.0, 0.3, 4.0, 3.0) * 0.4))
+        ev.append((i * dur + 6.5, pad(midi_to_hz(root + 31), 6.0, 0.45, 4.5, 2.0) * 0.22))
+    return normalize(soft_clip(normalize(render_loop(length, ev, DEEP, 0.45), 0.9), 1.2), 0.72)
+
+
 def loss() -> np.ndarray:
     ev = []
     for f in chord_notes(50, [0, 3, 7, 10]):
@@ -468,7 +498,7 @@ def ambience_hadal() -> np.ndarray:
 
 TRACKS = {
     "title": title, "shelf": shelf, "reef": reef, "midnight": midnight, "vents": vents,
-    "hadal": hadal, "boss": boss, "lair": lair, "angler": angler, "loss": loss, "ending": ending, "ambience": ambience,
+    "hadal": hadal, "boss": boss, "lair": lair, "angler": angler, "furnace": furnace, "loss": loss, "ending": ending, "ambience": ambience,
     "ambience_reef": ambience_reef, "ambience_caverns": ambience_caverns, "ambience_vents": ambience_vents,
     "ambience_hadal": ambience_hadal,
 }

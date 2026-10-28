@@ -335,7 +335,7 @@ func _awaken() -> void:
 		return
 	state = State.CRAWL
 	_cooldown = 1.5
-	wake("Its plates turn everything. The vents do not.", 0.45)
+	wake("Its plates turn everything. The vents do not.", 0.45, &"furnace")
 
 
 func _rear(at: Vector2) -> void:
