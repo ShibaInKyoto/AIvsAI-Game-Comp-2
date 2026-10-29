@@ -13,7 +13,7 @@ const ALL: Array[Dictionary] = [
 		"text": "Seven metres of wing gliding through the shallows, a school of fish sheltering under it."},
 	{"id": "whale", "name": "A sperm whale", "where": "in the Sunlit Shelf",
 		"text": "Eleven metres of whale passing in the blue, its clicks lighting the cave on your sonar."},
-	{"id": "pearl", "name": "A giant clam's pearl", "where": "in the Twilight Reef",
+	{"id": "pearl", "name": "A giant clam's pearl", "where": "in the Twilight Reef, in the dark",
 		"text": "Taken in the dark by its own glow, while the clam gaped."},
 	{"id": "whale_fall", "name": "A whale fall", "where": "in the Twilight Reef, now and then",
 		"text": "A whale's bones on the floor, feeding the deep for a century."},
@@ -21,7 +21,7 @@ const ALL: Array[Dictionary] = [
 		"text": "A ceiling of cold lights that go dark at a sound, and light the way for the quiet."},
 	{"id": "glass", "name": "Singing glass", "where": "in the Abyssal Vents", "log": "log_06",
 		"text": "Three notes rang it to pieces. Sing the right chord at the rock and it gives way."},
-	{"id": "echo", "name": "The echo", "where": "in the Hadal Trench", "log": "log_03",
+	{"id": "echo", "name": "The echo", "where": "in the Hadal Trench, for those who ping", "log": "log_03",
 		"text": "Eleven seconds after your ping, something far below pinged back."},
 	{"id": "trench", "name": "The moving trench", "where": "in the Hadal Trench", "log": "log_04",
 		"text": "The rock flowed shut behind you and opened into a chamber that had not been there."},
@@ -29,7 +29,8 @@ const ALL: Array[Dictionary] = [
 		"text": "Vasquez's drone, swallowed by the rock it was cutting through."},
 	{"id": "audience", "name": "The audience", "where": "on the hadal floor", "log": "log_05",
 		"text": "They hung over the station facing the floor, and turned together when the tone changed."},
-	{"id": "lullaby", "name": "Okafor's lullaby", "where": "on the hadal floor", "log": "log_08",
+	{"id": "lullaby", "name": "Okafor's lullaby", "log": "log_08",
+		"where": "on the hadal floor, for those who stay a while",
 		"text": "The station's speakers still play it, and something far below still sings it back."},
 ]
 
