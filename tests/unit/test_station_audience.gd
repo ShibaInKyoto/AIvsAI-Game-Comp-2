@@ -113,3 +113,16 @@ func test_still_and_harmless_until_hurt() -> void:
 			awake += 1
 	check(awake >= 2, "and wakes the rest near it (%d awake)" % awake)
 	level.free()
+
+
+func test_a_killed_member_leaves_the_audience() -> void:
+	var parts := _final_level(99)
+	var level: Level = parts[0]
+	var audience := _audience(level)
+	var count := audience.members.size()
+	var gone: Creature = audience.members[0]
+	level.entities.erase(gone)
+	gone.free()
+	audience.tick(DT)
+	check_eq(audience.members.size(), count - 1, "the freed one is dropped, the rest stay")
+	level.free()

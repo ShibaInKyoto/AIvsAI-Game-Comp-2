@@ -60,7 +60,13 @@ func setup() -> void:
 
 
 func tick(delta: float) -> void:
-	members = members.filter(func(m: Creature) -> bool: return is_instance_valid(m) and m.alive)
+	# Killed members are freed: check before touching them (a typed lambda
+	# would choke on the freed instance).
+	var still: Array[Creature] = []
+	for m: Variant in members:
+		if is_instance_valid(m) and (m as Creature).alive:
+			still.append(m)
+	members = still
 	# One that has left the trance (hurt, bumped) brings the rest with it.
 	for m in members:
 		if not m.entranced:
