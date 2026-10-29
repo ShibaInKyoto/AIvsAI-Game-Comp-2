@@ -12,7 +12,8 @@ singing at the bottom of the world.
 
 | | |
 |---|---|
-| ![Sunlit Shelf](docs/screenshots/shelf.jpg) | ![Spined puffers swelling up](docs/screenshots/puffers.jpg) |
+| ![Sunlit Shelf](docs/screenshots/shelf.jpg) | ![A shelf manta and the school sheltering under it](docs/screenshots/manta.jpg) |
+| ![Spined puffers swelling up](docs/screenshots/puffers.jpg) | ![Something far below pings back](docs/screenshots/echo.jpg) |
 | ![Twilight Reef](docs/screenshots/reef.jpg) | ![The Lamplighter](docs/screenshots/lamplighter.jpg) |
 | ![Abyssal Vents](docs/screenshots/vents.jpg) | ![The Blind Mother](docs/screenshots/mother.jpg) |
 | ![The Choir](docs/screenshots/choir.jpg) | ![Decompression stop](docs/screenshots/stop.jpg) |
