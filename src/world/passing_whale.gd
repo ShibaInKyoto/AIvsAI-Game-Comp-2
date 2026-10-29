@@ -32,14 +32,34 @@ var from := Vector2.ZERO
 var to := Vector2.ZERO
 var heading := 1.0
 var witnessed := false
+## Behind the title screen: it passes again and again, and is never witnessed.
+var backdrop := false
 var _x := 0.0
 var _t := 0.0
 var _click_in := 0.5
 var _ping_in := 1.5
+var _rest := 4.0
 var _rng := RandomNumberGenerator.new()
 var _rig: Node3D
 var _flukes: Node3D
 var _mat: StandardMaterial3D
+
+
+## A level stretch of open water through [param p] (along the row
+## [param rise] metres above it), as [from, to], or [] if it is too short.
+static func stretch_through(field: TerrainField, p: Vector2, rise: float) -> Array[Vector2]:
+	var y := p.y + rise
+	if field.sample(Vector2(p.x, y)) <= CLEARANCE:
+		return []
+	var a := p.x
+	while a > p.x - 40.0 and field.sample(Vector2(a - 1.0, y)) > CLEARANCE:
+		a -= 1.0
+	var b := p.x
+	while b < p.x + 40.0 and field.sample(Vector2(b + 1.0, y)) > CLEARANCE:
+		b += 1.0
+	if b - a < MIN_RUN:
+		return []
+	return [Vector2(a, y), Vector2(b, y)]
 
 
 ## Finds the longest level stretch of open water in the zone, at least
@@ -94,7 +114,7 @@ func setup() -> void:
 	_mat.rim_enabled = true
 	_mat.rim = 0.7
 	_mat.rim_tint = 0.2
-	_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_HASH
+	_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_DEPTH_PRE_PASS
 	_build()
 
 
@@ -137,7 +157,11 @@ func tick(delta: float) -> void:
 	var sub := level.player
 	match state:
 		State.WAITING:
-			if sub and sub.alive and sub.pos.distance_to(pos) < TRIGGER_RANGE:
+			if backdrop:
+				_rest -= delta
+				if _rest <= 0.0:
+					_set_off(-heading)
+			elif sub and sub.alive and sub.pos.distance_to(pos) < TRIGGER_RANGE:
 				_begin(sub)
 		State.PASSING:
 			_swim(delta, sub)
@@ -145,12 +169,16 @@ func tick(delta: float) -> void:
 
 ## Sets off from the end of its stretch farther from the sub, so it passes it.
 func _begin(sub: Submarine) -> void:
+	_set_off(1.0 if sub.pos.distance_to(from) > sub.pos.distance_to(to) else -1.0)
+
+
+func _set_off(dir: float) -> void:
 	state = State.PASSING
-	heading = 1.0 if sub.pos.distance_to(from) > sub.pos.distance_to(to) else -1.0
+	heading = dir
 	_x = from.x if heading > 0.0 else to.x
+	_t = 0.0
 	_rig.visible = true
-	if heading < 0.0:
-		_rig.rotation.y = PI
+	_rig.rotation.y = 0.0 if heading > 0.0 else PI
 
 
 func _swim(delta: float, sub: Submarine) -> void:
@@ -161,7 +189,9 @@ func _swim(delta: float, sub: Submarine) -> void:
 	var gone := absf(_x - start_x)
 	var left := absf(end_x - _x)
 	if left <= 0.0 or signf(end_x - _x) != heading:
-		state = State.GONE
+		# Behind the title it comes round again after a while.
+		state = State.WAITING if backdrop else State.GONE
+		_rest = _rng.randf_range(10.0, 16.0)
 		_rig.visible = false
 		return
 	# Out of the blue and back into it.
@@ -182,11 +212,11 @@ func _swim(delta: float, sub: Submarine) -> void:
 			Audio.play_at(&"whale_click", head, -8.0, 0.1)
 	# Its clicks chart the cave on the sub's sonar.
 	_ping_in -= delta
-	if _ping_in <= 0.0 and _mat.albedo_color.a > 0.5:
+	if _ping_in <= 0.0 and _mat.albedo_color.a > 0.5 and not backdrop:
 		_ping_in = CLICK_PING_EVERY
 		level.ping(head, CLICK_PING_RANGE, 2.0)
 	var seen := _mat.albedo_color.a > 0.5 and sub and sub.alive and sub.pos.distance_to(at) < WITNESS_RANGE
-	if seen and not witnessed:
+	if seen and not witnessed and not backdrop:
 		witnessed = true
 		Wonders.witness("whale")
 		sub.run.research += RESEARCH

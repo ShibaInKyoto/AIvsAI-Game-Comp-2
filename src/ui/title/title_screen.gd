@@ -9,6 +9,7 @@ func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	var backdrop := MenuBackdrop.new()
 	backdrop.view_shift = -6.0
+	backdrop.whale = true
 	add_child(backdrop)
 	Audio.play_music(&"title")
 	add_child(PostFx.new())

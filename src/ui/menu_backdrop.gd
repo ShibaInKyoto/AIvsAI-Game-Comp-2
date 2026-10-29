@@ -11,6 +11,8 @@ var camera: Camera3D
 var view_shift := -5.0
 ## Zone to show; -1 picks the deepest biome the player has reached.
 var force_zone := -1
+## In the Sunlit Shelf, a whale passes behind the submarine now and then.
+var whale := false
 var _t := 0.0
 var _ping_timer := 2.0
 var _anchor := Vector2.ZERO
@@ -46,6 +48,8 @@ func _ready() -> void:
 	var shoal := Shoal.new()
 	shoal.pos = _anchor + Vector2(8, 3)
 	level.add_entity(shoal)
+	if whale and layout.biome.id == &"shelf":
+		_add_whale(level)
 	if layout.biome.creatures.has(&"puffer"):
 		var puffer := Puffer.new()
 		puffer.pos = layout.field.resolve_circle(_anchor + Vector2(-5.5, -1.5), 1.2)
@@ -59,6 +63,19 @@ func _ready() -> void:
 	var water := WaterFx.new()
 	level.add_child(water)
 	water.setup(layout.biome, layout.size(), camera, Settings.quality)
+
+
+func _add_whale(on: Level) -> void:
+	for rise: float in [-4.0, -5.5, 4.0, 5.5, -7.0, 7.0]:
+		var way := PassingWhale.stretch_through(on.field, _anchor, rise)
+		if not way.is_empty():
+			var w := PassingWhale.new()
+			w.backdrop = true
+			w.from = way[0]
+			w.to = way[1]
+			w.pos = _anchor
+			on.add_entity(w)
+			return
 
 
 func _pick_spot(layout: LevelLayout) -> Vector2:
