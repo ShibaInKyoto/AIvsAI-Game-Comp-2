@@ -150,6 +150,7 @@ itself. Every zone is a procedurally generated cave cross-section. Find the
 | Sonar chart | `Tab` | Back |
 | Pick a module at a stop | `1` `2` `3` | D-pad + A |
 | Pause | `Esc` | Start |
+| Scroll hangar lists | Mouse wheel | Right stick |
 | Fullscreen | `F11` | |
 | Screenshot | `F12` | |
 
