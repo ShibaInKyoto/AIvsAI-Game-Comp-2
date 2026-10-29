@@ -236,4 +236,26 @@ func _build_mesh() -> ArrayMesh:
 		var at := right + right_basis * Vector3(-1.8 + i * 1.2, 0.1, 1.47)
 		parts.append([right_windows[i], Transform3D(right_basis, at)])
 	parts.append([porthole, Transform3D(Basis(), Vector3(0, 3.5, 2.12))])
+	# The berth of the last escape pod, empty: Hale and Sato took it up (log_10).
+	# An open docking ring on the left module, its clamps sprung wide and the
+	# umbilicals torn off and trailing down the hull.
+	var berth := left + Vector3(1.4, 1.45, 0.0)
+	var ring := _part(MeshKit.lathe(PackedVector2Array([Vector2(0, 0.82), Vector2(0.4, 0.86), Vector2(1, 0.82)]),
+		0.45, 16, 2), BAND)
+	parts.append([ring, Transform3D(Basis(Vector3.BACK, PI * 0.5), berth + Vector3(0, 0.22, 0))])
+	var clamp := _part(_box(Vector3(0.14, 0.7, 0.18)), FRAME)
+	for k in 4:
+		var a := TAU * (k + 0.5) / 4.0
+		var out := Vector3(cos(a), 0.0, sin(a))
+		var tilt := Basis(out.cross(Vector3.UP).normalized(), -0.75)
+		parts.append([clamp, Transform3D(tilt, berth + out * 0.95 + Vector3(0, 0.55, 0))])
+	var cable := _part(_cylinder(0.05, 1.0, 5), FRAME)
+	for c: Array in [[Vector3(-0.3, 0.3, 0.75), Vector3(-0.9, -0.9, 1.25)], [Vector3(0.4, 0.3, 0.7),
+			Vector3(1.1, -1.25, 1.3)]]:
+		var a: Vector3 = berth + c[0]
+		var b: Vector3 = berth + c[1]
+		var y := (b - a).normalized()
+		var x := y.cross(Vector3.BACK).normalized()
+		# Stretched along its own axis to span a to b.
+		parts.append([cable, Transform3D(Basis(x, y * a.distance_to(b), x.cross(y)), (a + b) * 0.5)])
 	return MeshKit.merge(parts)
