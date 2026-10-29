@@ -10,6 +10,8 @@ const PANIC_SPEED := 9.0
 
 var fish_pos := PackedVector2Array()
 var fish_vel := PackedVector2Array()
+## A big, harmless creature this school shelters under (a manta), or null.
+var follow: Creature
 var _multimesh: MultiMesh
 var _goal := Vector2.ZERO
 var _panic := 0.0
@@ -72,7 +74,11 @@ func build_model() -> void:
 
 
 func think() -> void:
-	if pos.distance_to(_goal) < 3.0:
+	if is_instance_valid(follow) and follow.alive:
+		# Keep to the water just under it, wherever it glides.
+		_home = follow.pos
+		_goal = follow.pos + Vector2(0.0, -1.8)
+	elif pos.distance_to(_goal) < 3.0:
 		_goal = wander_point(_home, 18.0)
 	var sub := level.player
 	if sub and sub.alive and sub.pos.distance_to(pos) < 9.0 and sub.vel.length() > 3.5:
@@ -117,6 +123,11 @@ func behave(delta: float) -> void:
 		threats.append(_scare_from)
 	var field := level.field
 	var max_speed := PANIC_SPEED if _panic > 0.0 else FISH_SPEED
+	# A school sheltering under something keeps up with it, pulled harder the
+	# further it has fallen behind.
+	var goal_pull := 1.2
+	if is_instance_valid(follow):
+		goal_pull = clampf(center.distance_to(_goal) * 0.6, 1.2, 5.0)
 	for i in n:
 		var p := fish_pos[i]
 		var v := fish_vel[i]
@@ -131,7 +142,7 @@ func behave(delta: float) -> void:
 				sep += d / maxf(dl, 0.05)
 			if dl < 6.0:
 				align += fish_vel[j]
-		var steer_v := (center - p) * 0.6 + sep * 1.2 + align.normalized() * 0.8 + (_goal - center).normalized() * 1.2
+		var steer_v := (center - p) * 0.6 + sep * 1.2 + align.normalized() * 0.8 + (_goal - center).normalized() * goal_pull
 		for threat in threats:
 			var away := p - threat
 			var dist := away.length()

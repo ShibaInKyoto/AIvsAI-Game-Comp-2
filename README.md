@@ -161,7 +161,8 @@ settings and key bindings are kept).
   to see it in the viewport) and 13 story logs to recover (find them all to learn
   what became of the crew).
 * Twelve creature species with their own senses and tells: shelf mantas, gentle
-  giants wider than the sub that glide through the sunlit zones, drifting jellies,
+  giants wider than the sub that glide through the sunlit zones with a school
+  sheltering under their wings, drifting jellies,
   dashing lancers that hunt the shoals, spined puffers that swell into living
   mines when rushed, angler-like lurelights, burrowing gulper eels,
   wall-crawling isopods, stinging siphonophore chains, caches that turn out to
@@ -230,7 +231,7 @@ Requires Godot 4.5.1 with export templates installed.
 
 ```sh
 godot --headless --import                                       # first-time import
-godot --headless --path . -s res://tests/run_tests.gd           # 113 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
+godot --headless --path . -s res://tests/run_tests.gd           # 114 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
 godot --headless --path . res://tests/flow_test.tscn            # end-to-end menu and dive flow
 godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
 python3 tools/audio/generate.py                                 # regenerate all audio (numpy + ffmpeg)

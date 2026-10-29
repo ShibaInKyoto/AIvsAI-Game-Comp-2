@@ -98,3 +98,28 @@ func test_glides_harmlessly_and_keeps_its_distance() -> void:
 	check(furthest > 12.0, "and roams (%.0f m out at most)" % furthest)
 	check_eq(in_rock, 0, "never into the rock")
 	level.free()
+
+
+func test_a_school_shelters_under_it() -> void:
+	for run_seed in [3, 17, 42, 99]:
+		var parts := _zone_level(0, run_seed)
+		var level: Level = parts[0]
+		var manta := _manta(level)
+		if manta == null:
+			level.free()
+			continue
+		var escort: Shoal = null
+		for e in level.entities:
+			if e is Shoal and (e as Shoal).follow == manta:
+				escort = e
+		check(escort != null, "seed %d: a school comes with it" % run_seed)
+		if escort:
+			var worst := 0.0
+			for i in int(30.0 / DT):
+				manta.tick(DT)
+				escort.tick(DT)
+				if i > int(5.0 / DT):
+					worst = maxf(worst, escort.pos.distance_to(manta.pos))
+			check(worst < 10.0, "seed %d: and keeps under it (strays %.1f m at most)" % [run_seed, worst])
+		level.free()
+		return

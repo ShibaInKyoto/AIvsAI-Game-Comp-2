@@ -71,7 +71,8 @@ static func populate(level: Level, run: RunState) -> void:
 
 
 ## The sunlit shelf is the gentle giants' water: most zones there have a
-## manta gliding through the open stretches.
+## manta gliding through the open stretches, a school of fish sheltering
+## under its wings.
 static func _spawn_manta(level: Level, used: PackedVector2Array) -> void:
 	if level.biome.id != &"shelf" or level.rng.randf() >= MANTA_CHANCE:
 		return
@@ -84,6 +85,12 @@ static func _spawn_manta(level: Level, used: PackedVector2Array) -> void:
 	manta.pos = p
 	level.add_entity(manta)
 	used.append(p)
+	var under := p + Vector2(0.0, -2.0)
+	if level.field.sample(under) > 2.0:
+		var escort: Shoal = SPECIES[&"shoal"].new()
+		escort.pos = under
+		escort.follow = manta
+		level.add_entity(escort)
 
 
 static func _spawn_creatures(level: Level, run: RunState, used: PackedVector2Array) -> void:
