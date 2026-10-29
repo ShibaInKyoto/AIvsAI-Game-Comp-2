@@ -70,6 +70,10 @@ static func populate(level: Level, run: RunState) -> void:
 	_spawn_manta(level, used)
 	if level.biome.id == &"reef":
 		GiantClam.scatter(level, rng, used, rng.randi_range(1, 2))
+	# The first Midnight Caverns zone always has its glow-worm grotto; the
+	# Blind Mother's zone sometimes does.
+	if level.biome.id == &"midnight" and (level.zone != BiomeLibrary.LAIR_ZONE or rng.randf() < 0.5):
+		GlowwormGrotto.place(level, rng)
 
 
 ## The sunlit shelf is the gentle giants' water: most zones there have a

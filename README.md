@@ -15,7 +15,8 @@ singing at the bottom of the world.
 | ![Sunlit Shelf](docs/screenshots/shelf.jpg) | ![A shelf manta and the school sheltering under it](docs/screenshots/manta.jpg) |
 | ![Spined puffers swelling up](docs/screenshots/puffers.jpg) | ![Something far below pings back](docs/screenshots/echo.jpg) |
 | ![Twilight Reef](docs/screenshots/reef.jpg) | ![The Lamplighter](docs/screenshots/lamplighter.jpg) |
-| ![Abyssal Vents](docs/screenshots/vents.jpg) | ![The Blind Mother](docs/screenshots/mother.jpg) |
+| ![A glow-worm grotto in the Midnight Caverns](docs/screenshots/grotto.jpg) | ![The Blind Mother](docs/screenshots/mother.jpg) |
+| ![Abyssal Vents](docs/screenshots/vents.jpg) | ![A giant clam gaping in the dark, its pearl aglow](docs/screenshots/clam.jpg) |
 | ![The Choir](docs/screenshots/choir.jpg) | ![Decompression stop](docs/screenshots/stop.jpg) |
 | ![The Ironclad, its shell cracked by an eruption](docs/screenshots/ironclad.jpg) | ![A whale fall](docs/screenshots/whale.jpg) |
 | ![A new chamber opens in the Hadal Trench where there was solid rock](docs/screenshots/trench.jpg) | ![Vasquez's drone, sealed into the rock](docs/screenshots/drone.jpg) |
@@ -76,6 +77,10 @@ itself. Every zone is a procedurally generated cave cross-section. Find the
   Lamplighter**, an angler the size of a whale that sees only light. Run dark,
   ping to break her lure's pull, then shine your lamp in her eyes up close (or
   feed her a flare) and strike while she is dazzled.
+* In the Midnight Caverns waits a **glow-worm grotto**: a chamber whose ceiling
+  hangs with thousands of glowing threads. They go dark at sound, the dark
+  spreading out from every noise, and light again after a few quiet seconds.
+  Drift through slowly and they light your way without the lamp.
 * At the bottom of the Midnight Caverns the way down is sealed by **the Blind
   Mother**, a colossal eyeless eel that strikes at sound. Make noise beside a
   wall, slip aside, and hit her gills while her head is stuck in the rock.
@@ -236,7 +241,7 @@ Requires Godot 4.5.1 with export templates installed.
 
 ```sh
 godot --headless --import                                       # first-time import
-godot --headless --path . -s res://tests/run_tests.gd           # 117 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
+godot --headless --path . -s res://tests/run_tests.gd           # 119 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
 godot --headless --path . res://tests/flow_test.tscn            # end-to-end menu and dive flow
 godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
 python3 tools/audio/generate.py                                 # regenerate all audio (numpy + ffmpeg)
