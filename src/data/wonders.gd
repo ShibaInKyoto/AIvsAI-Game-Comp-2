@@ -5,6 +5,8 @@ extends RefCounted
 ## yet witnessed says where to look. The moment each was first witnessed is
 ## kept as a small snapshot beside it.
 
+## Research for witnessing one for the first time.
+const RESEARCH := 5
 const SNAPSHOT_DIR := "user://wonders"
 const SNAPSHOT_WIDTH := 320
 
@@ -49,12 +51,15 @@ static func witness(id: String) -> void:
 	if meta == null or meta.wonders.has(id) or get_wonder(id).is_empty():
 		return
 	meta.wonders.append(id)
+	var reward := ""
 	if Game.run:
 		Game.run.wonders.append(id)
+		Game.run.research += RESEARCH
+		reward = "  +%d research" % RESEARCH
 	_snapshot(id)
 	Audio.play(&"wonder_chime", -6.0)
-	Events.toast.emit("Witnessed: %s  (%d / %d)" % [get_wonder(id).name, found_count(meta.wonders), ALL.size()],
-		UiTheme.GOOD)
+	Events.toast.emit("Witnessed: %s  (%d / %d)%s" % [get_wonder(id).name, found_count(meta.wonders), ALL.size(),
+		reward], UiTheme.GOOD)
 
 
 ## How many of [param seen] are wonders (saves may hold ids no longer listed).

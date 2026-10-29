@@ -27,6 +27,7 @@ func test_witnessed_once_and_kept() -> void:
 	var copy := MetaState.from_dict(JSON.parse_string(JSON.stringify(Game.meta.to_dict())))
 	check(copy.wonders.has("glass"), "kept in the save")
 	check_eq(Game.run.wonders, ["glass"] as Array[String], "and listed for this dive's report")
+	check_eq(Game.run.research, Wonders.RESEARCH, "for a little research")
 	var run_copy := RunState.from_dict(JSON.parse_string(JSON.stringify(Game.run.to_dict())), {})
 	check(run_copy.wonders.has("glass"), "even across a resumed dive")
 	Game.run = run_before
