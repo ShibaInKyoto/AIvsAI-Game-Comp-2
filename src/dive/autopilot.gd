@@ -314,7 +314,8 @@ func _fight_lamplighter(angler: Lamplighter, delta: float) -> void:
 	sub.aim = to.normalized()
 	sub.facing = 1.0 if sub.aim.x >= 0.0 else -1.0
 	_ping_timer -= delta
-	if _ping_timer <= 0.0:
+	# On emergency power the charge goes to the lamp, which is what dazzles her.
+	if _ping_timer <= 0.0 and sub.run.battery > sub.stats.sonar_cost + sub.stats.max_battery * 0.12:
 		_ping_timer = 3.0
 		sub.try_ping()
 	var away_from_lure := (sub.pos - angler.lure_pos()).normalized()
