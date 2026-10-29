@@ -77,6 +77,13 @@ func _sequence() -> void:
 			found, SignalLogs.count()], &"DimLabel", 20)
 		hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		await _reveal(hint, 1.2)
+	var witnessed := Wonders.found_count(meta.wonders)
+	var wonders_text := "%d of %d wonders of the trench witnessed." % [witnessed, Wonders.ALL.size()]
+	if witnessed < Wonders.ALL.size():
+		wonders_text += " The hangar archive says where to look for the rest."
+	var wonders := UiUtil.label(wonders_text, &"DimLabel", 20)
+	wonders.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	await _reveal(wonders, 0.8)
 	var stats := UiUtil.label("Salvage banked: %d     Dives: %d     Victories: %d" % [Game.last_victory_banked,
 			meta.dives, meta.wins], &"MonoLabel", 22)
 	stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
