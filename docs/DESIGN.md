@@ -116,6 +116,11 @@ has not noticed the sub can be **ambushed** (harpoon hits deal double), and
 * 4 submarine frames with different stats and starting tools.
 * Meta upgrades (hull, battery, thrusters, lamp, sonar, cargo, tool unlocks).
 * Codex: scan every creature, collect every signal log.
+* Eleven **wonders** to witness, most of them a log made real: a passing sperm
+  whale, a giant clam's pearl, a whale fall, the glow-worm grotto, the singing
+  glass, the echo, the moving trench, Vasquez's drone, the audience and
+  Okafor's lullaby. The hangar archive keeps a snapshot of each and hints where
+  to look for the rest.
 * **Pressure** levels after the first win (stacking difficulty modifiers).
 * Daily dive (date-seeded), with today's best depth on the title screen.
 * Zone events (currents, blackout, frenzy, wrecks, whale fall, dead calm, bloom) forecast
@@ -144,6 +149,10 @@ has not noticed the sub can be **ambushed** (harpoon hits deal double), and
   (re-checked, and undone if need be, if the sub slips past while it closes).
 * **Sonar**: global shader uniforms carry the last pings; terrain and creature
   shaders draw the expanding wavefront and a fading contour reveal.
+  Anything can ping: the station beacon, the echo from below and a passing
+  whale's clicks all chart the cave the same way. The singing glass listens
+  for the sub's pings arriving at the speed of the wave and opens with the
+  same field edit as the moving trench.
 * **Audio**: all sound effects and music are synthesized by a Python script in
   `tools/audio/` and committed as OGG files.
 * **Art**: all meshes are procedurally built at runtime; rock textures are
