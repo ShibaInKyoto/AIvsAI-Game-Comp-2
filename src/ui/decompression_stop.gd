@@ -55,6 +55,9 @@ func _build() -> void:
 	elif _run.zone == VasquezDrone.ZONE and not Game.meta.logs_found.has(String(VasquezDrone.LOG_ID)):
 		_column.add_child(UiUtil.label("A Meridian Deep transponder is chirping somewhere in the next zone, very " +
 			"faintly, from inside the rock.", &"", 22, UiTheme.ACCENT))
+	elif _run.zone == PassingWhale.ZONE:
+		_column.add_child(UiUtil.label("The hydrophones pick up slow, steady clicks in the next zone, like a clock " +
+			"ticking somewhere out in the blue.", &"", 22, UiTheme.ACCENT))
 	elif _run.zone == SingingGlass.ZONE:
 		_column.add_child(UiUtil.label("The hydrophones pick up a faint ringing in the next zone, like a wet finger " +
 			"round a wine glass, every time your sonar goes out.", &"", 22, UiTheme.ACCENT))
