@@ -25,6 +25,8 @@ const ALL: Array[Dictionary] = [
 		"text": "Vasquez's drone, swallowed by the rock it was cutting through."},
 	{"id": "audience", "name": "The audience", "where": "on the hadal floor", "log": "log_05",
 		"text": "They hung over the station facing the floor, and turned together when the tone changed."},
+	{"id": "lullaby", "name": "Okafor's lullaby", "where": "on the hadal floor", "log": "log_08",
+		"text": "The station's speakers still play it, and something far below still sings it back."},
 ]
 
 

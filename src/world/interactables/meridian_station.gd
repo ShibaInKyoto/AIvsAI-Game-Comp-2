@@ -17,6 +17,8 @@ const ARRIVE_RANGE := 16.0
 ## The beacon only pings while the sub is this close.
 const HEARING := 70.0
 const SURVEY_RESEARCH := 10
+## Seconds after arriving before the hull speakers start the lullaby.
+const LULLABY_DELAY := 3.0
 const HULL := Color(0.78, 0.76, 0.68)
 const BAND := Color(0.86, 0.42, 0.12)
 const FRAME := Color(0.17, 0.19, 0.21)
@@ -25,6 +27,10 @@ const GLASS := Color(0.04, 0.05, 0.06)
 const BEACON_COLOR := Color(0.4, 1.0, 0.6)
 
 var greeted := false
+## How far Okafor's lullaby has got: 0 not begun, 1 the speakers, 2 the
+## answer from below, 3 over.
+var lullaby_stage := 0
+var _lullaby_t := -1.0
 var _t := 0.0
 var _flicker := 1.0
 var _flicker_timer := 0.0
@@ -139,6 +145,8 @@ func tick(delta: float) -> void:
 	var sub := level.player
 	if not greeted and sub and sub.alive and sub.pos.distance_to(pos + Vector2(0.0, 3.0)) < ARRIVE_RANGE:
 		_greet(sub)
+	if _lullaby_t >= 0.0:
+		_play_lullaby(delta)
 
 
 func _ping() -> void:
@@ -159,6 +167,54 @@ func _greet(sub: Submarine) -> void:
 	sub.run.research += SURVEY_RESEARCH
 	sub.show_gain(SURVEY_RESEARCH, " research", UiTheme.ACCENT)
 	Events.toast.emit("Station survey: +%d research" % SURVEY_RESEARCH, UiTheme.ACCENT)
+	_lullaby_t = 0.0
+
+
+## Okafor's lullaby (log_08): the hull speakers still play it, then something
+## far below sings it back, and the audience over the station turns to listen.
+func _play_lullaby(delta: float) -> void:
+	_lullaby_t += delta
+	# The Choir's own song takes over once it wakes.
+	var singing := level.boss != null and level.boss.active
+	match lullaby_stage:
+		0:
+			if _lullaby_t >= LULLABY_DELAY:
+				_next_lullaby_stage()
+				if not singing:
+					Audio.stop_music(2.0)
+				Audio.play_at(&"lullaby_speaker", pos + Vector2(-2.0, 5.0), 3.0, 0.0)
+				Events.toast.emit("The station's speakers crackle into life: Okafor's lullaby, still playing.",
+					UiTheme.ACCENT)
+		1:
+			if _lullaby_t >= _length(&"lullaby_speaker") - 3.0:
+				_next_lullaby_stage()
+				if singing:
+					_lullaby_t = -1.0
+					return
+				Audio.play(&"lullaby_choir", 0.0)
+				# For the sound cues: it comes up from below.
+				Audio.sound_at.emit(&"lullaby_choir", pos + Vector2(0.0, -30.0))
+				Events.toast.emit("Something far below sings it back. Perfectly.", UiTheme.ACCENT)
+				for e in level.entities:
+					if e is StationAudience:
+						(e as StationAudience).listen()
+		2:
+			if _lullaby_t >= _length(&"lullaby_choir") - 4.0:
+				_next_lullaby_stage()
+				_lullaby_t = -1.0
+				Wonders.witness("lullaby")
+				if not singing:
+					Audio.play_music(level.biome.music, 4.0)
+
+
+func _next_lullaby_stage() -> void:
+	lullaby_stage += 1
+	_lullaby_t = 0.0
+
+
+static func _length(sound: StringName) -> float:
+	var stream := Audio.get_stream(sound)
+	return stream.get_length() if stream else 4.0
 
 
 ## Uniformly coloured copy of [param mesh]; [param window] goes in alpha

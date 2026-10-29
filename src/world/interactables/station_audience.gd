@@ -23,6 +23,8 @@ var members: Array[Creature] = []
 var turns := 0
 var _tone_in := 3.0
 var _side := 1.0
+## While the lullaby is sung back, they hold still, facing the station.
+var _listening := 0.0
 
 
 ## Gathers the audience in the water over [param station]; returns it.
@@ -83,10 +85,21 @@ func tick(delta: float) -> void:
 	# Once the Choir is singing to the sub, the tone is its own.
 	if level.boss and level.boss.active:
 		return
+	_listening = maxf(_listening - delta, 0.0)
+	if _listening > 0.0:
+		return
 	_tone_in -= delta
 	if _tone_in <= 0.0:
 		_tone_in = level.rng.randf_range(TONE_PERIOD.x, TONE_PERIOD.y)
 		_shift_tone()
+
+
+## The lullaby sung back from below: they turn to face the station's speakers.
+func listen() -> void:
+	_listening = 26.0
+	for m in members:
+		if m.entranced:
+			m.entranced_facing = (pos + Vector2(0.0, -2.0) - m.pos).normalized()
 
 
 func _wake_near(p: Vector2) -> void:

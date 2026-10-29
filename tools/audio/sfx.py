@@ -784,5 +784,79 @@ def wonder_chime():
     return normalize(trim_silence(wet_dry(out, HUGE_WATER, 0.5)), 0.5)
 
 
+# Okafor's lullaby (log_08): MIDI note and length in beats, three to a bar.
+LULLABY = [(69, 1), (74, 1), (78, 1), (76, 2), (74, 1), (71, 1), (74, 1), (69, 1), (69, 3),
+           (67, 1), (71, 1), (74, 1), (73, 2), (71, 1), (69, 1), (66, 1), (64, 1), (62, 3)]
+
+
+def _hz(midi: float) -> float:
+    return 440.0 * 2 ** ((midi - 69) / 12)
+
+
+def lullaby_speaker():
+    """Okafor's lullaby as Meridian's hull speakers still play it: a music-box
+    melody through a small, tired speaker, with hiss and crackle."""
+    beat = 60 / 92
+    d = sum(b for _, b in LULLABY) * beat + 2.0
+    t = t_axis(d)
+    wow = 1 + 0.003 * np.sin(2 * np.pi * 0.7 * t)
+    out = np.zeros(seconds(d))
+    at = 0.0
+    for midi, beats in LULLABY:
+        n = min(2.2, d - at)
+        f = _hz(midi)
+        i = seconds(at)
+        w = wow[i:i + seconds(n)]
+        tone = (np.sin(phase_from_freq(f * w)) + 0.35 * np.sin(phase_from_freq(f * 3.01 * w)) * env_exp(n, 0.3)
+                + 0.15 * np.sin(phase_from_freq(f * 5.4 * w)) * env_exp(n, 0.12)) * env_exp(n, 0.9, 0.004)
+        out[i:i + len(tone)] += tone[: max(0, len(out) - i)] * 0.5
+        at += beats * beat
+    out = lowpass(highpass(out, 380), 3200)
+    hiss = highpass(noise(d), 2000) * 0.015
+    crackle = np.zeros(seconds(d))
+    for _ in range(60):
+        k = seconds(RNG.uniform(0, d - 0.01))
+        crackle[k:k + 40] += RNG.uniform(-0.25, 0.25) * np.exp(-np.arange(40) / 6.0)
+    return normalize(trim_silence(wet_dry(mix(out, hiss, crackle), BIG_WATER, 0.3)), 0.6)
+
+
+def lullaby_choir():
+    """The lullaby sung back from far below, an octave down and slower, in the
+    Choir's voice (log_08: "It sang it back. Perfectly.")."""
+    beat = 60 / 70
+    d = sum(b for _, b in LULLABY) * beat + 3.5
+    f = np.zeros(seconds(d))
+    amp = np.zeros(seconds(d))
+    at = 0.0
+    prev = _hz(LULLABY[0][0] - 12)
+    for midi, beats in LULLABY:
+        n = beats * beat
+        i, j = seconds(at), seconds(at + n)
+        target = _hz(midi - 12)
+        glide = min(seconds(0.09), j - i)
+        f[i:i + glide] = np.linspace(prev, target, glide)
+        f[i + glide:j] = target
+        env = np.ones(j - i)
+        env[: seconds(0.12)] = np.linspace(0.3, 1.0, seconds(0.12))
+        # A breath at the end of each phrase.
+        if beats == 3:
+            tail = seconds(0.45)
+            env[-tail:] *= np.linspace(1.0, 0.0, tail)
+        amp[i:j] = env
+        prev = target
+        at += n
+    f[seconds(at):] = prev
+    amp[seconds(at):] = np.linspace(1.0, 0.0, len(amp) - seconds(at)) ** 2
+    t = t_axis(d)
+    out = np.zeros(seconds(d))
+    for ratio, gain, vowel in [(1.0, 1.0, "o"), (2 / 3, 0.45, "u"), (2.0, 0.18, "a")]:
+        ph = phase_from_freq(f * ratio * (1 + 0.007 * np.sin(2 * np.pi * (4.6 + ratio) * t)))
+        for k, a in enumerate(formant_amps(150 * ratio, VOWELS[vowel], 36)):
+            if a > 0.003:
+                out += gain * a * np.sin(ph * (k + 1))
+    out = lowpass(out * amp, 1800)
+    return normalize(trim_silence(wet_dry(out, HUGE_WATER, 0.65)), 0.8)
+
+
 ALL = {name: fn for name, fn in list(globals().items())
        if callable(fn) and not name.startswith("_") and fn.__module__ == __name__}

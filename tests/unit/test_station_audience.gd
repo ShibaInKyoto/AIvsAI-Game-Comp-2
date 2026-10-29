@@ -126,3 +126,38 @@ func test_a_killed_member_leaves_the_audience() -> void:
 	audience.tick(DT)
 	check_eq(audience.members.size(), count - 1, "the freed one is dropped, the rest stay")
 	level.free()
+
+
+func test_the_lullaby_is_sung_back() -> void:
+	# log_08: Okafor played it a lullaby, and it sang it back.
+	var parts := _final_level()
+	var level: Level = parts[0]
+	var station: MeridianStation = null
+	for e in level.entities:
+		if e is MeridianStation:
+			station = e
+	var audience := _audience(level)
+	check(station != null and audience != null, "the station and its audience")
+	if station == null or audience == null:
+		level.free()
+		return
+	var before := Game.meta.wonders.duplicate()
+	Game.meta.wonders.erase("lullaby")
+	var sub := _with_sub(level, parts[1], station.pos + Vector2(0.0, 5.0))
+	check_eq(station.lullaby_stage, 0, "not before the sub arrives")
+	var seen: Array[int] = []
+	for i in int(60.0 / DT):
+		sub.pos = station.pos + Vector2(0.0, 5.0)
+		station.tick(DT)
+		if seen.is_empty() or seen[-1] != station.lullaby_stage:
+			seen.append(station.lullaby_stage)
+		if station.lullaby_stage == 2:
+			for m in audience.members:
+				if m.entranced:
+					check(m.entranced_facing.dot((audience.pos - m.pos).normalized()) > 0.0,
+						"the audience turns to listen")
+					break
+	check_eq(seen, [0, 1, 2, 3] as Array[int], "the speakers play it, then it is sung back from below")
+	check(Game.meta.wonders.has("lullaby"), "a wonder")
+	Game.meta.wonders = before
+	level.free()
