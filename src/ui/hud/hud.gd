@@ -325,7 +325,7 @@ func show_banner(title: String, subtitle: String) -> void:
 
 
 func _on_damaged(amount: float) -> void:
-	_flash = maxf(_flash, clampf(amount / 25.0, 0.35, 1.0))
+	_flash = maxf(_flash, clampf(amount / 25.0, 0.35, 1.0) * (0.4 if Settings.reduce_flashing else 1.0))
 
 
 func _on_scanned(id: StringName, first_time: bool) -> void:

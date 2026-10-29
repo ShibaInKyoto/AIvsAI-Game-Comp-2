@@ -49,6 +49,8 @@ func _ready() -> void:
 	_check(grid, "Gamepad rumble", Settings.rumble, func(on: bool) -> void: Settings.rumble = on)
 	_check(grid, "Sound cues (show where threat sounds come from)", Settings.sound_cues,
 		func(on: bool) -> void: Settings.sound_cues = on)
+	_check(grid, "Reduce flashing (softer bursts of light)", Settings.reduce_flashing,
+		func(on: bool) -> void: Settings.reduce_flashing = on)
 
 	column.add_child(UiUtil.label("Quality changes to terrain detail apply from the next zone.", &"DimLabel"))
 	var row := HBoxContainer.new()

@@ -126,8 +126,10 @@ and controls. Settings include an **Assist mode** (40% less hull damage and
 wider timing windows against the Choir), **Sound cues** (threat sounds such
 as a lancer's wind-up, a vent's rumble or cracking rock flash a labelled arc
 round the sub pointing at their source, and a Stalker's hunt shows as a
-pulsing heartbeat, so the game is playable without sound), screen-shake
-strength, gamepad rumble and four graphics presets. Opened from the title
+pulsing heartbeat, so the game is playable without sound), **Reduce
+flashing** (bursts of light swell in softly and stay dim, shockwaves and the
+damage flash are fainter, and moving rock glows without rippling),
+screen-shake strength, gamepad rumble and four graphics presets. Opened from the title
 screen, Settings can also erase all progress for a fresh start (two presses;
 settings and key bindings are kept).
 
@@ -221,7 +223,7 @@ Requires Godot 4.5.1 with export templates installed.
 
 ```sh
 godot --headless --import                                       # first-time import
-godot --headless --path . -s res://tests/run_tests.gd           # 104 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
+godot --headless --path . -s res://tests/run_tests.gd           # 106 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
 godot --headless --path . res://tests/flow_test.tscn            # end-to-end menu and dive flow
 godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
 python3 tools/audio/generate.py                                 # regenerate all audio (numpy + ffmpeg)

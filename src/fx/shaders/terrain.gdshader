@@ -30,6 +30,8 @@ uniform float vein_strength = 0.0;
 uniform float caustics = 0.0;
 // Rock moving to the Choir's song (Hadal Trench): centre xy, radius, strength.
 uniform vec4 shift_zones[2];
+// 0 holds the glow steady (Reduce flashing).
+uniform float shift_ripple = 1.0;
 uniform float tex_scale = 0.11;
 
 varying vec3 world_pos;
@@ -164,7 +166,7 @@ void fragment() {
 		if (zone.w > 0.0) {
 			float d = length(world_pos.xy - zone.xy);
 			float inside = 1.0 - smoothstep(zone.z * 0.55, zone.z, d);
-			float ripple = 0.5 + 0.5 * sin(d * 1.6 - TIME * 3.5);
+			float ripple = mix(0.5, 0.5 + 0.5 * sin(d * 1.6 - TIME * 3.5), shift_ripple);
 			// Brightest along the moving surface, seeping a little way into the rock.
 			float near_surface = 1.0 - smoothstep(0.5, 4.5, abs(sdf_value + 0.5));
 			float facing_cam = smoothstep(-2.0, 2.0, world_pos.z);

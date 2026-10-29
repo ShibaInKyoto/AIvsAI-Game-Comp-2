@@ -90,6 +90,7 @@ func set_shift_glow(zones: Array[Vector4]) -> void:
 	for i in 2:
 		packed.append(zones[i] if i < zones.size() else Vector4.ZERO)
 	material.set_shader_parameter(&"shift_zones", packed)
+	material.set_shader_parameter(&"shift_ripple", 0.0 if Settings.reduce_flashing else 1.0)
 
 
 ## Seamless tiling noise shared by terrain and props.

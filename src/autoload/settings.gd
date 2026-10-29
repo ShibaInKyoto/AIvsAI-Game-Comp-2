@@ -29,6 +29,8 @@ var assist := false
 var rumble := true
 ## Accessibility: show where threat sounds come from (see [SoundCues]).
 var sound_cues := false
+## Accessibility: softer, slower bursts of light and no rippling glows.
+var reduce_flashing := false
 ## Set once [QualityProbe] has checked this machine's frame rate.
 var quality_probed := false
 ## Last input device used; prompts and aiming adapt to it.
@@ -67,6 +69,7 @@ func load_settings() -> void:
 	assist = cfg.get_value("game", "assist", assist)
 	rumble = cfg.get_value("game", "rumble", rumble)
 	sound_cues = cfg.get_value("game", "sound_cues", sound_cues)
+	reduce_flashing = cfg.get_value("game", "reduce_flashing", reduce_flashing)
 	var saved: Variant = cfg.get_value("input", "bindings", {})
 	bindings = saved if saved is Dictionary else {}
 	_apply_bindings()
@@ -86,6 +89,7 @@ func save_settings() -> void:
 	cfg.set_value("game", "assist", assist)
 	cfg.set_value("game", "rumble", rumble)
 	cfg.set_value("game", "sound_cues", sound_cues)
+	cfg.set_value("game", "reduce_flashing", reduce_flashing)
 	cfg.set_value("input", "bindings", bindings)
 	cfg.save(PATH)
 

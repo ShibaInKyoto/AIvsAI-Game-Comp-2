@@ -307,12 +307,18 @@ static func flash(level: Node3D, at: Vector2, color: Color, light_range: float, 
 	var light := OmniLight3D.new()
 	light.light_color = color
 	light.omni_range = light_range
-	light.light_energy = 6.0
 	light.light_volumetric_fog_energy = 1.5
 	level.add_child(light)
 	light.global_position = Vector3(at.x, at.y, 1.5)
 	var tween := light.create_tween()
-	tween.tween_property(light, ^"light_energy", 0.0, duration).set_ease(Tween.EASE_OUT)
+	if Settings.reduce_flashing:
+		# Swell in and out gently instead of a sudden burst.
+		light.light_energy = 0.0
+		tween.tween_property(light, ^"light_energy", 1.5, duration * 0.6).set_ease(Tween.EASE_IN_OUT)
+		tween.tween_property(light, ^"light_energy", 0.0, duration * 1.4).set_ease(Tween.EASE_IN_OUT)
+	else:
+		light.light_energy = 6.0
+		tween.tween_property(light, ^"light_energy", 0.0, duration).set_ease(Tween.EASE_OUT)
 	tween.tween_callback(light.queue_free)
 
 
@@ -329,7 +335,8 @@ static func shockwave(level: Node3D, at: Vector2, radius: float, color: Color, d
 	m.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
 	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	m.albedo_texture = ring_texture()
-	m.albedo_color = Color(color.r * 2.0, color.g * 2.0, color.b * 2.0, 1.0)
+	var bright := 0.8 if Settings.reduce_flashing else 2.0
+	m.albedo_color = Color(color.r * bright, color.g * bright, color.b * bright, 1.0)
 	mi.material_override = m
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	level.add_child(mi)
