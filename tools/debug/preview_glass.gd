@@ -21,6 +21,13 @@ func _ready() -> void:
 	add_hud()
 	shot_prefix = "glass"
 	shot_times = [1.6, 2.5, 5.3, 6.6, 7.0, 8.1, 8.6, 11.0]
+	# A fourth argument: a frame every that many seconds instead, for a clip.
+	if args.size() > 3:
+		shot_times.clear()
+		var at := 1.4
+		while at < 10.5:
+			shot_times.append(at)
+			at += float(args[3])
 
 
 func direct(_dt: float) -> void:
