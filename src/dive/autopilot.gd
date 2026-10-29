@@ -355,7 +355,8 @@ func _nearest_threat(minor_only := false) -> Creature:
 	var best_d := 14.0
 	for e in level.targets_in_radius(sub.pos, 14.0):
 		var c := e as Creature
-		if c and c.is_hostile() and not (minor_only and (c is Guardian or c is ChoirOrgan)):
+		# Leave the entranced audience over the station alone, as a careful pilot would.
+		if c and c.is_hostile() and not c.entranced and not (minor_only and (c is Guardian or c is ChoirOrgan)):
 			var d := c.pos.distance_to(sub.pos)
 			if d < best_d and level.field.line_of_sight(sub.pos, c.pos):
 				best = c
