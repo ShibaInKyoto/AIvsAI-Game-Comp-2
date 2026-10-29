@@ -16,6 +16,7 @@ const TIPS: PackedStringArray = [
 	"Guardians seal the way down out of three biomes. Each has one weakness - scan it, and the codex records it.",
 	"Surface at a stop to bank salvage safely - implode and you keep only part of it.",
 	"Spend salvage in the hangar on upgrades; research from scans unlocks new submarines.",
+	"Some sights down there are wonders. The hangar archive keeps those you witness, and hints where the rest are.",
 ]
 
 
