@@ -619,6 +619,24 @@ def choir_call():
     return normalize(trim_silence(wet_dry(v * env_adsr(d, 0.6, 0.8, 0.7, 1.8), HUGE_WATER, 0.55)), 0.85)
 
 
+def choir_echo():
+    """The sub's own ping coming back up from far below eleven seconds later,
+    slowed down and stretched into something like a word (log_03)."""
+    d = 4.2
+    t = np.linspace(0, 1, seconds(d))
+    tone = sine(_sweep(560, 420, d)) * env_exp(d, 1.3, 0.02) * 0.55
+    f0 = 140 * (1 - 0.12 * t)
+    ph = phase_from_freq(f0)
+    o = formant_amps(140, VOWELS["o"], 36)
+    a = formant_amps(140, VOWELS["a"], 36)
+    w = np.clip((t - 0.3) / 0.4, 0, 1)
+    voice = np.zeros(seconds(d))
+    for k in range(36):
+        voice += (o[k] * (1 - w) + a[k] * w) * np.sin(ph * (k + 1))
+    out = mix(tone, voice * env_adsr(d, 0.45, 0.6, 0.7, 1.6) * 0.8)
+    return normalize(trim_silence(wet_dry(lowpass(out, 2500), HUGE_WATER, 0.6)), 0.7)
+
+
 def trench_song():
     """The Choir singing far below while the trench reshapes itself: low voices
     gliding down a fifth and back, heard through a lot of water."""

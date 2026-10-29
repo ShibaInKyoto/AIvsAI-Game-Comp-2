@@ -104,7 +104,7 @@ func test_seals_behind_and_opens_ahead() -> void:
 		check(not level.layout.find_path(sub.pos, level.layout.exit, 1.3).is_empty(),
 			"seed %d: the way on is open" % run_seed)
 		for e in level.entities:
-			if not (e is Creature or e is Pickup or e is TrenchShift):
+			if not (e is Creature or e is Pickup or e is TrenchShift or e is ChoirEcho):
 				var kind: String = e.get_script().get_global_name()
 				check(level.field.sample(e.pos) > 0.0, "seed %d: nothing buried (%s)" % [run_seed, kind])
 		level.free()

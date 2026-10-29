@@ -295,7 +295,8 @@ func _plan_seal(sub: Submarine) -> Morph:
 ## a seal from [param a] to [param b] of radius [param r].
 func _nothing_buried(a: Vector2, b: Vector2, r: float) -> bool:
 	for e in level.entities:
-		if e == self or e is Creature or e is Pickup:
+		# Zone-wide controllers (this, the Choir's echo) are not things in the cave.
+		if e == self or e is ChoirEcho or e is Creature or e is Pickup:
 			continue
 		var margin := 6.0 if e is VasquezDrone else 2.0
 		if segment_distance(e.pos, a, b) < r + e.radius + margin:
