@@ -7,6 +7,8 @@ extends RefCounted
 const ALL: Array[Dictionary] = [
 	{"id": "manta", "name": "A shelf manta", "where": "in the Sunlit Shelf",
 		"text": "Seven metres of wing gliding through the shallows, a school of fish sheltering under it."},
+	{"id": "whale", "name": "A sperm whale", "where": "in the Sunlit Shelf",
+		"text": "Eleven metres of whale passing in the blue, its clicks lighting the cave on your sonar."},
 	{"id": "pearl", "name": "A giant clam's pearl", "where": "in the Twilight Reef",
 		"text": "Taken in the dark by its own glow, while the clam gaped."},
 	{"id": "whale_fall", "name": "A whale fall", "where": "in the Twilight Reef, now and then",

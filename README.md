@@ -12,7 +12,7 @@ singing at the bottom of the world.
 
 | | |
 |---|---|
-| ![Sunlit Shelf](docs/screenshots/shelf.jpg) | ![A shelf manta and the school sheltering under it](docs/screenshots/manta.jpg) |
+| ![A sperm whale passing behind the sub in the Sunlit Shelf](docs/screenshots/shelf.jpg) | ![A shelf manta and the school sheltering under it](docs/screenshots/manta.jpg) |
 | ![Spined puffers swelling up](docs/screenshots/puffers.jpg) | ![Something far below pings back](docs/screenshots/echo.jpg) |
 | ![Twilight Reef](docs/screenshots/reef.jpg) | ![The Lamplighter](docs/screenshots/lamplighter.jpg) |
 | ![A glow-worm grotto in the Midnight Caverns](docs/screenshots/grotto.jpg) | ![The Blind Mother](docs/screenshots/mother.jpg) |
@@ -69,6 +69,9 @@ itself. Every zone is a procedurally generated cave cross-section. Find the
   the dive report tells you what sank you and how to deal with it.
 * Spend salvage in the **hangar** on permanent upgrades. Spend research (from
   scanning creatures and recovering logs) on three more submarines.
+* In the second Sunlit Shelf zone a **sperm whale** passes through the blue
+  behind you, eleven metres of it on slow beats of its flukes. Its clicks
+  reach your sonar and chart the cave around it.
 * On the Twilight Reef floor sit **giant clams** with glowing pearls inside.
   They snap shut in the light or at any loud sound: kill the lamp, wait in
   the dark for one to gape, and harpoon the pearl by its own glow. Do not
@@ -173,7 +176,7 @@ settings and key bindings are kept).
   (near silent, quick scanner, sonar decoys).
 * 12 hangar upgrades, a creature codex (hover a scanned species in the hangar
   to see it in the viewport) and 13 story logs to recover (find them all to learn
-  what became of the crew). The hangar archive also lists the nine **wonders**
+  what became of the crew). The hangar archive also lists the ten **wonders**
   of the trench you have witnessed, beside the logs that told of them, and
   where to look for the rest.
 * Twelve creature species with their own senses and tells: shelf mantas, gentle
@@ -247,7 +250,7 @@ Requires Godot 4.5.1 with export templates installed.
 
 ```sh
 godot --headless --import                                       # first-time import
-godot --headless --path . -s res://tests/run_tests.gd           # 124 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
+godot --headless --path . -s res://tests/run_tests.gd           # 126 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
 godot --headless --path . res://tests/flow_test.tscn            # end-to-end menu and dive flow
 godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
 python3 tools/audio/generate.py                                 # regenerate all audio (numpy + ffmpeg)

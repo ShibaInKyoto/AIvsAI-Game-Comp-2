@@ -77,6 +77,9 @@ static func populate(level: Level, run: RunState) -> void:
 	# The first Abyssal Vents zone has a chamber sealed with singing glass.
 	if level.zone == SingingGlass.ZONE:
 		SingingGlass.place(level, rng, used)
+	# Something huge passes through the second Sunlit Shelf zone.
+	if level.zone == PassingWhale.ZONE:
+		PassingWhale.place(level)
 
 
 ## The sunlit shelf is the gentle giants' water: most zones there have a

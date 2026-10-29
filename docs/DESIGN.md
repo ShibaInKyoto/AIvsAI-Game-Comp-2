@@ -47,7 +47,7 @@ Hangar (spend salvage & research) -> Dive -> Zone 1 -> Decompression stop
 
 | # | Biome            | Depth       | Mood / hazards                                        |
 |---|------------------|-------------|-------------------------------------------------------|
-| 1 | Sunlit Shelf     | 0–200 m     | God rays, kelp, schools, mantas, jellies, lancers     |
+| 1 | Sunlit Shelf     | 0–200 m     | God rays, kelp, mantas, a passing whale, lancers      |
 | 2 | Twilight Reef    | 200–1000 m  | Bioluminescent coral, giant clams, anglers, siphons   |
 | 3 | Midnight Caverns | 1–4 km      | Pitch dark, glow-worm grottoes, gulpers, Stalker      |
 | 4 | Abyssal Vents    | 4–6 km      | Hydrothermal vents, singing glass, latching isopods   |

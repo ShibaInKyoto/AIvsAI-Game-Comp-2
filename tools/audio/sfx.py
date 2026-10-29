@@ -746,5 +746,30 @@ def _glass_ring_tail(d: float) -> np.ndarray:
     return out
 
 
+def whale_click():
+    """A sperm whale's echolocation click heard across open water: a sharp
+    broadband snap with a short ringing tail."""
+    snap = bandpass(noise(0.012), 4000, 0.8) * env_exp(0.012, 0.003)
+    ring = np.sin(phase_from_freq(np.full(seconds(0.06), 900.0))) * env_exp(0.06, 0.012) * 0.4
+    out = np.zeros(seconds(0.3))
+    out[: len(snap)] += snap
+    out[: len(ring)] += ring
+    return normalize(trim_silence(wet_dry(out, BIG_WATER, 0.35)), 0.6)
+
+
+def whale_creak():
+    """A sperm whale homing in on something: clicks quickening into a creak."""
+    d = 1.6
+    out = np.zeros(seconds(d))
+    t, gap = 0.0, 0.09
+    while t < 1.3:
+        c = bandpass(noise(0.006), 3500, 0.9) * env_exp(0.006, 0.002) * (0.4 + 0.6 * t / 1.3)
+        i = seconds(t)
+        out[i:i + len(c)] += c[: max(0, len(out) - i)]
+        t += gap
+        gap = max(0.012, gap * 0.9)
+    return normalize(trim_silence(wet_dry(out, BIG_WATER, 0.3)), 0.55)
+
+
 ALL = {name: fn for name, fn in list(globals().items())
        if callable(fn) and not name.startswith("_") and fn.__module__ == __name__}

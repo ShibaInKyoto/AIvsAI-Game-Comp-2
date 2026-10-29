@@ -40,6 +40,8 @@ const CUES: Dictionary[StringName, Array] = {
 	&"choir_tone": ["THE TONE", UiTheme.ACCENT],
 	&"glass_ring": ["RINGING", UiTheme.ACCENT],
 	&"glass_shatter": ["SHATTER", UiTheme.ACCENT],
+	&"whale_click": ["CLICKS", UiTheme.ACCENT],
+	&"whale_creak": ["CLICKS", UiTheme.ACCENT],
 	&"decoy_ping": ["DECOY", UiTheme.ACCENT],
 	&"beacon_ping": ["BEACON", UiTheme.GOOD],
 }
