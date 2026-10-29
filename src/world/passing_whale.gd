@@ -14,8 +14,10 @@ const ZONE := 1
 const DEPTH := -3.5
 const LENGTH := 11.0
 const SPEED := 1.7
-## Open water it needs along its way, and how far its way must run.
+## Open water it needs along its way (a little less will do if a zone has
+## nothing roomier), and how far its way must run.
 const CLEARANCE := 3.0
+const TIGHT_CLEARANCE := 2.6
 const MIN_RUN := 24.0
 ## How close the sub comes before it appears, and before it is witnessed.
 const TRIGGER_RANGE := 50.0
@@ -65,6 +67,14 @@ static func stretch_through(field: TerrainField, p: Vector2, rise: float) -> Arr
 ## Finds the longest level stretch of open water in the zone, at least
 ## [constant MIN_RUN] long; returns the whale waiting there, or null.
 static func place(level: Level) -> PassingWhale:
+	for clearance in [CLEARANCE, TIGHT_CLEARANCE]:
+		var whale := _place_with(level, clearance)
+		if whale:
+			return whale
+	return null
+
+
+static func _place_with(level: Level, clearance: float) -> PassingWhale:
 	var field := level.field
 	var size := level.layout.size()
 	var best_len := 0.0
@@ -75,7 +85,7 @@ static func place(level: Level) -> PassingWhale:
 		var run_start := -1.0
 		var x := 4.0
 		while x < size.x - 4.0:
-			var open := field.sample(Vector2(x, y)) > CLEARANCE
+			var open := field.sample(Vector2(x, y)) > clearance
 			if open and run_start < 0.0:
 				run_start = x
 			if (not open or x + 1.0 >= size.x - 4.0) and run_start >= 0.0:

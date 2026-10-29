@@ -38,7 +38,7 @@ func test_waits_in_the_second_shelf_zone() -> void:
 			check(whale.to.x - whale.from.x >= PassingWhale.MIN_RUN, "seed %d: a long way to swim" % run_seed)
 			var x := whale.from.x
 			while x <= whale.to.x:
-				check(field.sample(Vector2(x, whale.from.y)) > PassingWhale.CLEARANCE - 0.01,
+				check(field.sample(Vector2(x, whale.from.y)) > PassingWhale.TIGHT_CLEARANCE - 0.01,
 					"seed %d: open water all along it" % run_seed)
 				x += 2.0
 			check_eq(whale.state, PassingWhale.State.WAITING, "seed %d: waiting for the sub" % run_seed)

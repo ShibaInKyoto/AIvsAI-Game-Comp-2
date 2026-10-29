@@ -14,7 +14,7 @@ const RING_TIME := 6.5
 ## The chord it rings, as pitch scales of its note: a major triad.
 const CHORD: Array[float] = [1.0, 1.26, 1.5]
 ## Chamber sizes to try, largest first.
-const POCKET_SIZES: Array[float] = [4.0, 3.2]
+const POCKET_SIZES: Array[float] = [4.0, 3.2, 2.7]
 ## The rock between the tunnel and the chamber: the glass seam.
 const WALL := 2.2
 const NECK_RADIUS := 2.2
@@ -54,21 +54,29 @@ static func place(level: Level, rng: RandomNumberGenerator, avoid: PackedVector2
 	var path := level.layout.main_path
 	if path.size() < 12:
 		return null
+	# The middle of the zone first; then anywhere but its ends.
+	var middle := _shuffled(int(path.size() * 0.25), int(path.size() * 0.75), rng)
+	var wide := _shuffled(int(path.size() * 0.12), int(path.size() * 0.88), rng)
+	for size_r in POCKET_SIZES:
+		for order in [middle, wide]:
+			for i: int in order:
+				var glass := _site(level, i, avoid, size_r)
+				if glass:
+					level.add_entity(glass)
+					return glass
+	return null
+
+
+static func _shuffled(from: int, to: int, rng: RandomNumberGenerator) -> Array[int]:
 	var order: Array[int] = []
-	for i in range(int(path.size() * 0.25), int(path.size() * 0.75)):
+	for i in range(from, to):
 		order.append(i)
 	for i in range(order.size() - 1, 0, -1):
 		var j := rng.randi() % (i + 1)
 		var tmp := order[i]
 		order[i] = order[j]
 		order[j] = tmp
-	for size_r in POCKET_SIZES:
-		for i in order:
-			var glass := _site(level, i, avoid, size_r)
-			if glass:
-				level.add_entity(glass)
-				return glass
-	return null
+	return order
 
 
 ## A seam beside main-path point [param i] sealing a chamber of radius
@@ -103,7 +111,8 @@ static func _site(level: Level, i: int, avoid: PackedVector2Array, pocket_r: flo
 			continue
 		if c.distance_to(layout.start) < 25.0 or c.distance_to(layout.exit) < 20.0:
 			continue
-		if LevelPopulator.in_guarded_room(level, c) or _near_any(c, avoid, 14.0):
+		# Clear of anything placed on the wall the neck will open through.
+		if LevelPopulator.in_guarded_room(level, c) or _near_any(wall_at, avoid, 7.0) or _near_any(c, avoid, 7.0):
 			continue
 		var glass := SingingGlass.new()
 		glass.wall = wall_at
