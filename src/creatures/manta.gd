@@ -53,6 +53,8 @@ func build_model() -> void:
 		m.set_shader_parameter(&"swim_vertical", 0.0))
 	_tilt = Node3D.new()
 	_tilt.scale = Vector3.ONE * SIZE
+	# Back to the camera from the start (a specimen in the hangar never ticks).
+	_tilt.rotation.x = TILT
 	model.add_child(_tilt)
 	# A flat, broad body along +X (the head), flattened top to bottom.
 	var body := MeshKit.lathe(PackedVector2Array([Vector2(0.0, 0.05), Vector2(0.2, 0.42), Vector2(0.55, 0.62),

@@ -3,7 +3,8 @@ extends Node
 ## Usage: xvfb-run godot --path . res://tools/debug/preview_ui.tscn -- <out.png> <panel> [zone]
 ## Panels: howto, settings, erase (armed), controls, stop, summary, records, credits,
 ## prologue, ending (every log found, epilogue shown at once), logs (the hangar's
-## archive scrolled to the recordings outside the Meridian set; nothing is saved).
+## archive scrolled to the recordings outside the Meridian set; nothing is saved),
+## specimen <id> (the hangar codex with that species in the viewport; nothing is saved).
 ## (summary banks a fake dive into the local save).
 
 
@@ -34,6 +35,18 @@ func _ready() -> void:
 		var scroll: ScrollContainer = hangar.find_children("*", "ScrollContainer", true, false)[0]
 		scroll.scroll_vertical = int(scroll.get_v_scroll_bar().max_value)
 		await get_tree().create_timer(1.5).timeout
+		get_viewport().get_texture().get_image().save_png(out)
+		Router.quit()
+		return
+	if which == "specimen":
+		var id := StringName(args[2]) if args.size() > 2 else &"manta"
+		Game.meta.codex[String(id)] = 1
+		var hangar: Node = load(Router.HANGAR).instantiate()
+		add_child(hangar)
+		await get_tree().process_frame
+		hangar.call(&"_show_tab", 2)
+		(hangar.get(&"_backdrop") as MenuBackdrop).preview_creature(id)
+		await get_tree().create_timer(3.0).timeout
 		get_viewport().get_texture().get_image().save_png(out)
 		Router.quit()
 		return
