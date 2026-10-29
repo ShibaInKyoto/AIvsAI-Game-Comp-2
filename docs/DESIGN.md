@@ -116,7 +116,7 @@ has not noticed the sub can be **ambushed** (harpoon hits deal double), and
 * 4 submarine frames with different stats and starting tools.
 * Meta upgrades (hull, battery, thrusters, lamp, sonar, cargo, tool unlocks).
 * Codex: scan every creature, collect every signal log.
-* Eleven **wonders** to witness, most of them a log made real: a passing sperm
+* Eleven **wonders** to witness, many of them a log made real: a shelf manta, a passing sperm
   whale, a giant clam's pearl, a whale fall, the glow-worm grotto, the singing
   glass, the echo, the moving trench, Vasquez's drone, the audience and
   Okafor's lullaby. The hangar archive keeps a snapshot of each and hints where
