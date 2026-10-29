@@ -11,6 +11,7 @@ const TIPS: Dictionary[StringName, String] = {
 	&"ghostfin": "Ghostfins hunt the lamp. Switch it off and they lose interest in a few seconds, or throw a " +
 		"flare and let the pack circle that instead.",
 	&"jelly": "Drifter jellies are drawn to light. Swing the lamp away, or switch it off, as you pass.",
+	&"manta": "Shelf mantas are harmless and shy. Hang back and let one glide through your lamp to scan it.",
 	&"lurelight": "A lone light in the dark is usually a lure. Ping first: the sonar shows what is holding it.",
 	&"gulper": "Gulper eels feel fast movement through the rock. Pass their burrows slowly.",
 	&"isopod": "A latched isopod drains hull and battery. Boost or fire a shock pulse to throw it off.",

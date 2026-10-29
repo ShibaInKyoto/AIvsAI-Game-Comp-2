@@ -160,7 +160,8 @@ settings and key bindings are kept).
 * 12 hangar upgrades, a creature codex (hover a scanned species in the hangar
   to see it in the viewport) and 13 story logs to recover (find them all to learn
   what became of the crew).
-* Eleven creature species with their own senses and tells: drifting jellies,
+* Twelve creature species with their own senses and tells: shelf mantas, gentle
+  giants wider than the sub that glide through the sunlit zones, drifting jellies,
   dashing lancers that hunt the shoals, spined puffers that swell into living
   mines when rushed, angler-like lurelights, burrowing gulper eels,
   wall-crawling isopods, stinging siphonophore chains, caches that turn out to
@@ -214,7 +215,7 @@ src/
   core/       run state, meta progression, submarine stats
   data/       biomes, modules/upgrades/frames, codex, logs, zone events, pressure
   world/      generator, terrain field + renderer, level, props, pickups, interactables
-  creatures/  creature base, eleven species, three lair guardians and the Choir
+  creatures/  creature base, twelve species, three lair guardians and the Choir
   player/     submarine, model, harpoon, tool belt, projectiles
   dive/       dive controller, camera, tutorial, test autopilot
   ui/         theme, HUD, sonar chart, menus, hangar, decompression stop, ending
@@ -229,7 +230,7 @@ Requires Godot 4.5.1 with export templates installed.
 
 ```sh
 godot --headless --import                                       # first-time import
-godot --headless --path . -s res://tests/run_tests.gd           # 111 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
+godot --headless --path . -s res://tests/run_tests.gd           # 113 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
 godot --headless --path . res://tests/flow_test.tscn            # end-to-end menu and dive flow
 godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
 python3 tools/audio/generate.py                                 # regenerate all audio (numpy + ffmpeg)

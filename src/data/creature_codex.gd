@@ -23,6 +23,10 @@ static var _entries: Array[Entry] = []
 static func entries() -> Array[Entry]:
 	if _entries.is_empty():
 		_entries = [
+			Entry.new(&"manta", "Shelf Manta", "Mobula lucis", "Harmless",
+				"A gentle giant of the sunlit shelf, wider than the sub is long. It glides from one open " +
+					"stretch of water to the next, ignores engines and lamps alike, and banks away from " +
+					"anything that crowds it. Hurt, it beats away fast."),
 			Entry.new(&"shoal", "Glimmer Shoal", "Lucens gregaria", "Harmless",
 				"Schools of finger-length fish that flash in unison. They scatter from engines " +
 					"and are hunted by almost everything else down here."),

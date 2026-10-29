@@ -15,6 +15,7 @@ const SPECIES: Dictionary[StringName, Script] = {
 	&"siphon": preload("res://src/creatures/siphonophore.gd"),
 	&"puffer": preload("res://src/creatures/puffer.gd"),
 	&"ghostfin": preload("res://src/creatures/ghostfin.gd"),
+	&"manta": preload("res://src/creatures/manta.gd"),
 }
 ## Hunters left out of the Choir's arena (see [method _spawn_creatures]).
 const ARENA_EXCLUDED: Array[StringName] = [&"lancer", &"ghostfin", &"stalker"]
@@ -27,6 +28,8 @@ const COST: Dictionary[StringName, float] = {
 	&"gulper": 1.4, &"stalker": 4.0, &"isopod": 0.7, &"siphon": 1.6, &"puffer": 0.7, &"ghostfin": 1.3,
 }
 const SAFE_RADIUS := 26.0
+## How often a Sunlit Shelf zone has a manta in it.
+const MANTA_CHANCE := 0.8
 ## Vents and glow bulbs on the Ironclad's lair floor.
 const LAIR_VENTS := 4
 const LAIR_BULBS := 3
@@ -63,6 +66,24 @@ static func populate(level: Level, run: RunState) -> void:
 	# The hadal floor always keeps a log, at the station it came from.
 	if rng.randf() < 0.8 or not layout.has_exit:
 		_spawn_log(level, used)
+	# Last, so the rest of the zone is laid out exactly as it would be without it.
+	_spawn_manta(level, used)
+
+
+## The sunlit shelf is the gentle giants' water: most zones there have a
+## manta gliding through the open stretches.
+static func _spawn_manta(level: Level, used: PackedVector2Array) -> void:
+	if level.biome.id != &"shelf" or level.rng.randf() >= MANTA_CHANCE:
+		return
+	var p := level.layout.random_open_point(level.rng, 4.5, used, 8.0)
+	if p == Vector2.INF:
+		p = level.layout.random_open_point(level.rng, 3.5, used, 5.0)
+	if p == Vector2.INF:
+		return
+	var manta: Creature = SPECIES[&"manta"].new()
+	manta.pos = p
+	level.add_entity(manta)
+	used.append(p)
 
 
 static func _spawn_creatures(level: Level, run: RunState, used: PackedVector2Array) -> void:
