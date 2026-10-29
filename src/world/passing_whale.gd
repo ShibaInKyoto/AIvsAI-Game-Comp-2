@@ -117,7 +117,10 @@ func setup() -> void:
 	_rig.visible = false
 	add_child(_rig)
 	_mat = StandardMaterial3D.new()
-	_mat.albedo_color = SKIN
+	# The skin colour is painted into the mesh; the albedo only carries the fade.
+	_mat.albedo_color = Color(1.0, 1.0, 1.0, 0.0)
+	_mat.vertex_color_use_as_albedo = true
+	_mat.vertex_color_is_srgb = true
 	_mat.roughness = 0.85
 	# Lit from the surface above: a pale rim keeps it from sinking into the
 	# dark back of the cave.
@@ -147,7 +150,12 @@ func _build() -> void:
 		parts.append([flipper, Transform3D(Basis().rotated(Vector3(1, 0, 0), side * 0.5),
 			Vector3(LENGTH * 0.2, -0.7, side * 0.8))])
 	var body := MeshInstance3D.new()
-	body.mesh = MeshKit.merge(parts)
+	# Countershaded: dark along the back, paler underneath, the narrow jaw palest.
+	body.mesh = MeshKit.painted(MeshKit.merge(parts), func(v: Vector3) -> Color:
+		var c := SKIN.darkened(0.2).lerp(SKIN.lightened(0.3), smoothstep(0.2, -1.0, v.y))
+		if v.y < -0.8 and v.x > LENGTH * 0.3:
+			c = c.lerp(Color(0.8, 0.8, 0.78), 0.5)
+		return c)
 	body.material_override = _mat
 	_rig.add_child(body)
 	# The flukes, flat to the water, beating up and down from the tail stock.
@@ -157,7 +165,7 @@ func _build() -> void:
 	var fluke := MeshKit.fin(PackedVector2Array([Vector2(0.0, 0.0), Vector2(-1.0, 1.9), Vector2(-1.6, 1.75),
 		Vector2(-1.15, 0.25), Vector2(-1.15, -0.25), Vector2(-1.6, -1.75), Vector2(-1.0, -1.9)]), 0.1)
 	var flukes_mesh := MeshInstance3D.new()
-	flukes_mesh.mesh = fluke
+	flukes_mesh.mesh = MeshKit.painted(fluke, func(_v: Vector3) -> Color: return SKIN.darkened(0.15))
 	flukes_mesh.material_override = _mat
 	flukes_mesh.rotation.x = PI * 0.5
 	_flukes.add_child(flukes_mesh)
