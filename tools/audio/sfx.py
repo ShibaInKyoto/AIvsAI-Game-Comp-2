@@ -771,5 +771,18 @@ def whale_creak():
     return normalize(trim_silence(wet_dry(out, BIG_WATER, 0.3)), 0.55)
 
 
+def wonder_chime():
+    """A wonder of the trench witnessed: four soft bell tones rising through a
+    major seventh, ringing on in a lot of water."""
+    d = 3.2
+    out = np.zeros(seconds(d))
+    for i, f in enumerate([523.3, 659.3, 784.0, 987.8]):
+        n = d - i * 0.16
+        b = (sine(f, n) + 0.3 * sine(f * 2.76, n) * env_exp(n, 0.25)) * env_exp(n, 1.1, 0.004)
+        s = seconds(i * 0.16)
+        out[s:s + len(b)] += b * (0.8 - i * 0.1)
+    return normalize(trim_silence(wet_dry(out, HUGE_WATER, 0.5)), 0.5)
+
+
 ALL = {name: fn for name, fn in list(globals().items())
        if callable(fn) and not name.startswith("_") and fn.__module__ == __name__}
