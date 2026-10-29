@@ -85,13 +85,17 @@ jobs:
             ### What's inside
             - Eleven procedurally generated cave zones in five biomes, each with its own creatures,
               hazards, music and ambience.
-            - Three guardians: the Lamplighter, who sees only light; the Blind Mother, who hears only
-              sound; and the Choir at the bottom of the world.
-            - Ten creature species, thermal vents and loose stalactites, all reacting to one
+            - Three guardians, each with one weakness to find: the Lamplighter, who sees only light;
+              the Blind Mother, who hears only sound; the Ironclad, whose shell only a vent's heat
+              cracks. And the Choir at the bottom of the world, which you answer ping for ping.
+            - Twelve creature species, thermal vents and loose stalactites, all reacting to one
               light-and-sound stealth system: ambushes, decoys, flares and pings all matter.
+            - A trench that reshapes itself around you when the Choir sings, the ruins of Meridian
+              Deep, the crew's thirteen logs, and eleven wonders of the deep to witness.
             - Four submarines, 32 modules, 12 hangar upgrades, contracts, a daily dive, pressure
               levels, 17 milestones and a records table.
-            - Rebindable controls, photo mode, Assist mode and four graphics presets.
+            - Rebindable controls, photo mode, Assist mode, sound cues, a reduce-flashing option and
+              four graphics presets.
 
             ### Controls
             WASD move - mouse aim the lamp - left mouse harpoon (hold to winch) - right mouse tool -
