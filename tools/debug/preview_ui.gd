@@ -28,7 +28,7 @@ func _ready() -> void:
 		for id in ["log_01", "log_02", "log_03", "log_04", "log_drone", "log_final"]:
 			if not Game.meta.logs_found.has(id):
 				Game.meta.logs_found.append(id)
-		for id in ["manta", "pearl", "grotto", "glass", "echo"]:
+		for id in ["manta", "whale", "pearl", "grotto", "glass", "echo"]:
 			if not Game.meta.wonders.has(id):
 				Game.meta.wonders.append(id)
 		var hangar: Node = load(Router.HANGAR).instantiate()
@@ -37,7 +37,9 @@ func _ready() -> void:
 		hangar.call(&"_show_tab", 3)
 		await get_tree().create_timer(1.5).timeout
 		var scroll: ScrollContainer = hangar.find_children("*", "ScrollContainer", true, false)[0]
-		scroll.scroll_vertical = int(scroll.get_v_scroll_bar().max_value)
+		# An optional third argument scrolls back up that many pixels from the end.
+		var back := int(args[2]) if args.size() > 2 else 0
+		scroll.scroll_vertical = int(scroll.get_v_scroll_bar().max_value) - back
 		await get_tree().create_timer(1.5).timeout
 		get_viewport().get_texture().get_image().save_png(out)
 		Router.quit()

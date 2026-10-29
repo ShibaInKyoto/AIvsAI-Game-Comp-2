@@ -395,6 +395,16 @@ func _build_wonders() -> void:
 		info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(info)
 		if seen.has(w.id):
+			# The moment it was first witnessed.
+			var shot := Wonders.snapshot(w.id)
+			if shot:
+				var pic := TextureRect.new()
+				pic.texture = shot
+				pic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+				pic.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+				pic.custom_minimum_size = Vector2(176, 99)
+				row.add_child(pic)
+				row.move_child(pic, 0)
 			info.add_child(UiUtil.label(w.name, &"HeaderLabel", 24, UiTheme.GOOD))
 			var text := UiUtil.label(w.text)
 			text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

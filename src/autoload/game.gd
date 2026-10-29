@@ -92,6 +92,7 @@ func save_game() -> void:
 
 func reset_progress() -> void:
 	meta = MetaState.new()
+	Wonders.clear_snapshots()
 	save_game()
 
 

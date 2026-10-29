@@ -19,7 +19,7 @@ const CLEARANCE := 3.0
 const MIN_RUN := 24.0
 ## How close the sub comes before it appears, and before it is witnessed.
 const TRIGGER_RANGE := 50.0
-const WITNESS_RANGE := 40.0
+const WITNESS_RANGE := 16.0
 const CLICK_PING_RANGE := 34.0
 const CLICK_PING_EVERY := 4.0
 const FADE := 3.0

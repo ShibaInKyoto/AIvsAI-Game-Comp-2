@@ -2,7 +2,11 @@ class_name Wonders
 extends RefCounted
 ## The sights of the trench a pilot has witnessed, kept between dives and
 ## listed in the hangar archive beside the logs that told of them. One not
-## yet witnessed says where to look.
+## yet witnessed says where to look. The moment each was first witnessed is
+## kept as a small snapshot beside it.
+
+const SNAPSHOT_DIR := "user://wonders"
+const SNAPSHOT_WIDTH := 320
 
 const ALL: Array[Dictionary] = [
 	{"id": "manta", "name": "A shelf manta", "where": "in the Sunlit Shelf",
@@ -44,6 +48,7 @@ static func witness(id: String) -> void:
 	if meta == null or meta.wonders.has(id) or get_wonder(id).is_empty():
 		return
 	meta.wonders.append(id)
+	_snapshot(id)
 	Audio.play(&"wonder_chime", -6.0)
 	Events.toast.emit("Witnessed: %s  (%d / %d)" % [get_wonder(id).name, found_count(meta.wonders), ALL.size()],
 		UiTheme.GOOD)
@@ -56,3 +61,39 @@ static func found_count(seen: Array[String]) -> int:
 		if seen.has(w.id):
 			n += 1
 	return n
+
+
+static func snapshot_path(id: String) -> String:
+	return SNAPSHOT_DIR.path_join(id + ".png")
+
+
+## The snapshot kept of [param id], or null if there is none.
+static func snapshot(id: String) -> Texture2D:
+	var path := snapshot_path(id)
+	if not FileAccess.file_exists(path):
+		return null
+	var img := Image.load_from_file(path)
+	return ImageTexture.create_from_image(img) if img and not img.is_empty() else null
+
+
+## Forgets every snapshot (with the rest of the progress).
+static func clear_snapshots() -> void:
+	if not DirAccess.dir_exists_absolute(SNAPSHOT_DIR):
+		return
+	for f in DirAccess.get_files_at(SNAPSHOT_DIR):
+		DirAccess.remove_absolute(SNAPSHOT_DIR.path_join(f))
+
+
+## Keeps the last frame drawn, small, for the archive (not in headless or
+## autopilot runs).
+static func _snapshot(id: String) -> void:
+	if DisplayServer.get_name() == "headless" or Autopilot.requested():
+		return
+	var tree := Engine.get_main_loop() as SceneTree
+	var tex := tree.root.get_texture() if tree else null
+	var img := tex.get_image() if tex else null
+	if img == null or img.is_empty():
+		return
+	img.resize(SNAPSHOT_WIDTH, maxi(1, SNAPSHOT_WIDTH * img.get_height() / img.get_width()), Image.INTERPOLATE_BILINEAR)
+	DirAccess.make_dir_recursive_absolute(SNAPSHOT_DIR)
+	img.save_png(snapshot_path(id))

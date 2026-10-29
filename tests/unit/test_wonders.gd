@@ -24,3 +24,12 @@ func test_witnessed_once_and_kept() -> void:
 	var copy := MetaState.from_dict(JSON.parse_string(JSON.stringify(Game.meta.to_dict())))
 	check(copy.wonders.has("glass"), "kept in the save")
 	Game.meta.wonders = before
+
+
+func test_snapshots_load_back() -> void:
+	var img := Image.create(32, 18, false, Image.FORMAT_RGB8)
+	DirAccess.make_dir_recursive_absolute(Wonders.SNAPSHOT_DIR)
+	img.save_png(Wonders.snapshot_path("zz_test"))
+	check(Wonders.snapshot("zz_test") != null, "a kept snapshot loads back")
+	DirAccess.remove_absolute(Wonders.snapshot_path("zz_test"))
+	check(Wonders.snapshot("zz_test") == null, "and a missing one is null")
