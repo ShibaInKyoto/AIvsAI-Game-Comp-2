@@ -25,6 +25,8 @@ const SLAM_TIME := 0.55
 const SLAM_DAMAGE := 28.0
 const SLAM_RANGE := 9.0
 const SCALD_TIME := 1.0
+## The highest step it climbs on its way to a sound.
+const CLIMB := 6.0
 ## Seconds it stands listening where a sound led it before patrolling on.
 const LINGER := 3.5
 ## Per phase (thirds of its health): crawl speed, seconds the shell stays
@@ -204,11 +206,21 @@ func _crawl(delta: float) -> void:
 	var speed := CRAWL_SPEED[phase] * clampf(absf(dx) / 2.0, 0.0, 1.0)
 	if not _chasing and _vent_ahead():
 		speed = 0.0
-	if level.field.sample(pos + Vector2(heading * 3.4, 0.0)) < 1.0:
+	# Rock ahead: climb it if there is water over it (a step, or the lip of
+	# the fissure it has been knocked into), else stop there.
+	var climb := 0.0
+	while absf(dx) > 0.5 and climb < CLIMB and level.field.sample(pos + Vector2(heading * 3.4, climb)) < 1.0:
+		climb += 0.5
+	if climb >= CLIMB or climb > 0.0 and level.field.sample(pos + Vector2(0.0, climb)) < radius * 0.8:
 		speed = 0.0
 		_goal_x = pos.x
+		climb = 0.0
+	elif climb > 0.0:
+		speed *= 0.4
 	var fy := _floor_y(pos.x + heading * 1.5, pos.y)
 	var want_y := maxf(fy + RIDE if fy != -INF and fy > pos.y - RIDE - 3.0 else pos.y, _lowest)
+	if climb > 0.0:
+		want_y = maxf(want_y, pos.y + climb + 0.5)
 	vel.x = lerpf(vel.x, heading * speed, 1.0 - exp(-4.0 * delta))
 	vel.y = lerpf(vel.y, clampf((want_y - pos.y) * 4.0, -8.0, 8.0), 1.0 - exp(-6.0 * delta))
 	# Every stride shakes the floor; heard (and felt) across the lair.
