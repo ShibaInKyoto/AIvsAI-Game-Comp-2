@@ -96,6 +96,10 @@ static func _snapshot(id: String) -> void:
 	var img := tex.get_image() if tex else null
 	if img == null or img.is_empty():
 		return
-	img.resize(SNAPSHOT_WIDTH, maxi(1, SNAPSHOT_WIDTH * img.get_height() / img.get_width()), Image.INTERPOLATE_BILINEAR)
 	DirAccess.make_dir_recursive_absolute(SNAPSHOT_DIR)
-	img.save_png(snapshot_path(id))
+	var path := snapshot_path(id)
+	# Shrink and write it off the main thread, so the moment does not hitch.
+	WorkerThreadPool.add_task(func() -> void:
+		img.resize(SNAPSHOT_WIDTH, maxi(1, SNAPSHOT_WIDTH * img.get_height() / img.get_width()),
+			Image.INTERPOLATE_BILINEAR)
+		img.save_png(path))
