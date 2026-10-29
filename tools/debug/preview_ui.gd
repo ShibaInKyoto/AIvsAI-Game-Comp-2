@@ -2,7 +2,7 @@ extends Node
 ## Debug helper: shows one UI panel over the menu backdrop and saves a PNG.
 ## Usage: xvfb-run godot --path . res://tools/debug/preview_ui.tscn -- <out.png> <panel> [zone]
 ## Panels: howto, settings, erase (armed), controls, stop, summary, records, credits,
-## prologue, ending (every log found, epilogue shown at once), logs (the hangar's
+## prologue, ending (every log found and the lullaby heard, epilogue shown at once), logs (the hangar's
 ## archive scrolled to its end: the recordings outside the Meridian set and the
 ## wonders witnessed; nothing is saved),
 ## specimen <id> (the hangar codex with that species in the viewport; nothing is saved).
@@ -17,6 +17,8 @@ func _ready() -> void:
 		for l in SignalLogs.LOGS:
 			if not Game.meta.logs_found.has(l.id):
 				Game.meta.logs_found.append(l.id)
+		if not Game.meta.wonders.has("lullaby"):
+			Game.meta.wonders.append("lullaby")
 		var ending: Node = load(Router.ENDING).instantiate()
 		ending.set(&"_fast", true)
 		add_child(ending)

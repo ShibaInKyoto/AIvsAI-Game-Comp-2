@@ -62,6 +62,13 @@ func _sequence() -> void:
 		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		await _reveal(l, 2.6)
 	var meta := Game.meta
+	# For pilots who stayed at the station long enough to hear it sung back.
+	if meta.wonders.has("lullaby"):
+		var hum := UiUtil.label("As you rise, something far below is still humming Okafor's lullaby.", &"", 24,
+			UiTheme.ACCENT.lerp(UiTheme.TEXT, 0.4))
+		hum.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		hum.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		await _reveal(hum, 2.6)
 	var found := SignalLogs.found_count(meta.logs_found)
 	if found >= SignalLogs.count():
 		var heading := UiUtil.label("THE MERIDIAN RECORD", &"TitleLabel", 34, UiTheme.WARN)
