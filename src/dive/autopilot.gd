@@ -109,23 +109,7 @@ func drive(delta: float) -> void:
 	if _ran_dark:
 		_ran_dark = false
 		sub.lamp_on = true
-	var path := _route
-	# Advance along the path once we are close to the current waypoint.
-	while _path_index < path.size() - 1 and sub.pos.distance_to(path[_path_index]) < 4.0:
-		_path_index += 1
-	var ahead := mini(_path_index + 1, path.size() - 1)
-	# Never steer into the rock: round a sharp corner the next waypoint can be
-	# out of sight, so fall back to the nearest one that is not.
-	while ahead > _path_index and not level.field.line_of_sight(sub.pos, path[ahead], Submarine.RADIUS * 0.9):
-		ahead -= 1
-	var target := path[ahead]
-	if _path_index >= path.size() - 2:
-		target = level.layout.exit
-	var to := target - sub.pos
-	var move := to.normalized()
-	# Pressed against a wall, push off it rather than grinding into it.
-	if level.field.sample(sub.pos) < Submarine.RADIUS + 0.25:
-		move = (move + level.field.normal(sub.pos) * 0.8).normalized()
+	var move := _route_move()
 	var threat := _nearest_threat()
 	if threat:
 		sub.aim = (threat.pos - sub.pos).normalized()
@@ -151,6 +135,27 @@ func drive(delta: float) -> void:
 			_path_index = _nearest_index(_route, sub.pos)
 		_stuck_timer = 0.0
 		_last_pos = sub.pos
+
+
+## The way on along the route to the exit, steering clear of rock.
+func _route_move() -> Vector2:
+	var path := _route
+	# Advance along the path once we are close to the current waypoint.
+	while _path_index < path.size() - 1 and sub.pos.distance_to(path[_path_index]) < 4.0:
+		_path_index += 1
+	var ahead := mini(_path_index + 1, path.size() - 1)
+	# Never steer into the rock: round a sharp corner the next waypoint can be
+	# out of sight, so fall back to the nearest one that is not.
+	while ahead > _path_index and not level.field.line_of_sight(sub.pos, path[ahead], Submarine.RADIUS * 0.9):
+		ahead -= 1
+	var target := path[ahead]
+	if _path_index >= path.size() - 2:
+		target = level.layout.exit
+	var move := (target - sub.pos).normalized()
+	# Pressed against a wall, push off it rather than grinding into it.
+	if level.field.sample(sub.pos) < Submarine.RADIUS + 0.25:
+		move = (move + level.field.normal(sub.pos) * 0.8).normalized()
+	return move
 
 
 ## Index of the waypoint closest to [param p] (a fresh route starts there;
@@ -179,15 +184,18 @@ func _fight_boss() -> void:
 	var eta := boss.next_arrival(sub.pos)
 	if eta < 0.12:
 		sub.try_ping()
-	# The nearest organ in sight; with none in sight, swim into the open arena
-	# (heading straight for a hidden organ wedges the sub on the rock between).
+	# The nearest organ in sight whose standoff point (9 m off it) the hull can
+	# swim to in a straight line; with none, follow the route on into the open
+	# arena (heading straight across rock wedges the sub for the whole fight).
 	var organ: ChoirOrgan = null
 	for o in boss.organs:
+		var standoff := o.pos - (o.pos - sub.pos).normalized() * 9.0
 		if level.field.line_of_sight(sub.pos, o.pos) \
+				and level.field.line_of_sight(sub.pos, standoff, Submarine.RADIUS * 0.9) \
 				and (organ == null or o.pos.distance_to(sub.pos) < organ.pos.distance_to(sub.pos)):
 			organ = o
 	if organ == null:
-		sub.external_move = (boss.center - sub.pos).limit_length(1.0) if not boss.organs.is_empty() else Vector2.ZERO
+		sub.external_move = _route_move() if not boss.organs.is_empty() else Vector2.ZERO
 	else:
 		var to := organ.pos - sub.pos
 		sub.external_move = (organ.pos - to.normalized() * 9.0 - sub.pos).limit_length(1.0)
