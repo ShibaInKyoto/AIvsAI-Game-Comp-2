@@ -2,7 +2,7 @@ extends "res://tools/debug/preview_stage.gd"
 ## Debug helper: stages the first Abyssal Vents zone and saves screenshots of
 ## the singing glass sealing its chamber, ringing higher with each ping, and
 ## shattering open on the third.
-## Usage: xvfb-run godot --path . res://tools/debug/preview_glass.tscn -- <out_dir> [seed] [zoom]
+## Usage: xvfb-run godot --path . res://tools/debug/preview_glass.tscn -- <out_dir> [seed] [zoom] [clip step]
 
 var _glass: SingingGlass
 var _pings: Array[float] = [2.0, 4.8, 7.6]
