@@ -37,6 +37,9 @@ var boss: ChoirBoss
 ## one; the exit stays sealed while it lives.
 var guardian: Guardian
 var exit_sealed := false
+## Where scattered boulders near the play plane sit (see [PropScatter]), so
+## things placed on the floor later can keep clear of them.
+var boulders := PackedVector2Array()
 var descent_marker: DescentMarker
 
 var _pending_remove: Array[Entity] = []

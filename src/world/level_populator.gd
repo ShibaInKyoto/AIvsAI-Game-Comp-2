@@ -66,8 +66,10 @@ static func populate(level: Level, run: RunState) -> void:
 	# The hadal floor always keeps a log, at the station it came from.
 	if rng.randf() < 0.8 or not layout.has_exit:
 		_spawn_log(level, used)
-	# Last, so the rest of the zone is laid out exactly as it would be without it.
+	# Last, so the rest of the zone is laid out exactly as it would be without them.
 	_spawn_manta(level, used)
+	if level.biome.id == &"reef":
+		GiantClam.scatter(level, rng, used, rng.randi_range(1, 2))
 
 
 ## The sunlit shelf is the gentle giants' water: most zones there have a

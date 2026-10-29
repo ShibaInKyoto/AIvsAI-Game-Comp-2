@@ -68,6 +68,10 @@ itself. Every zone is a procedurally generated cave cross-section. Find the
   the dive report tells you what sank you and how to deal with it.
 * Spend salvage in the **hangar** on permanent upgrades. Spend research (from
   scanning creatures and recovering logs) on three more submarines.
+* On the Twilight Reef floor sit **giant clams** with glowing pearls inside.
+  They snap shut in the light or at any loud sound: kill the lamp, wait in
+  the dark for one to gape, and harpoon the pearl by its own glow. Do not
+  swim into an open one.
 * At the bottom of the Twilight Reef the way down is guarded by **the
   Lamplighter**, an angler the size of a whale that sees only light. Run dark,
   ping to break her lure's pull, then shine your lamp in her eyes up close (or
@@ -232,7 +236,7 @@ Requires Godot 4.5.1 with export templates installed.
 
 ```sh
 godot --headless --import                                       # first-time import
-godot --headless --path . -s res://tests/run_tests.gd           # 114 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
+godot --headless --path . -s res://tests/run_tests.gd           # 117 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
 godot --headless --path . res://tests/flow_test.tscn            # end-to-end menu and dive flow
 godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
 python3 tools/audio/generate.py                                 # regenerate all audio (numpy + ffmpeg)

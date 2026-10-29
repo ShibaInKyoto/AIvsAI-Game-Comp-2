@@ -61,6 +61,8 @@ static func scatter(level: Level) -> void:
 			var basis := Basis(Vector3.BACK, up.angle() - PI * 0.5) * Basis(Vector3.UP, rng.randf_range(-max_yaw, max_yaw))
 			basis = basis.scaled(Vector3.ONE * rng.randf_range(def.scale.x, def.scale.y))
 			xforms.append(Transform3D(basis, Vector3(base.x, base.y, z)))
+			if id == &"rock" and z > -2.0:
+				level.boulders.append(a.pos)
 			customs.append(Color(rng.randf(), rng.randf(), rng.randf_range(0.75, 1.15), rng.randf_range(0.6, 1.2)))
 		if xforms.is_empty():
 			continue
