@@ -116,6 +116,7 @@ func tick(delta: float) -> void:
 		return
 	if not _started:
 		_started = true
+		Settings.rumble_pulse(0.25, 1.5)
 		for m in _morphs:
 			Audio.play_at(&"rock_flow", m.centre(), 0.0, 0.05)
 			Fx.silt(level, m.centre(), 3.0, level.biome.sediment_tint)

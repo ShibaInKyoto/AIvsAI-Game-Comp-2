@@ -93,7 +93,10 @@ itself. Every zone is a procedurally generated cave cross-section. Find the
   drain what charge is left in its cells.
 * On the hadal floor, on the way down, stand the ruins of **Meridian Deep**
   itself. A few windows still have power, and its beacon still pings: each
-  ping charts the cave around it and is loud enough to draw hunters.
+  ping charts the cave around it and is loud enough to draw hunters. Over it
+  hangs an audience of hunters held by the Choir's tone, facing the floor,
+  perfectly still; each time the tone shifts they turn together. Slip past
+  without touching one, or they all wake.
 * At the bottom of the trench waits **the Choir**. It sings in waves. Answer
   each wave with a sonar ping as it reaches you (an answer costs no battery; a
   missed wave hurts and drains it), then harpoon its voice organs while they
@@ -226,7 +229,7 @@ Requires Godot 4.5.1 with export templates installed.
 
 ```sh
 godot --headless --import                                       # first-time import
-godot --headless --path . -s res://tests/run_tests.gd           # 108 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
+godot --headless --path . -s res://tests/run_tests.gd           # 110 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
 godot --headless --path . res://tests/flow_test.tscn            # end-to-end menu and dive flow
 godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
 python3 tools/audio/generate.py                                 # regenerate all audio (numpy + ffmpeg)

@@ -36,6 +36,11 @@ var upright := false
 var lock_facing := false
 ## Bosses cannot be caught unaware.
 var ambushable := true
+## Held by the Choir's tone (see [StationAudience]): hangs still facing
+## [member entranced_facing], deaf to everything, and bites nothing, until
+## something hurts or bumps it.
+var entranced := false
+var entranced_facing := Vector2(0.0, -1.0)  # World +y is up: facing the floor.
 
 var _stun := 0.0
 var _blind := 0.0
@@ -86,6 +91,9 @@ func tick(delta: float) -> void:
 	_marked = maxf(_marked - delta, 0.0)
 	_blind = maxf(_blind - delta, 0.0)
 	_touch_cooldown = maxf(_touch_cooldown - delta, 0.0)
+	if entranced:
+		_hang(delta)
+		return
 	if _stun > 0.0:
 		_stun -= delta
 		vel = vel.lerp(Vector2.ZERO, 1.0 - exp(-3.0 * delta))
@@ -99,6 +107,26 @@ func tick(delta: float) -> void:
 	move_and_collide_field(delta, 0.2)
 	_check_player_contact()
 	_update_visuals(delta)
+
+
+## Entranced: still in the water but for a slow bob, turning with the rest.
+func _hang(delta: float) -> void:
+	vel = Vector2(0.0, sin(level.time * 0.7 + _phase) * 0.12)
+	pos += vel * delta
+	if not upright:
+		facing = facing.slerp(entranced_facing, 1.0 - exp(-2.0 * delta)).normalized()
+	var sub := level.player
+	if sub and sub.alive and pos.distance_squared_to(sub.pos) < pow(radius + Submarine.RADIUS + 0.2, 2.0):
+		_wake()
+	_update_visuals(delta)
+
+
+## Breaks the trance: it notices the sub and acts on its own again.
+func _wake() -> void:
+	if not entranced:
+		return
+	entranced = false
+	alert()
 
 
 func _check_player_contact() -> void:
@@ -145,6 +173,7 @@ func _update_instance_params() -> void:
 func take_damage(amount: float, from: Vector2, _kind: StringName = &"") -> void:
 	if not alive:
 		return
+	_wake()
 	hp -= amount
 	_flash = 1.0
 	vel += (pos - from).normalized() * clampf(amount * 0.25, 1.0, 8.0) / maxf(mass, 0.5)

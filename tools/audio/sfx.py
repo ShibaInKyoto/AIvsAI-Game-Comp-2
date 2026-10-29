@@ -619,6 +619,20 @@ def choir_call():
     return normalize(trim_silence(wet_dry(v * env_adsr(d, 0.6, 0.8, 0.7, 1.8), HUGE_WATER, 0.55)), 0.85)
 
 
+def choir_tone():
+    """The Choir's tone changing pitch under the station (log_05): a low hum in
+    two voices that slides to a new note and holds it."""
+    d = 3.6
+    t = np.linspace(0, 1, seconds(d))
+    slide = 1 + 0.19 * np.clip((t - 0.25) / 0.35, 0, 1) ** 2
+    v = np.zeros(seconds(d))
+    for f, a in [(73.4, 1.0), (110.0, 0.55), (146.8, 0.25)]:
+        ph = phase_from_freq(f * slide * (1 + 0.004 * np.sin(2 * np.pi * 3.1 * t_axis(d))))
+        v += a * (np.sin(ph) + 0.3 * np.sin(2 * ph) + 0.12 * np.sin(3 * ph))
+    v = lowpass(v, 700) * env_adsr(d, 0.7, 0.5, 0.8, 1.2)
+    return normalize(trim_silence(wet_dry(v, HUGE_WATER, 0.6)), 0.6)
+
+
 def choir_echo():
     """The sub's own ping coming back up from far below eleven seconds later,
     slowed down and stretched into something like a word (log_03)."""

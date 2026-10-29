@@ -263,6 +263,9 @@ static func _spawn_station(level: Level, used: PackedVector2Array) -> void:
 	station.pos = Vector2(room.center.x, floors[floors.size() / 2])
 	level.add_entity(station)
 	used.append(station.pos + Vector2(0.0, 3.0))
+	var audience := StationAudience.gather(level, station)
+	for m in audience.members:
+		used.append(m.pos)
 
 
 ## A whale fall gathers life: shoals feeding over the carcass and the
