@@ -119,6 +119,8 @@ func behave(delta: float) -> void:
 	var sub := level.player
 	if sub and sub.alive:
 		var away := pos - sub.pos
+		if away.length() < PERSONAL_SPACE * 2.0:
+			Wonders.witness("manta")
 		if away.length() < PERSONAL_SPACE:
 			desired += away.normalized() * speed * (1.0 - away.length() / PERSONAL_SPACE) * 2.0
 	steer(desired, 0.6 if _flee <= 0.0 else 1.5, delta)

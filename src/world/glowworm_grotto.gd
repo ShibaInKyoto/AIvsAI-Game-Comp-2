@@ -185,6 +185,8 @@ func tick(delta: float) -> void:
 		lit[i] = move_toward(lit[i], 0.0 if dark else 1.0, delta * (DIM_RATE if dark else RELIGHT_RATE))
 	_upload()
 	var sub := level.player
+	if sub and sub.alive and _inside(sub.pos):
+		Wonders.witness("grotto")
 	if not _explained and sub and sub.alive and _inside(sub.pos):
 		_explained = true
 		Events.toast.emit("A glow-worm grotto. They go dark at any sound - drift through quietly " +

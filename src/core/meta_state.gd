@@ -15,6 +15,8 @@ var selected_frame := "lantern"
 ## Creature id (String) -> number of times scanned.
 var codex: Dictionary = {}
 var logs_found: Array[String] = []
+## Ids of the [Wonders] witnessed.
+var wonders: Array[String] = []
 var deepest_zone := 0
 var deepest_depth := 0
 var dives := 0
@@ -166,6 +168,7 @@ func to_dict() -> Dictionary:
 		"selected_frame": selected_frame,
 		"codex": codex,
 		"logs_found": logs_found,
+		"wonders": wonders,
 		"deepest_zone": deepest_zone,
 		"deepest_depth": deepest_depth,
 		"dives": dives,
@@ -214,6 +217,8 @@ static func from_dict(d: Dictionary) -> MetaState:
 		m.codex[String(k)] = int(codex[k])
 	for l in d.get("logs_found", []):
 		m.logs_found.append(String(l))
+	for w in d.get("wonders", []):
+		m.wonders.append(String(w))
 	m.deepest_zone = int(d.get("deepest_zone", 0))
 	m.deepest_depth = int(d.get("deepest_depth", 0))
 	m.dives = int(d.get("dives", 0))

@@ -239,6 +239,7 @@ func take_pearl(sub: Submarine) -> void:
 	if not has_pearl:
 		return
 	has_pearl = false
+	Wonders.witness("pearl")
 	if sub:
 		sub.run.research += PEARL_RESEARCH
 		sub.show_gain(PEARL_RESEARCH, " research", UiTheme.ACCENT)

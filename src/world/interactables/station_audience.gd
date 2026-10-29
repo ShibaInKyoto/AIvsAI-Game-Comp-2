@@ -72,6 +72,9 @@ func tick(delta: float) -> void:
 		if not m.entranced:
 			_wake_near(m.pos)
 	var sub := level.player
+	if sub and sub.alive and sub.pos.distance_to(pos) < NOTICE_RANGE \
+			and members.any(func(m: Creature) -> bool: return m.entranced):
+		Wonders.witness("audience")
 	if not _explained and sub and sub.alive and sub.pos.distance_to(pos) < NOTICE_RANGE \
 			and members.any(func(m: Creature) -> bool: return m.entranced):
 		_explained = true

@@ -303,6 +303,7 @@ func _ring() -> void:
 func _shatter() -> void:
 	shattered = true
 	_arrivals.clear()
+	Wonders.witness("glass")
 	_neck = TrenchShift.build_morph(level.field, [[wall - normal * 1.0, chamber, NECK_RADIUS]], false)
 	_open = 0.0
 	Audio.play_at(&"glass_shatter", pos, 2.0, 0.0)

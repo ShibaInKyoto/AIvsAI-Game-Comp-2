@@ -3,7 +3,8 @@ extends Node
 ## Usage: xvfb-run godot --path . res://tools/debug/preview_ui.tscn -- <out.png> <panel> [zone]
 ## Panels: howto, settings, erase (armed), controls, stop, summary, records, credits,
 ## prologue, ending (every log found, epilogue shown at once), logs (the hangar's
-## archive scrolled to the recordings outside the Meridian set; nothing is saved),
+## archive scrolled to its end: the recordings outside the Meridian set and the
+## wonders witnessed; nothing is saved),
 ## specimen <id> (the hangar codex with that species in the viewport; nothing is saved).
 ## (summary banks a fake dive into the local save).
 
@@ -27,6 +28,9 @@ func _ready() -> void:
 		for id in ["log_01", "log_02", "log_03", "log_04", "log_drone", "log_final"]:
 			if not Game.meta.logs_found.has(id):
 				Game.meta.logs_found.append(id)
+		for id in ["manta", "pearl", "grotto", "glass", "echo"]:
+			if not Game.meta.wonders.has(id):
+				Game.meta.wonders.append(id)
 		var hangar: Node = load(Router.HANGAR).instantiate()
 		add_child(hangar)
 		await get_tree().process_frame

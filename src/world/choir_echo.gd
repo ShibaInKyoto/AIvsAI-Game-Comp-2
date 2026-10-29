@@ -67,6 +67,7 @@ func _answer() -> void:
 	if sub == null or not sub.alive:
 		return
 	answers += 1
+	Wonders.witness("echo")
 	var from := sub.pos + Vector2(0.0, -DEPTH)
 	Audio.play(&"choir_echo", -3.0)
 	# For the sound cues: it comes up from below.

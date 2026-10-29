@@ -138,6 +138,7 @@ func tick(delta: float) -> void:
 	var sub := level.player
 	if not surveyed and sub and sub.alive and sub.pos.distance_to(pos) < SURVEY_RANGE:
 		surveyed = true
+		Wonders.witness("whale_fall")
 		sub.run.research += SURVEY_RESEARCH
 		sub.show_gain(SURVEY_RESEARCH, " research", UiTheme.ACCENT)
 		Events.toast.emit("Whale fall surveyed: +%d research" % SURVEY_RESEARCH, UiTheme.ACCENT)

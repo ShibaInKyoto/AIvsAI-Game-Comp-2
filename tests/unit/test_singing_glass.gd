@@ -108,6 +108,7 @@ func test_three_pings_in_a_row_shatter_it() -> void:
 	_ping(level, sub)
 	_run(level, glass, 0.5)
 	check(glass.shattered, "the third note shatters it")
+	check(Game.meta.wonders.has("glass"), "a wonder witnessed")
 	check_eq(run.research, research + SingingGlass.RESEARCH, "and earns research")
 	_run(level, glass, SingingGlass.OPEN_TIME + 0.5)
 	var layout := level.layout

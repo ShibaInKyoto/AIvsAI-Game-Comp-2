@@ -204,6 +204,7 @@ func survey(sub: Submarine) -> void:
 	if surveyed:
 		return
 	surveyed = true
+	Wonders.witness("drone")
 	_lamp_mat.emission_energy_multiplier = 6.0
 	_light.light_energy = 1.4
 	var charge := minf(CELL_CHARGE, maxf(sub.stats.max_battery - sub.run.battery, 0.0))

@@ -64,7 +64,7 @@ func _ready() -> void:
 	tabs.add_theme_constant_override(&"separation", 8)
 	left.add_child(tabs)
 	var tab_names := [[Tab.UPGRADES, "Upgrades"], [Tab.FRAMES, "Submarines"], [Tab.CODEX, "Codex"],
-		[Tab.LOGS, "Signal logs"], [Tab.MILESTONES, "Milestones"]]
+		[Tab.LOGS, "Archive"], [Tab.MILESTONES, "Milestones"]]
 	for t: Array in tab_names:
 		var tab_id: Tab = t[0]
 		var b := UiUtil.button(t[1], func() -> void: _show_tab(tab_id), 196)
@@ -378,6 +378,33 @@ func _build_logs() -> void:
 		var text := UiUtil.label(l.text)
 		text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		info.add_child(text)
+	_build_wonders()
+
+
+## The sights witnessed in the trench, beside the logs that told of them.
+func _build_wonders() -> void:
+	var seen := Game.meta.wonders
+	var gap := Control.new()
+	gap.custom_minimum_size = Vector2(0, 14)
+	_content.add_child(gap)
+	_content.add_child(UiUtil.label("%d / %d wonders witnessed" % [Wonders.found_count(seen), Wonders.ALL.size()],
+		&"MonoLabel"))
+	for w in Wonders.ALL:
+		var row := _row_panel()
+		var info := VBoxContainer.new()
+		info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(info)
+		if seen.has(w.id):
+			info.add_child(UiUtil.label(w.name, &"HeaderLabel", 24, UiTheme.GOOD))
+			var text := UiUtil.label(w.text)
+			text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			info.add_child(text)
+			if w.has("log") and Game.meta.logs_found.has(w.log):
+				info.add_child(UiUtil.label("As told in \"%s\"" % SignalLogs.get_log(StringName(w.log)).title,
+					&"DimLabel"))
+		else:
+			info.add_child(UiUtil.label("? ? ?", &"HeaderLabel", 24, UiTheme.TEXT_DIM))
+			info.add_child(UiUtil.label("Not yet witnessed. Somewhere %s." % w.where, &"DimLabel"))
 
 
 func _build_milestones() -> void:

@@ -141,6 +141,7 @@ func tick(delta: float) -> void:
 
 ## Plans the seal and the chamber for this song and starts it.
 func _begin(sub: Submarine) -> void:
+	Wonders.witness("trench")
 	_morphs.clear()
 	var seal := _plan_seal(sub)
 	if seal:
