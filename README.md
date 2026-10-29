@@ -16,8 +16,8 @@ singing at the bottom of the world.
 | ![Spined puffers swelling up](docs/screenshots/puffers.jpg) | ![Something far below pings back](docs/screenshots/echo.jpg) |
 | ![Twilight Reef](docs/screenshots/reef.jpg) | ![The Lamplighter](docs/screenshots/lamplighter.jpg) |
 | ![A glow-worm grotto in the Midnight Caverns](docs/screenshots/grotto.jpg) | ![The Blind Mother](docs/screenshots/mother.jpg) |
-| ![Abyssal Vents](docs/screenshots/vents.jpg) | ![A giant clam gaping in the dark, its pearl aglow](docs/screenshots/clam.jpg) |
-| ![The Choir](docs/screenshots/choir.jpg) | ![Decompression stop](docs/screenshots/stop.jpg) |
+| ![Singing glass sealing a chamber in the Abyssal Vents, ringing under sonar](docs/screenshots/vents.jpg) | ![A giant clam gaping in the dark, its pearl aglow](docs/screenshots/clam.jpg) |
+| ![The Choir: an answered song wave](docs/screenshots/choir.jpg) | ![Decompression stop](docs/screenshots/stop.jpg) |
 | ![The Ironclad, its shell cracked by an eruption](docs/screenshots/ironclad.jpg) | ![A whale fall](docs/screenshots/whale.jpg) |
 | ![A new chamber opens in the Hadal Trench where there was solid rock](docs/screenshots/trench.jpg) | ![Vasquez's drone, sealed into the rock](docs/screenshots/drone.jpg) |
 | ![The ruins of Meridian Deep, and the audience hanging over them](docs/screenshots/station.jpg) | ![Sound cues](docs/screenshots/cues.jpg) |

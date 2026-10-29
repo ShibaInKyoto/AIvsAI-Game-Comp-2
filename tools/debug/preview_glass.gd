@@ -20,7 +20,7 @@ func _ready() -> void:
 	place_sub(_glass.wall - _glass.normal * 4.5, float(args[2]) if args.size() > 2 else 0.8)
 	add_hud()
 	shot_prefix = "glass"
-	shot_times = [1.6, 2.5, 5.3, 8.1, 8.6, 11.0]
+	shot_times = [1.6, 2.5, 5.3, 6.6, 7.0, 8.1, 8.6, 11.0]
 
 
 func direct(_dt: float) -> void:
