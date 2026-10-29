@@ -113,6 +113,9 @@ itself. Every zone is a procedurally generated cave cross-section. Find the
   something answers your sonar the way it answered Meridian's: eleven seconds
   after a ping, your ping comes back up from far below, slowed and stretched
   into something like a word.
+
+  ![The Choir sings and a new chamber flows open in the Hadal Trench, a cache waiting in it](docs/screenshots/trench.webp)
+
 * In the last stretch of the Hadal Trench, a work lamp gutters out of a wall:
   **Vasquez's drone**, lost the night the trench closed, sealed into rock that
   flowed over it like wax. Come alongside to play its flight recorder and

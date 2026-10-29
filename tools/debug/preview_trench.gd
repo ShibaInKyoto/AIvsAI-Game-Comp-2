@@ -1,7 +1,7 @@
 extends "res://tools/debug/preview_stage.gd"
 ## Debug helper: stages a Hadal Trench zone, sets the Choir singing and saves
 ## screenshots of the tunnel behind the sub flowing shut.
-## Usage: xvfb-run godot --path . res://tools/debug/preview_trench.tscn -- <out_dir> [seed] [zoom] [pocket]
+## Usage: xvfb-run godot --path . res://tools/debug/preview_trench.tscn -- <out_dir> [seed] [zoom] [pocket] [clip step]
 ## (pocket: frame the chamber opening ahead instead.)
 
 var _shift: TrenchShift
@@ -36,6 +36,13 @@ func _ready() -> void:
 	camera.snap()
 	shot_prefix = "pocket" if _pocket_view else "seal"
 	shot_times = [0.8, 3.5, 5.0, 8.5]
+	# A fifth argument: a frame every that many seconds instead, for a clip.
+	if args.size() > 4:
+		shot_times.clear()
+		var at := 0.2
+		while at < 9.0:
+			shot_times.append(at)
+			at += float(args[4])
 
 
 func direct(_dt: float) -> void:
