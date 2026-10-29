@@ -5,7 +5,7 @@ extends Node
 ## prologue, ending (every log found and the lullaby heard, epilogue shown at once), logs (the hangar's
 ## archive scrolled to its end: the recordings outside the Meridian set and the
 ## wonders witnessed; nothing is saved),
-## specimen <id> (the hangar codex with that species in the viewport; nothing is saved).
+## hangar (its upgrades tab), specimen <id> (the hangar codex with that species in the viewport; nothing is saved).
 ## (summary banks a fake dive into the local save).
 
 
@@ -43,6 +43,12 @@ func _ready() -> void:
 		var back := int(args[2]) if args.size() > 2 else 0
 		scroll.scroll_vertical = int(scroll.get_v_scroll_bar().max_value) - back
 		await get_tree().create_timer(1.5).timeout
+		get_viewport().get_texture().get_image().save_png(out)
+		Router.quit()
+		return
+	if which == "hangar":
+		add_child(load(Router.HANGAR).instantiate())
+		await get_tree().create_timer(3.0).timeout
 		get_viewport().get_texture().get_image().save_png(out)
 		Router.quit()
 		return
