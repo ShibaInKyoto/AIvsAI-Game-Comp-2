@@ -244,6 +244,10 @@ static func _prism() -> ArrayMesh:
 
 
 func _on_ping(origin: Vector2, ping_range: float) -> void:
+	# Only the sub's own sonar is a note it answers.
+	var sub := level.player
+	if sub == null or origin.distance_to(sub.pos) > 1.5:
+		return
 	var d := origin.distance_to(pos)
 	if shattered or d > ping_range:
 		return

@@ -41,6 +41,8 @@ var exit_sealed := false
 ## things placed on the floor later can keep clear of them.
 var boulders := PackedVector2Array()
 var descent_marker: DescentMarker
+## Set while a ping no hunter would follow is going out (see [method ping]).
+var silent_ping := false
 
 var _pending_remove: Array[Entity] = []
 var _ping_slot := 0
@@ -180,7 +182,10 @@ func loudest_noise_at(p: Vector2, hearing := 1.0, ignore: Node = null) -> Varian
 
 
 ## Fires a sonar ping: drives the terrain shader and marks entities in range.
-func ping(origin: Vector2, ping_range: float, mark_time: float) -> void:
+## A [param silent] ping (a whale's clicks, the echo from below) charts and
+## marks like any other, but no hunter turns towards it.
+func ping(origin: Vector2, ping_range: float, mark_time: float, silent := false) -> void:
+	silent_ping = silent
 	var slot := StringName("sonar_ping%d" % _ping_slot)
 	_ping_slot = (_ping_slot + 1) % 4
 	RenderingServer.global_shader_parameter_set(slot, Vector4(origin.x, origin.y, time, ping_range))
@@ -193,6 +198,7 @@ func ping(origin: Vector2, ping_range: float, mark_time: float) -> void:
 		get_tree().create_timer(delay).timeout.connect(func() -> void:
 			Events.toast.emit("Sonar contact: the descent", UiTheme.GOOD)
 			Audio.play(&"sonar_contact", -4.0))
+	silent_ping = false
 	Events.sonar_pinged.emit(origin, ping_range)
 
 

@@ -72,7 +72,7 @@ func _answer() -> void:
 	Audio.play(&"choir_echo", -3.0)
 	# For the sound cues: it comes up from below.
 	Audio.sound_at.emit(&"choir_echo", from)
-	level.ping(from, DEPTH + sub.stats.sonar_range, sub.stats.sonar_mark_time)
+	level.ping(from, DEPTH + sub.stats.sonar_range, sub.stats.sonar_mark_time, true)
 	if not _explained:
 		_explained = true
 		Events.toast.emit("Eleven seconds later, something far below pinged back.", UiTheme.ACCENT)

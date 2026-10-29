@@ -17,6 +17,7 @@ const ARRIVE_RANGE := 16.0
 ## The beacon only pings while the sub is this close.
 const HEARING := 70.0
 const SURVEY_RESEARCH := 10
+const ACTIVE_RADIUS := 220.0
 ## Seconds after arriving before the hull speakers start the lullaby.
 const LULLABY_DELAY := 3.0
 const HULL := Color(0.78, 0.76, 0.68)
@@ -64,8 +65,7 @@ static func floor_below(field: TerrainField, p: Vector2, max_drop := 30.0) -> fl
 
 func setup() -> void:
 	radius = 0.0
-	# Ticks zone-wide, so the lullaby always plays out (and hands the music back).
-	active_radius = 1.0e6
+	active_radius = ACTIVE_RADIUS
 	var rig := Node3D.new()
 	# The floor behind the play plane rises, so the rig sits a little higher.
 	rig.position = Vector3(0.0, PropScatter.surface_offset(DEPTH) - 0.3, DEPTH)
@@ -169,6 +169,9 @@ func _greet(sub: Submarine) -> void:
 	sub.show_gain(SURVEY_RESEARCH, " research", UiTheme.ACCENT)
 	Events.toast.emit("Station survey: +%d research" % SURVEY_RESEARCH, UiTheme.ACCENT)
 	_lullaby_t = 0.0
+	# Zone-wide while it plays, so it plays out (and hands the music back)
+	# wherever the sub goes.
+	active_radius = 1.0e6
 
 
 ## Okafor's lullaby (log_08): the hull speakers still play it, then something
@@ -179,10 +182,11 @@ func _play_lullaby(delta: float) -> void:
 	var singing := level.boss != null and level.boss.active
 	match lullaby_stage:
 		0:
-			if _lullaby_t >= LULLABY_DELAY:
+			if singing:
+				_end_lullaby()
+			elif _lullaby_t >= LULLABY_DELAY:
 				_next_lullaby_stage()
-				if not singing:
-					Audio.stop_music(2.0)
+				Audio.stop_music(2.0)
 				Audio.play_at(&"lullaby_speaker", pos + Vector2(-2.0, 5.0), 3.0, 0.0)
 				Events.toast.emit("The station's speakers crackle into life: Okafor's lullaby, still playing.",
 					UiTheme.ACCENT)
@@ -190,7 +194,7 @@ func _play_lullaby(delta: float) -> void:
 			if _lullaby_t >= _length(&"lullaby_speaker") - 3.0:
 				_next_lullaby_stage()
 				if singing:
-					_lullaby_t = -1.0
+					_end_lullaby()
 					return
 				Audio.play(&"lullaby_choir", 0.0)
 				# For the sound cues: it comes up from below.
@@ -201,11 +205,16 @@ func _play_lullaby(delta: float) -> void:
 						(e as StationAudience).listen()
 		2:
 			if _lullaby_t >= _length(&"lullaby_choir") - 4.0:
-				_next_lullaby_stage()
-				_lullaby_t = -1.0
+				_end_lullaby()
 				Wonders.witness("lullaby")
 				if not singing:
 					Audio.play_music(level.biome.music, 4.0)
+
+
+func _end_lullaby() -> void:
+	lullaby_stage = 3
+	_lullaby_t = -1.0
+	active_radius = ACTIVE_RADIUS
 
 
 func _next_lullaby_stage() -> void:

@@ -74,3 +74,25 @@ func test_a_ping_comes_back_from_below() -> void:
 	check(not echo.pending(), "it rests after answering")
 	Events.sonar_pinged.disconnect(on_ping)
 	level.free()
+
+
+func test_silent_pings_draw_no_hunter() -> void:
+	# The echo from below (and a whale's clicks) chart the cave, but a Stalker
+	# on patrol only turns towards a ping it can follow.
+	var zone := BiomeLibrary.LAIR_ZONE
+	var run := RunState.new()
+	run.run_seed = 5
+	run.rebuild_stats({})
+	run.zone = zone
+	var layout := LevelGenerator.new().generate(BiomeLibrary.biome_for_zone(zone), run.zone_seed(zone), zone)
+	var level := Level.new()
+	(Engine.get_main_loop() as SceneTree).root.add_child(level)
+	level.build(layout, 0)
+	var stalker := Stalker.new()
+	stalker.pos = layout.random_open_point(level.rng, 2.0)
+	level.add_entity(stalker)
+	level.ping(stalker.pos + Vector2(10.0, 0.0), 40.0, 2.0, true)
+	check_eq(stalker.state, Stalker.State.PATROL, "a silent ping leaves it on patrol")
+	level.ping(stalker.pos + Vector2(10.0, 0.0), 40.0, 2.0)
+	check_eq(stalker.state, Stalker.State.INVESTIGATE, "a sonar ping draws it")
+	level.free()

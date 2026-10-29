@@ -162,3 +162,20 @@ func test_climbs_out_of_the_fissure() -> void:
 	check(boss.pos.y > -257.5, "it climbs out of the fissure (%s)" % boss.pos)
 	check(absf(boss.pos.x - goal.x) < absf(44.57 - goal.x) - 4.0, "and walks on towards the sound")
 	level.free()
+
+
+func test_sinks_back_after_a_slam_upwards() -> void:
+	var run := RunState.new()
+	var level := _lair_level(run)
+	var boss := level.guardian as Ironclad
+	_with_sub(level, run)
+	boss.take_damage(1.0, boss.pos)
+	boss.state = Ironclad.State.CRAWL
+	var floor_y := MeridianStation.floor_below(level.field, boss.pos + Vector2(0.0, 2.0), 20.0)
+	boss.pos += Vector2(0.0, 8.0)
+	boss.set(&"_goal_x", boss.pos.x)
+	for i in 150:
+		level.tick(DT)
+	var up := boss.pos.y - floor_y
+	check(up < Ironclad.RIDE + 1.5, "it settles back onto the floor (%.1f m up)" % up)
+	level.free()

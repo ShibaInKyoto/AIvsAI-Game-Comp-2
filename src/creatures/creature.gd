@@ -250,7 +250,8 @@ func on_sonar(origin: Vector2, mark_time: float) -> void:
 	var delay := pos.distance_to(origin) / Level.SONAR_SPEED
 	_marked = mark_time + delay
 	_mark_total = _marked
-	on_pinged(origin)
+	if not level.silent_ping:
+		on_pinged(origin)
 
 
 ## Override: hunters may turn towards the source of a ping.

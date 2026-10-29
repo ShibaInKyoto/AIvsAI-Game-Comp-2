@@ -221,6 +221,13 @@ func _crawl(delta: float) -> void:
 	var want_y := maxf(fy + RIDE if fy != -INF and fy > pos.y - RIDE - 3.0 else pos.y, _lowest)
 	if climb > 0.0:
 		want_y = maxf(want_y, pos.y + climb + 0.5)
+	else:
+		# Carried up off the floor (a slam aimed upwards), it sinks back down
+		# onto the floor under it - but never into the fissure, which it bridges.
+		var under := _floor_y(pos.x, pos.y)
+		var over_fissure := absf(pos.x - level.layout.exit.x) < 6.0
+		if under != -INF and not over_fissure and under + RIDE >= _lowest and pos.y - under > RIDE + 3.0:
+			want_y = under + RIDE
 	vel.x = lerpf(vel.x, heading * speed, 1.0 - exp(-4.0 * delta))
 	vel.y = lerpf(vel.y, clampf((want_y - pos.y) * 4.0, -8.0, 8.0), 1.0 - exp(-6.0 * delta))
 	# Every stride shakes the floor; heard (and felt) across the lair.

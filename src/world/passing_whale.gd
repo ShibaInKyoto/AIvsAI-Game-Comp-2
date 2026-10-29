@@ -214,7 +214,7 @@ func _swim(delta: float, sub: Submarine) -> void:
 	_ping_in -= delta
 	if _ping_in <= 0.0 and _mat.albedo_color.a > 0.5 and not backdrop:
 		_ping_in = CLICK_PING_EVERY
-		level.ping(head, CLICK_PING_RANGE, 2.0)
+		level.ping(head, CLICK_PING_RANGE, 2.0, true)
 	var seen := _mat.albedo_color.a > 0.5 and sub and sub.alive and sub.pos.distance_to(at) < WITNESS_RANGE
 	if seen and not witnessed and not backdrop:
 		witnessed = true
