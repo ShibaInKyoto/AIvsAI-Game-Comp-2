@@ -14,6 +14,7 @@ var _contract_button: Button
 var _contract_desc: Label
 var _start_button: Button
 var _start_desc: Label
+var _scroll: ScrollContainer
 
 
 func _ready() -> void:
@@ -73,6 +74,7 @@ func _ready() -> void:
 		_tab_buttons.append(b)
 
 	var scroll := ScrollContainer.new()
+	_scroll = scroll
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	# Gamepad and keyboard focus moving down the list scrolls it into view.
@@ -135,6 +137,18 @@ func _ready() -> void:
 
 
 ## Debug: `-- --hangar --hangar-tab=1` opens on a given tab (for screenshots).
+## The right stick scrolls the list, for the codex and archive (which have
+## nothing on them to focus).
+func _process(delta: float) -> void:
+	var axis := 0.0
+	for pad in Input.get_connected_joypads():
+		var a := Input.get_joy_axis(pad, JOY_AXIS_RIGHT_Y)
+		if absf(a) > absf(axis):
+			axis = a
+	if absf(axis) > 0.2 and _scroll:
+		_scroll.scroll_vertical += int(axis * 900.0 * delta)
+
+
 static func _initial_tab() -> Tab:
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--hangar-tab="):
