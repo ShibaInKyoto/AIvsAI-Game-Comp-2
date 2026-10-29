@@ -64,7 +64,8 @@ static func floor_below(field: TerrainField, p: Vector2, max_drop := 30.0) -> fl
 
 func setup() -> void:
 	radius = 0.0
-	active_radius = 220.0
+	# Ticks zone-wide, so the lullaby always plays out (and hands the music back).
+	active_radius = 1.0e6
 	var rig := Node3D.new()
 	# The floor behind the play plane rises, so the rig sits a little higher.
 	rig.position = Vector3(0.0, PropScatter.surface_offset(DEPTH) - 0.3, DEPTH)
