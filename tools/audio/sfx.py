@@ -706,5 +706,45 @@ def organ_burst():
     return normalize(trim_silence(wet_dry(mix(burst, wail, _bubbles(d, 30, 300, 1200) * 0.4), BIG_WATER, 0.5)), 0.85)
 
 
+def glass_ring():
+    """Volcanic glass ringing where a ping has reached it: a struck-glass tone
+    with the inharmonic partials of a bowl, beating slowly, and a long tail."""
+    d = 6.0
+    t = t_axis(d)
+    f0 = 587.0
+    out = np.zeros(seconds(d))
+    for ratio, amp, decay in [(1.0, 1.0, 2.2), (2.76, 0.42, 1.2), (5.4, 0.2, 0.6), (8.93, 0.08, 0.3)]:
+        beat = 1 + 0.0018 * np.sin(2 * np.pi * (0.9 + ratio * 0.35) * t)
+        out += amp * np.sin(phase_from_freq(f0 * ratio * beat)) * env_exp(d, decay, 0.003)
+    tick = highpass(noise(0.04), 4000) * env_exp(0.04, 0.008) * 0.25
+    return normalize(trim_silence(wet_dry(mix(out, tick), BIG_WATER, 0.45)), 0.7)
+
+
+def glass_shatter():
+    """A seam of volcanic glass shattering: a sharp crack, a shower of bright
+    shards ringing as they fall, and the rock behind giving way."""
+    d = 2.4
+    crack = highpass(noise(0.08), 2500) * env_exp(0.08, 0.02)
+    body = _thud(150, 40, d, 0.3) * 0.6
+    shards = np.zeros(seconds(d))
+    for _ in range(46):
+        start = seconds(RNG.uniform(0.0, d * 0.75))
+        sd = RNG.uniform(0.15, 0.5)
+        f = RNG.uniform(1800, 5200)
+        s = np.sin(phase_from_freq(np.full(seconds(sd), f))) * env_exp(sd, RNG.uniform(0.04, 0.12)) \
+            * RNG.uniform(0.08, 0.3)
+        shards[start:start + len(s)] += s[: max(0, len(shards) - start)]
+    out = mix(crack, body, shards, _glass_ring_tail(d) * 0.35)
+    return normalize(trim_silence(wet_dry(out, BIG_WATER, 0.5)), 0.9)
+
+
+def _glass_ring_tail(d: float) -> np.ndarray:
+    """The chord the glass rang, dying away under the shatter."""
+    out = np.zeros(seconds(d))
+    for f in [587.0, 740.0, 880.0]:
+        out += np.sin(phase_from_freq(np.full(seconds(d), f))) * env_exp(d, 0.9, 0.002)
+    return out
+
+
 ALL = {name: fn for name, fn in list(globals().items())
        if callable(fn) and not name.startswith("_") and fn.__module__ == __name__}

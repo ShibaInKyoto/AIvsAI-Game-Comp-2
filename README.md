@@ -84,6 +84,10 @@ itself. Every zone is a procedurally generated cave cross-section. Find the
 * At the bottom of the Midnight Caverns the way down is sealed by **the Blind
   Mother**, a colossal eyeless eel that strikes at sound. Make noise beside a
   wall, slip aside, and hit her gills while her head is stuck in the rock.
+* In the first Abyssal Vents zone a seam of **singing glass** seals off a
+  chamber, a cache glinting behind it. Every sonar ping that reaches it rings
+  it, a note higher if it was still ringing: three in a row, a rising chord,
+  and it shatters. The Choir asks the same of you at the bottom.
 * At the bottom of the Abyssal Vents walks **the Ironclad**, an armoured
   isopod the size of a bus whose plates turn every weapon. Only the vents in
   its lair crack its shell: hang above a vent and ping so it walks over to
@@ -241,7 +245,7 @@ Requires Godot 4.5.1 with export templates installed.
 
 ```sh
 godot --headless --import                                       # first-time import
-godot --headless --path . -s res://tests/run_tests.gd           # 119 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
+godot --headless --path . -s res://tests/run_tests.gd           # 121 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
 godot --headless --path . res://tests/flow_test.tscn            # end-to-end menu and dive flow
 godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
 python3 tools/audio/generate.py                                 # regenerate all audio (numpy + ffmpeg)

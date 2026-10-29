@@ -379,6 +379,12 @@ func _pocket_at(sub: Submarine, at: int, ahead: float, pocket_r: float) -> Morph
 
 
 func _make_morph(shapes: Array[Array], fill: bool) -> Morph:
+	return build_morph(level.field, shapes, fill)
+
+
+## A change to [param field]: [param shapes] filled with rock (or opened into
+## water), tapering back into the rock as it was.
+static func build_morph(field: TerrainField, shapes: Array[Array], fill: bool) -> Morph:
 	var m := Morph.new()
 	m.fill = fill
 	m.shapes = shapes
@@ -389,7 +395,6 @@ func _make_morph(shapes: Array[Array], fill: bool) -> Morph:
 		var r := Rect2(s[0], Vector2.ZERO).expand(s[1]).grow(grow)
 		bounds = r if k == 0 else bounds.merge(r)
 	m.bounds = bounds
-	var field := level.field
 	m.cells = field.cells_in(bounds)
 	m.original = field.read_cells(m.cells)
 	m.target = m.original.duplicate()

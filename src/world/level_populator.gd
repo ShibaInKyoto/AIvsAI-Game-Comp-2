@@ -74,6 +74,9 @@ static func populate(level: Level, run: RunState) -> void:
 	# Blind Mother's zone sometimes does.
 	if level.biome.id == &"midnight" and (level.zone != BiomeLibrary.LAIR_ZONE or rng.randf() < 0.5):
 		GlowwormGrotto.place(level, rng)
+	# The first Abyssal Vents zone has a chamber sealed with singing glass.
+	if level.zone == SingingGlass.ZONE:
+		SingingGlass.place(level, rng, used)
 
 
 ## The sunlit shelf is the gentle giants' water: most zones there have a

@@ -37,6 +37,7 @@ var _max_frame_ms := 0.0
 var _frame_ms_sum := 0.0
 var _frames := 0
 var _reported := false
+var _glass: SingingGlass
 
 
 static func requested() -> bool:
@@ -86,6 +87,10 @@ func bind(p_sub: Submarine, p_level: Level) -> void:
 	_path_index = 0
 	_last_pos = sub.pos
 	_route = _plan_route(sub.pos)
+	_glass = null
+	for e in level.entities:
+		if e is SingingGlass:
+			_glass = e
 
 
 func drive(delta: float) -> void:
@@ -126,6 +131,7 @@ func drive(delta: float) -> void:
 	if _ping_timer <= 0.0:
 		_ping_timer = ping_interval
 		sub.try_ping()
+	_ring_glass()
 
 	# Unstick: if we have not moved for a while, plan again from here.
 	_stuck_timer += delta
@@ -135,6 +141,17 @@ func drive(delta: float) -> void:
 			_path_index = _nearest_index(_route, sub.pos)
 		_stuck_timer = 0.0
 		_last_pos = sub.pos
+
+
+## Passing the singing glass, it pings as fast as the sonar allows to ring it open.
+func _ring_glass() -> void:
+	if _glass and _glass.shattered:
+		print("AUTOPILOT: the singing glass shattered at %.1f s" % _elapsed)
+		_glass = null
+	if _glass == null or sub.pos.distance_to(_glass.pos) > 30.0:
+		return
+	if sub.try_ping():
+		print("AUTOPILOT: pinged the singing glass at %.1f s (%d ringing)" % [_elapsed, _glass.rings])
 
 
 ## The way on along the route to the exit, steering clear of rock.

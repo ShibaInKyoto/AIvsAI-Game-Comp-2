@@ -50,7 +50,7 @@ Hangar (spend salvage & research) -> Dive -> Zone 1 -> Decompression stop
 | 1 | Sunlit Shelf     | 0–200 m     | God rays, kelp, schools, mantas, jellies, lancers     |
 | 2 | Twilight Reef    | 200–1000 m  | Bioluminescent coral, giant clams, anglers, siphons   |
 | 3 | Midnight Caverns | 1–4 km      | Pitch dark, glow-worm grottoes, gulpers, Stalker      |
-| 4 | Abyssal Vents    | 4–6 km      | Hydrothermal vents, heat currents, latching isopods   |
+| 4 | Abyssal Vents    | 4–6 km      | Hydrothermal vents, singing glass, latching isopods   |
 | 5 | Hadal Trench     | 6–11 km     | Rock that moves to the song, Vasquez's drone, the Choir |
 
 ## Player kit
