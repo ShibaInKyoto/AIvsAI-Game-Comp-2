@@ -23,6 +23,8 @@ var kills := 0
 var ambushes := 0
 var scans := 0
 var logs := 0
+## [Wonders] witnessed for the first time on this dive.
+var wonders: Array[String] = []
 var time := 0.0
 var pressure := 0
 var daily := false
@@ -99,7 +101,7 @@ func to_dict() -> Dictionary:
 		"hull": hull, "battery": battery, "torpedoes": torpedoes, "flares": flares, "decoys": decoys,
 		"salvage": salvage, "research": research, "kills": kills, "ambushes": ambushes, "scans": scans, "logs": logs,
 		"time": time, "pressure": pressure, "daily": daily, "daily_event": daily_event, "contract": contract,
-		"deepest_depth": deepest_depth, "last_hit_by": last_hit_by,
+		"deepest_depth": deepest_depth, "last_hit_by": last_hit_by, "wonders": wonders,
 	}
 
 
@@ -129,6 +131,8 @@ static func from_dict(d: Dictionary, upgrades: Dictionary) -> RunState:
 	r.ambushes = int(d.get("ambushes", 0))
 	r.scans = int(d.get("scans", 0))
 	r.logs = int(d.get("logs", 0))
+	for w in d.get("wonders", []):
+		r.wonders.append(String(w))
 	r.time = float(d.get("time", 0.0))
 	r.pressure = int(d.get("pressure", 0))
 	r.daily = bool(d.get("daily", false))

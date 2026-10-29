@@ -66,6 +66,11 @@ func show_result(run: RunState, outcome: RunState.Outcome) -> void:
 	if run.daily:
 		column.add_child(UiUtil.label("Daily dive %s  -  %s" % [Game.meta.daily_date,
 				Game.meta.daily_summary(Game.meta.daily_date)], &"", 22, UiTheme.ACCENT))
+	if not run.wonders.is_empty():
+		var names: Array[String] = []
+		for id in run.wonders:
+			names.append(Wonders.get_wonder(id).get("name", id))
+		column.add_child(UiUtil.label("Wonders witnessed: %s" % ", ".join(names), &"", 22, UiTheme.GOOD))
 	for m in Game.last_milestones:
 		column.add_child(UiUtil.label("Milestone: %s  -  %s paint unlocked in the hangar" % [m.name, m.paint_name],
 				&"", 22, UiTheme.WARN))

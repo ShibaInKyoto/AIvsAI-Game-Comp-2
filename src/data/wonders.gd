@@ -48,6 +48,8 @@ static func witness(id: String) -> void:
 	if meta == null or meta.wonders.has(id) or get_wonder(id).is_empty():
 		return
 	meta.wonders.append(id)
+	if Game.run:
+		Game.run.wonders.append(id)
 	_snapshot(id)
 	Audio.play(&"wonder_chime", -6.0)
 	Events.toast.emit("Witnessed: %s  (%d / %d)" % [get_wonder(id).name, found_count(meta.wonders), ALL.size()],

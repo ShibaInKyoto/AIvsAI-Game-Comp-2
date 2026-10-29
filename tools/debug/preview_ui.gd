@@ -86,6 +86,7 @@ func _ready() -> void:
 			Game.run.scans = 3
 			Game.run.hull = 0.0
 			Game.run.last_hit_by = &"lancer"
+			Game.run.wonders.assign(["manta", "whale"])
 			add_child(RunSummary.new())
 			(get_child(get_child_count() - 1) as RunSummary).show_result(Game.run, RunState.Outcome.IMPLODED)
 		"stop":

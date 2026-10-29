@@ -15,6 +15,9 @@ func test_listed_once_and_told_of_in_real_logs() -> void:
 
 func test_witnessed_once_and_kept() -> void:
 	var before := Game.meta.wonders.duplicate()
+	var run_before := Game.run
+	Game.run = RunState.new()
+	Game.run.rebuild_stats({})
 	Game.meta.wonders.clear()
 	Wonders.witness("glass")
 	Wonders.witness("glass")
@@ -23,6 +26,10 @@ func test_witnessed_once_and_kept() -> void:
 	check_eq(Wonders.found_count(Game.meta.wonders), 1, "counted")
 	var copy := MetaState.from_dict(JSON.parse_string(JSON.stringify(Game.meta.to_dict())))
 	check(copy.wonders.has("glass"), "kept in the save")
+	check_eq(Game.run.wonders, ["glass"] as Array[String], "and listed for this dive's report")
+	var run_copy := RunState.from_dict(JSON.parse_string(JSON.stringify(Game.run.to_dict())), {})
+	check(run_copy.wonders.has("glass"), "even across a resumed dive")
+	Game.run = run_before
 	Game.meta.wonders = before
 
 
