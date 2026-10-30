@@ -2,21 +2,21 @@ class_name Ironclad
 extends Guardian
 ## The Ironclad: a colossal armoured isopod that rules the hottest lair in the
 ## Abyssal Vents and seals the way down. It crawls the lair floor towards
-## whatever it hears and rears up to crush anything that comes close. Its
-## plates turn harpoons and torpedoes alike - but not the vents in its lair:
-## caught in an eruption, the shell cracks open, glowing, for a few seconds.
-## While it hunts a sound it pays the vents no mind; left to patrol, it waits
-## for a rumbling vent to blow over before crossing it. Lure it across a vent
-## as it erupts, then strike while it burns.
+## whatever it hears (and, through the floor, feels the sub moving over), and
+## rears up to crush anything that comes close; out of reach, it spits
+## scalding water from the vents it has swallowed. Its plates turn harpoons
+## and torpedoes alike - but not the vents in its lair: caught in an
+## eruption, the shell cracks open, glowing, for a few seconds. Then it is
+## tempered against the heat for a while. While it hunts it pays the vents
+## no mind; left to patrol, it waits for a rumbling vent to blow over before
+## crossing it. Lure it across a vent as it erupts, then strike while it burns.
 
-enum State { DORMANT, CRAWL, REAR, SLAM, SCALDED, DEAD }
+enum State { DORMANT, CRAWL, REAR, SLAM, SCALDED, SPIT, DEAD }
 
 ## Model scale.
 const SIZE := 1.7
 ## Height of the body centre above the floor.
 const RIDE := 2.2
-## Share of damage that gets through the shell unless the heat has cracked it.
-const ARMOR := 0.08
 ## Share of a vent's own scald that gets through.
 const VENT_ARMOR := 0.25
 const REAR_TIME := 0.8
@@ -34,6 +34,13 @@ const LINGER := 3.5
 const CRAWL_SPEED: Array[float] = [3.5, 4.5, 5.5]
 const OPEN_TIME: Array[float] = [4.5, 3.8, 3.2]
 const REST: Array[float] = [1.4, 1.0, 0.7]
+## Feeling the sub move over the lair floor, it closes in at this share of its pace.
+const STALK_PACE := 0.7
+## Out of reach of a slam: seconds of warning, then scalding globs (one per
+## phase reached), every so often.
+const SPIT_WINDUP := 0.8
+const SPIT_EVERY: Array[float] = [5.5, 4.5, 3.6]
+const SPIT_SPEED := 10.0
 
 var state := State.DORMANT
 var phase := 0
@@ -49,8 +56,8 @@ var _linger := 0.0
 var _stride := 0.0
 var _slam_dir := Vector2.UP
 var _t := 0.0
-var _clank_cooldown := 0.0
-var _taught_armor := false
+var _spit_cd := 3.0
+var _was_exposed := false
 var _taught_heat := false
 var _shrink := 1.0
 var _legs: MeshInstance3D
@@ -148,9 +155,17 @@ func think() -> void:
 					and level.field.line_of_sight(pos, sub.pos):
 				_rear(sub.pos)
 				return
+			if _spit_cd <= 0.0 and sub and sub.alive and in_lair(sub.pos, 1.1) \
+					and level.field.line_of_sight(_spout(), sub.pos):
+				_begin_spit()
+				return
 			var heard := _heard()
 			if heard != Vector2.INF:
 				_goal_x = clampf(heard.x, lair_center.x - lair_radius.x * 0.85, lair_center.x + lair_radius.x * 0.85)
+				_chasing = true
+			elif sub and sub.alive and in_lair(sub.pos, 1.1):
+				# Quiet, but it feels the sub's wake through the floor.
+				_goal_x = clampf(sub.pos.x, lair_center.x - lair_radius.x * 0.85, lair_center.x + lair_radius.x * 0.85)
 				_chasing = true
 			elif absf(_goal_x - pos.x) < 1.0:
 				if _chasing:
@@ -164,9 +179,14 @@ func behave(delta: float) -> void:
 	_t += delta
 	_timer -= delta
 	_cooldown = maxf(_cooldown - delta, 0.0)
-	_clank_cooldown = maxf(_clank_cooldown - delta, 0.0)
 	exposed = maxf(exposed - delta, 0.0)
+	if _was_exposed and exposed <= 0.0:
+		# The shell closes, tempered: the heat cannot crack it again for a while.
+		raise_guard()
+	_was_exposed = exposed > 0.0
 	_linger = maxf(_linger - delta, 0.0)
+	if state == State.CRAWL:
+		_spit_cd -= delta
 	match state:
 		State.DORMANT:
 			vel = Vector2.ZERO
@@ -189,6 +209,14 @@ func behave(delta: float) -> void:
 			vel = vel.lerp(Vector2.ZERO, 1.0 - exp(-5.0 * delta))
 			if _timer <= 0.0:
 				state = State.CRAWL
+		State.SPIT:
+			vel = vel.lerp(Vector2.ZERO, 1.0 - exp(-6.0 * delta))
+			var target := level.player
+			if target and target.alive:
+				facing = facing.slerp(Vector2(heading, 0.0).lerp((target.pos - pos).normalized(), 0.5).normalized(),
+					1.0 - exp(-5.0 * delta))
+			if _timer <= 0.0:
+				_spit()
 		State.DEAD:
 			vel = vel.lerp(Vector2(0.0, -1.0), 1.0 - exp(-1.0 * delta))
 			_shrink = maxf(_timer / 3.0, 0.01)
@@ -203,7 +231,7 @@ func _crawl(delta: float) -> void:
 	var dx := _goal_x - pos.x
 	if absf(dx) > 0.5:
 		heading = signf(dx)
-	var speed := CRAWL_SPEED[phase] * clampf(absf(dx) / 2.0, 0.0, 1.0)
+	var speed := CRAWL_SPEED[phase] * clampf(absf(dx) / 2.0, 0.0, 1.0) * (1.0 if _heard() != Vector2.INF else STALK_PACE)
 	if not _chasing and _vent_ahead():
 		speed = 0.0
 	# Rock ahead: climb it if there is water over it (a step, or the lip of
@@ -289,17 +317,15 @@ func take_damage(amount: float, from: Vector2, kind: StringName = &"") -> void:
 	if state == State.DORMANT:
 		_awaken()
 	if kind == &"vent":
+		if stun_guard > 0.0 and exposed <= 0.0:
+			# Tempered: the heat rolls off it.
+			deflect(from, "")
+			return
 		amount *= VENT_ARMOR
 		_crack()
 	elif exposed <= 0.0:
-		amount *= ARMOR
-		if _clank_cooldown <= 0.0:
-			_clank_cooldown = 0.5
-			Audio.play_at(&"harpoon_wall", pos, -2.0, 0.05, 0.5)
-		if not _taught_armor:
-			_taught_armor = true
-			Events.toast.emit("Its plates turn the blow. Lure it into a vent's eruption to crack the shell.",
-				UiTheme.WARN)
+		deflect(from, "Its plates turn everything. Lure it into a vent's eruption to crack the shell.", 0.5)
+		return
 	super.take_damage(amount, from, kind)
 	var frac := hp / max_hp
 	var want := 0 if frac > 0.66 else (1 if frac > 0.33 else 2)
@@ -343,6 +369,8 @@ func _update_visuals(delta: float) -> void:
 		glow = 3.2 + 0.9 * sin(_t * 11.0)
 	elif state == State.REAR:
 		glow = 1.4
+	elif state == State.SPIT:
+		glow = 1.8 + 0.6 * sin(_t * 18.0)
 	_shell.set_instance_shader_parameter(&"glow_boost", glow)
 	# Legs paddle while it walks.
 	var stride := clampf(absf(vel.x) / 3.0, 0.0, 1.0)
@@ -370,6 +398,35 @@ func _slam() -> void:
 	_timer = SLAM_TIME
 	Audio.play_at(&"lancer_dash", pos, 4.0, 0.03, 0.5)
 	level.emit_noise(pos, 14.0, self)
+
+
+## Where the scalding water leaves its shell.
+func _spout() -> Vector2:
+	return pos + Vector2(0.0, 1.4 * SIZE)
+
+
+func _begin_spit() -> void:
+	state = State.SPIT
+	_timer = SPIT_WINDUP
+	Audio.play_at(&"vent_rumble", pos, 2.0, 0.03, 1.3)
+	Fx.silt(level, _spout(), 1.5, Color(1.0, 0.5, 0.2))
+
+
+## Globs of scalding water, fanned out at the sub (one more per phase).
+func _spit() -> void:
+	state = State.CRAWL
+	_spit_cd = SPIT_EVERY[phase]
+	var sub := level.player
+	if sub == null or not sub.alive:
+		return
+	var aim := (sub.pos - _spout()).normalized()
+	Audio.play_at(&"vent_erupt", pos, -2.0, 0.05, 1.5)
+	for i in phase + 1:
+		var glob := ScaldGlob.new()
+		glob.pos = _spout()
+		glob.vel = aim.rotated((i - phase * 0.5) * 0.18) * SPIT_SPEED
+		glob.shooter = self
+		level.add_entity(glob)
 
 
 func _enrage() -> void:

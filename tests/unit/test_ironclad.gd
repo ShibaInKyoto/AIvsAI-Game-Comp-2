@@ -1,7 +1,9 @@
 extends TestCase
 ## The Ironclad guards the last Abyssal Vents zone: its lair floor is a vent
-## field, it walks towards sound (but never towards an eruption), its shell
-## turns blows until a vent's heat cracks it, and killing it opens the exit.
+## field, it walks towards sound (but never towards an eruption) and stalks
+## the sub over its floor, spits at a sub out of reach, its shell turns blows
+## until a vent's heat cracks it (and not twice running), and killing it
+## opens the exit.
 
 const DT := 1.0 / 30.0
 
@@ -105,7 +107,7 @@ func test_only_heat_cracks_the_shell() -> void:
 	boss.take_damage(1.0, boss.pos)
 	var before := boss.hp
 	boss.take_damage(20.0, boss.pos, &"harpoon")
-	check(before - boss.hp < 3.0, "plates turn a harpoon")
+	check_eq(boss.hp, before, "plates turn a harpoon")
 	boss.take_damage(14.0, boss.pos, &"vent")
 	check(boss.exposed > 0.0, "a vent's scald cracks the shell")
 	before = boss.hp
@@ -114,6 +116,10 @@ func test_only_heat_cracks_the_shell() -> void:
 	for i in 200:
 		boss.tick(DT)
 	check(boss.exposed <= 0.0, "the shell closes again")
+	check(boss.stun_guard > 0.0, "tempered")
+	before = boss.hp
+	boss.take_damage(14.0, boss.pos, &"vent")
+	check(boss.exposed <= 0.0 and boss.hp == before, "tempered, a vent cannot crack it again so soon")
 	var opened := [false]
 	boss.defeated.connect(func() -> void: opened[0] = true)
 	boss.exposed = 1.0
@@ -178,4 +184,26 @@ func test_sinks_back_after_a_slam_upwards() -> void:
 		level.tick(DT)
 	var up := boss.pos.y - floor_y
 	check(up < Ironclad.RIDE + 1.5, "it settles back onto the floor (%.1f m up)" % up)
+	level.free()
+
+
+func test_it_hunts_a_quiet_sub_and_spits_at_one_out_of_reach() -> void:
+	var run := RunState.new()
+	var level := _lair_level(run)
+	var boss := level.guardian as Ironclad
+	var sub := _with_sub(level, run)
+	sub.invulnerable = true
+	boss.take_damage(1.0, boss.pos)
+	var side := -signf(boss.pos.x - boss.lair_center.x)
+	var spot := level.layout.field.resolve_circle(boss.lair_center + Vector2(side * boss.lair_radius.x * 0.6,
+		boss.lair_radius.y * 0.3), 2.0)
+	var start := absf(boss.pos.x - spot.x)
+	var spat := false
+	for i in int(8.0 / DT):
+		sub.pos = spot
+		sub.vel = Vector2.ZERO
+		level.tick(DT)
+		spat = spat or level.entities.any(func(e: Entity) -> bool: return e is ScaldGlob)
+	check(absf(boss.pos.x - spot.x) < start - 3.0, "it closes in on a silent sub")
+	check(spat, "and spits scalding water at it")
 	level.free()

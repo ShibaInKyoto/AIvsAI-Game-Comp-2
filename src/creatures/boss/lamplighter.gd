@@ -5,15 +5,15 @@ extends Guardian
 ## sees light and nothing else. A lamp seen from afar draws a charge (her lure
 ## goes dark first); anything that drifts up to the lure is snapped up, and
 ## the lure itself pulls the sub in until a sonar ping breaks its spell. Her
-## scales turn almost every blow, but a lamp held in her eyes up close, or a
-## flare fed to her, dazzles her long enough to wound.
+## scales turn every blow, but a lamp held in her eyes up close, or a flare
+## fed to her, dazzles her long enough to wound; then she shuts her eyes to
+## light for a while. Wounded, she charges again and again, and learns to
+## douse her lure and hunt in the dark, lighting it only to strike.
 
-enum State { DORMANT, STALK, WINDUP, CHARGE, SNAP, FEED, DAZZLED, RECOVER, DEAD }
+enum State { DORMANT, STALK, WINDUP, CHARGE, SNAP, FEED, DAZZLED, RECOVER, LURK, DEAD }
 
 ## Model scale.
 const SIZE := 1.7
-## Share of damage that gets through her scales unless she is dazzled.
-const ARMOR := 0.12
 const SIGHT_RANGE := 36.0
 ## Seconds of seeing a lamp from afar before she commits to a charge.
 const SPOT_TIME := 0.7
@@ -32,7 +32,15 @@ const PULL_RANGE := 20.0
 const TRANCE_BREAK := 4.0
 ## Per phase (thirds of her health).
 const CHARGE_SPEED: Array[float] = [21.0, 24.0, 27.0]
-const PULL: Array[float] = [2.4, 3.0, 3.6]
+const PULL: Array[float] = [2.6, 3.4, 4.2]
+## Charges she follows a charge with, if she still sees light.
+const FOLLOW_UPS: Array[int] = [0, 1, 2]
+## Seconds between dark hunts (none before she is wounded).
+const LURK_EVERY: Array[float] = [INF, 16.0, 11.0]
+const LURK_SPEED := 7.0
+const LURK_MAX := 6.0
+## Seconds of her lure dark before she can strike out of it.
+const LURK_STRIKE := 7.5
 const DAZZLE_NEED: Array[float] = [0.9, 1.1, 1.3]
 const DAZZLE_TIME: Array[float] = [4.2, 3.6, 3.0]
 const LURE_COLOR := Color(0.55, 1.0, 0.92)
@@ -44,6 +52,8 @@ var dazzle := 0.0
 
 var _timer := 0.0
 var _cooldown := 0.0
+var _charges_left := 0
+var _lurk_in := INF
 var _spot := 0.0
 var _trance_free := 0.0
 var _dir := Vector2.RIGHT
@@ -54,8 +64,8 @@ var _t := 0.0
 var _jaw_open := 0.0
 var _lure_k := 1.0
 var _shrink := 1.0
-var _clank_cooldown := 0.0
-var _taught_armor := false
+var _taught_lurk := false
+var _taught_guard := false
 var _taught_pull := false
 var _taught_ping := false
 var _jaw: Node3D
@@ -68,7 +78,7 @@ var _lure_light: OmniLight3D
 func setup() -> void:
 	species = &"lamplighter"
 	title = "THE LAMPLIGHTER"
-	max_hp = 260.0
+	max_hp = 300.0
 	radius = 3.4
 	mass = 50.0
 	contact_damage = 12.0
@@ -197,21 +207,28 @@ func think() -> void:
 		State.STALK:
 			if _cooldown > 0.0:
 				return
-			var flare := _flare_in_lair()
+			# With her eyes shut to light, a flare is nothing to her.
+			var flare := _flare_in_lair() if stun_guard <= 0.0 else null
 			if flare:
 				_flare = flare
 				state = State.FEED
 				return
 			if sub == null or not sub.alive:
 				return
+			if _lurk_in <= 0.0:
+				_begin_lurk()
+				return
 			_look_for(sub)
+		State.LURK:
+			if sub and sub.alive and (head_pos().distance_to(sub.pos) < LURK_STRIKE or _timer <= 0.0):
+				_strike_from_dark(sub)
 
 
 ## Decides what to do about the sub: be dazzled, snap, or charge its light.
 func _look_for(sub: Submarine) -> void:
 	var head := head_pos()
 	var d := head.distance_to(sub.pos)
-	if sub.illuminates(head, 1.5) and d < DAZZLE_RANGE:
+	if sub.illuminates(head, 1.5) and d < DAZZLE_RANGE and stun_guard <= 0.0:
 		dazzle += THINK_INTERVAL
 		_spot = 0.0
 		if dazzle >= DAZZLE_NEED[phase]:
@@ -234,7 +251,8 @@ func behave(delta: float) -> void:
 	_timer -= delta
 	_cooldown = maxf(_cooldown - delta, 0.0)
 	_trance_free = maxf(_trance_free - delta, 0.0)
-	_clank_cooldown = maxf(_clank_cooldown - delta, 0.0)
+	if state == State.STALK:
+		_lurk_in -= delta
 	var jaw_target := 0.08
 	var lure_target := 1.0
 	var sub := level.player
@@ -261,7 +279,7 @@ func behave(delta: float) -> void:
 			jaw_target = 1.0
 			lure_target = 0.3
 			if _timer <= 0.0:
-				_recover(1.1)
+				_end_charge(1.1)
 		State.SNAP:
 			jaw_target = 1.0
 			if not _snapping:
@@ -289,8 +307,19 @@ func behave(delta: float) -> void:
 			jaw_target = 0.85 + 0.15 * sin(_t * 11.0)
 			lure_target = 0.3 + 0.7 * absf(sin(_t * 17.0))
 			if _timer <= 0.0:
-				_recover(0.8)
-				_cooldown = 2.5
+				_recover(0.6)
+				_cooldown = 1.0
+				raise_guard()
+				if not _taught_guard:
+					_taught_guard = true
+					Events.toast.emit("She has shut her eyes to your light - for now.", UiTheme.WARN)
+		State.LURK:
+			# Lure doused, gliding in on where the sub was last lit.
+			lock_facing = false
+			lure_target = 0.0
+			jaw_target = 0.3
+			if sub and sub.alive:
+				seek(sub.pos - facing * 2.0 * SIZE, LURK_SPEED, 1.5, delta)
 		State.RECOVER:
 			vel = vel.lerp(Vector2.ZERO, 1.0 - exp(-2.5 * delta))
 			if _timer <= 0.0:
@@ -338,11 +367,44 @@ func _flare_in_lair() -> Flare:
 	return null
 
 
-func _begin_windup() -> void:
+func _begin_windup(follow_up := false) -> void:
 	state = State.WINDUP
-	_timer = WINDUP_TIME * (1.0 - phase * 0.12)
+	_timer = WINDUP_TIME * (1.0 - phase * 0.12) * (0.55 if follow_up else 1.0)
 	_spot = 0.0
+	if not follow_up:
+		_charges_left = FOLLOW_UPS[phase]
 	Audio.play_at(&"lancer_windup", pos, 3.0, 0.03, 0.45)
+
+
+## A charge is over: she turns straight into another while she still sees
+## light (and has charges left in her), else she recovers.
+func _end_charge(rest: float) -> void:
+	var sub := level.player
+	if _charges_left > 0 and sub and sub.alive and (sub.lamp_on or head_pos().distance_to(sub.pos) < DAZZLE_RANGE):
+		_charges_left -= 1
+		_begin_windup(true)
+	else:
+		_recover(rest)
+
+
+## Douses her lure and glides in on the sub in the dark.
+func _begin_lurk() -> void:
+	state = State.LURK
+	_timer = LURK_MAX
+	_lurk_in = LURK_EVERY[phase]
+	Audio.play_at(&"creak", pos, 0.0, 0.03, 0.5)
+	if not _taught_lurk:
+		_taught_lurk = true
+		Events.toast.emit("Her lure went dark. She is coming for you - keep moving, ping to find her.",
+			UiTheme.DANGER)
+
+
+## Her lure flares right in the pilot's face, and she snaps.
+func _strike_from_dark(sub: Submarine) -> void:
+	_lure_k = 1.6
+	Fx.flash(level, lure_pos(), LURE_COLOR, 18.0, 0.35)
+	_trance_free = 0.0
+	_begin_snap(sub.pos)
 
 
 func _charge() -> void:
@@ -397,7 +459,7 @@ func move_and_collide_field(delta: float, bounce := 0.1) -> Vector2:
 		Events.shake_requested.emit(0.6)
 		Audio.play_at(&"impact_rock", pos, 4.0, 0.03, 0.6)
 		level.emit_noise(pos, 18.0, self)
-		_recover(1.0)
+		_end_charge(1.0)
 	return hit
 
 
@@ -408,7 +470,7 @@ func on_touch_player(sub: Submarine) -> void:
 		State.CHARGE:
 			sub.take_damage(CHARGE_DAMAGE, pos, self)
 			sub.vel += _dir * 8.0
-			_recover(1.0)
+			_end_charge(1.0)
 		State.SNAP:
 			if _snapping:
 				sub.take_damage(SNAP_DAMAGE, pos, self)
@@ -423,14 +485,9 @@ func take_damage(amount: float, from: Vector2, kind: StringName = &"") -> void:
 	if state == State.DORMANT:
 		_awaken()
 	if state != State.DAZZLED:
-		amount *= ARMOR
-		if _clank_cooldown <= 0.0:
-			_clank_cooldown = 0.5
-			Audio.play_at(&"harpoon_wall", pos, -2.0, 0.05, 0.7)
-		if not _taught_armor:
-			_taught_armor = true
-			Events.toast.emit("Her scales turn the blow. Dazzle her first: your lamp in her eyes up close, " +
-				"or a flare.", UiTheme.WARN)
+		deflect(from, "Her scales turn everything. Dazzle her first: your lamp in her eyes up close, " +
+			"or a flare.", 0.7)
+		return
 	super.take_damage(amount, from, kind)
 	var frac := hp / max_hp
 	var want := 0 if frac > 0.66 else (1 if frac > 0.33 else 2)
@@ -455,17 +512,20 @@ func _awaken() -> void:
 	wake("She sees only light. Run dark, and dazzle her up close.", 0.7, &"angler")
 
 
-## Each roar brings a drifter jelly to her light.
+## Each roar brings drifter jellies to her light (one, then two), and her next
+## dark hunt sooner.
 func _enrage() -> void:
 	Audio.play_at(&"stalker_roar", pos, 4.0, 0.03, 0.65)
 	Events.shake_requested.emit(0.6)
 	Fx.flash(level, lure_pos(), LURE_COLOR, 24.0, 0.6)
-	var jelly: Creature = LevelPopulator.SPECIES[&"jelly"].new()
-	jelly.pos = lure_pos() + Vector2(level.rng.randf_range(-4.0, 4.0), 3.0)
-	if level.field.sample(jelly.pos) > 1.5:
-		level.add_entity(jelly)
-	else:
-		jelly.free()
+	_lurk_in = minf(_lurk_in, 4.0)
+	for i in phase:
+		var jelly: Creature = LevelPopulator.SPECIES[&"jelly"].new()
+		jelly.pos = lure_pos() + Vector2(level.rng.randf_range(-5.0, 5.0), 3.0)
+		if level.field.sample(jelly.pos) > 1.5:
+			level.add_entity(jelly)
+		else:
+			jelly.free()
 
 
 func _update_visuals(delta: float) -> void:

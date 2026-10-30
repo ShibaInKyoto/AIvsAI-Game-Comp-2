@@ -56,10 +56,21 @@ func test_noise_by_a_wall_makes_her_stick_and_open_up() -> void:
 	var before := mother.hp
 	mother.take_damage(20.0, mother.pos)
 	check_near(before - mother.hp, 20.0, 0.01, "stuck, her gills take the full blow")
-	mother.state = BlindMother.State.PROWL
+	# Torn free, she is wary of the rock: a lunge into it glances off.
+	for i in int((BlindMother.STUCK_TIME[0] + 0.5) / DT):
+		level.tick(DT)
+	check(mother.state != BlindMother.State.STUCK, "she tears free")
+	check(mother.stun_guard > 0.0, "and is on her guard")
 	before = mother.hp
 	mother.take_damage(20.0, mother.pos)
-	check(before - mother.hp < 3.0, "free, her hide turns most of it")
+	check_eq(mother.hp, before, "free, her hide turns all of it")
+	var stuck_again := false
+	for i in int(Guardian.STUN_GUARD * 0.8 / DT):
+		if i % 15 == 0:
+			level.emit_noise(water, 60.0)
+		level.tick(DT)
+		stuck_again = stuck_again or mother.state == BlindMother.State.STUCK
+	check(not stuck_again, "no wedging her twice in a row")
 	var opened := [false]
 	mother.defeated.connect(func() -> void: opened[0] = true)
 	mother.state = BlindMother.State.STUCK

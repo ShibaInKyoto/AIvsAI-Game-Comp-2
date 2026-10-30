@@ -3,9 +3,10 @@ extends Guardian
 ## The Blind Mother: a colossal eyeless eel coiled in a lair at the bottom of
 ## the Midnight Caverns, sealing the way down. She hunts by sound alone and
 ## lunges at whatever she hears. A lunge that ends in rock wedges her head in
-## the wall and lays her glowing gills open; anywhere else her hide shrugs off
-## almost everything. Ping beside a wall, slip away quietly - or fire a
-## torpedo across the lair and let her chase the blast.
+## the wall and lays her glowing gills open; anywhere else her hide turns
+## everything. Once she has torn free she is wary of the rock for a while:
+## her next lunges glance off it. Ping beside a wall, slip away quietly - or
+## fire a torpedo across the lair and let her chase the blast.
 
 enum State { DORMANT, PROWL, AIM, LUNGE, STUCK, RECOVER, DEAD }
 
@@ -16,8 +17,6 @@ const SIZE := 1.6
 const AIM_TIME := 0.75
 const LUNGE_MAX := 2.2
 const LUNGE_DAMAGE := 32.0
-## Share of damage that gets through her hide unless she is stuck.
-const ARMOR := 0.08
 const PROWL_SPEED := 5.0
 ## Per phase (thirds of her health): lunge speed, seconds stuck, rest between lunges.
 const LUNGE_SPEED: Array[float] = [24.0, 27.0, 30.0]
@@ -35,8 +34,6 @@ var _lunge_dir := Vector2.RIGHT
 var _wall_normal := Vector2.UP
 var _orbit := 0.0
 var _t := 0.0
-var _clank_cooldown := 0.0
-var _taught_armor := false
 var _taught_stuck := false
 var _shrink := 1.0
 var _body_mesh := ArrayMesh.new()
@@ -129,7 +126,6 @@ func behave(delta: float) -> void:
 	_t += delta
 	_timer -= delta
 	_cooldown = maxf(_cooldown - delta, 0.0)
-	_clank_cooldown = maxf(_clank_cooldown - delta, 0.0)
 	match state:
 		State.DORMANT:
 			vel = Vector2.ZERO
@@ -151,6 +147,7 @@ func behave(delta: float) -> void:
 			vel = Vector2.ZERO
 			if _timer <= 0.0:
 				_recover(_wall_normal)
+				raise_guard()
 		State.RECOVER:
 			vel = vel.lerp(_wall_normal * 6.0, 1.0 - exp(-3.0 * delta))
 			if _timer <= 0.0:
@@ -195,13 +192,8 @@ func take_damage(amount: float, from: Vector2, kind: StringName = &"") -> void:
 	if state == State.DORMANT:
 		_awaken()
 	if state != State.STUCK:
-		amount *= ARMOR
-		if _clank_cooldown <= 0.0:
-			_clank_cooldown = 0.5
-			Audio.play_at(&"harpoon_wall", pos, -2.0, 0.05, 0.6)
-		if not _taught_armor and kind != &"vent":
-			_taught_armor = true
-			Events.toast.emit("Her hide turns the blow. Make her strike the rock, then hit her gills.", UiTheme.WARN)
+		deflect(from, "Her hide turns everything. Make her strike the rock, then hit her gills.")
+		return
 	super.take_damage(amount, from, kind)
 	var frac := hp / max_hp
 	var want := 0 if frac > 0.66 else (1 if frac > 0.33 else 2)
@@ -258,6 +250,13 @@ func _lunge() -> void:
 
 
 func _on_impact(normal: Vector2) -> void:
+	if stun_guard > 0.0:
+		# Still wary of the rock: she glances off it and turns.
+		Events.shake_requested.emit(0.4)
+		Audio.play_at(&"impact_rock", pos, 2.0, 0.03, 0.6)
+		Fx.sparks(level, pos - normal * radius)
+		_recover(normal)
+		return
 	state = State.STUCK
 	_timer = STUCK_TIME[phase]
 	_wall_normal = normal

@@ -1,8 +1,9 @@
 extends TestCase
 ## The Lamplighter guards the reef's way down: she charges a lamp seen from
 ## afar, a lamp held in her eyes up close dazzles her, only a dazzled
-## Lamplighter takes full damage, a flare also dazzles her, and killing her
-## opens the exit.
+## Lamplighter takes damage (and she cannot be dazzled again straight away),
+## a flare also dazzles her, she hunts in the dark once wounded, and killing
+## her opens the exit.
 
 const DT := 1.0 / 30.0
 
@@ -75,10 +76,21 @@ func test_light_draws_a_charge_and_dazzles_up_close() -> void:
 	var before := angler.hp
 	angler.take_damage(20.0, angler.pos)
 	check_near(before - angler.hp, 20.0, 0.01, "dazzled, she takes the full blow")
-	angler.state = Lamplighter.State.STALK
+	# Her eyes shut once she shakes it off: no dazzling her twice in a row.
+	for i in int((Lamplighter.DAZZLE_TIME[0] + 0.3) / DT):
+		level.tick(DT)
+	check(angler.state != Lamplighter.State.DAZZLED, "she shakes it off")
+	check(angler.stun_guard > 0.0, "and shuts her eyes to light")
 	before = angler.hp
 	angler.take_damage(20.0, angler.pos)
-	check(before - angler.hp < 3.0, "otherwise her scales turn most of it")
+	check_eq(angler.hp, before, "otherwise her scales turn all of it")
+	var again := false
+	for i in int(Guardian.STUN_GUARD * 0.7 / DT):
+		_face(sub, angler, 9.0)
+		sub.lamp_on = true
+		level.tick(DT)
+		again = again or angler.state == Lamplighter.State.DAZZLED
+	check(not again, "the lamp cannot dazzle her again so soon")
 	var opened := [false]
 	angler.defeated.connect(func() -> void: opened[0] = true)
 	angler.state = Lamplighter.State.DAZZLED
@@ -107,4 +119,30 @@ func test_a_flare_in_the_lair_is_swallowed_and_dazzles_her() -> void:
 			break
 	check(dazzled, "she goes for the flare and it dazzles her")
 	check(not flare.alive, "the flare is swallowed")
+	level.free()
+
+
+func test_wounded_she_hunts_in_the_dark() -> void:
+	var parts := _lair(RunState.new())
+	var level: Level = parts[0]
+	var sub: Submarine = parts[1]
+	var angler: Lamplighter = parts[2]
+	sub.lamp_on = false
+	angler.take_damage(1.0, angler.pos)
+	angler.state = Lamplighter.State.DAZZLED
+	angler.take_damage(angler.max_hp * 0.4, angler.pos)
+	check_eq(angler.phase, 1, "wounded")
+	angler.state = Lamplighter.State.STALK
+	var lurked := false
+	var struck := false
+	sub.pos = level.layout.field.resolve_circle(angler.lair_center, 2.0)
+	for i in int(12.0 / DT):
+		sub.vel = Vector2.ZERO
+		level.tick(DT)
+		lurked = lurked or angler.state == Lamplighter.State.LURK
+		if lurked and angler.state == Lamplighter.State.SNAP:
+			struck = true
+			break
+	check(lurked, "her lure goes dark and she comes hunting")
+	check(struck, "and strikes out of the dark")
 	level.free()
