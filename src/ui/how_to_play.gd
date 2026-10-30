@@ -8,7 +8,7 @@ const TIPS: PackedStringArray = [
 	"Glow bulbs on the walls recharge the battery. Running dark (lamp off) trickle-charges an empty one.",
 	"Sonar pings chart the cave and reveal the way down. Every ping is loud: things below will hear it.",
 	"Boosting and collisions make noise too. Drift quietly past what you cannot fight.",
-	"Fire the harpoon to spear creatures, drag caches open or pull salvage in. Hold to winch.",
+	"Hold fire to send the harpoon out: it spears creatures, reels caches in, winches you to rock. Let go: it returns.",
 	"Harpoon a creature before it notices you for an AMBUSH: double damage.",
 	"Decoys stick to the rock and ping on their own. Hunters that hear them go there instead.",
 	"Loud noises shake loose stalactites down. Keep out from under them - or lure something beneath.",

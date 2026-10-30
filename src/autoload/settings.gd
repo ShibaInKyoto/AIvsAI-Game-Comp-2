@@ -184,6 +184,12 @@ func _register_inputs() -> void:
 	var defaults := default_inputs()
 	for action in defaults:
 		_set_events(action, defaults[action])
+	# Godot's menu actions only know the keyboard (and the d-pad for moving
+	# focus): A presses the focused button, B backs out.
+	for pair: Array in [[&"ui_accept", JOY_BUTTON_A], [&"ui_cancel", JOY_BUTTON_B]]:
+		var e := _joy(pair[1])
+		if not InputMap.action_has_event(pair[0], e):
+			InputMap.action_add_event(pair[0], e)
 
 
 func _set_events(action: StringName, events: Array) -> void:

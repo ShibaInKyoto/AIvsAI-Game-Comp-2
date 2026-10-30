@@ -141,7 +141,7 @@ itself. Every zone is a procedurally generated cave cross-section. Find the
 |---|---|---|
 | Thrust | `W A S D` / arrows | Left stick |
 | Aim lamp and tools | Mouse | Right stick |
-| Harpoon (hold on rock to winch) | Left mouse | RT |
+| Harpoon (hold: out and reeling in; let go: it comes home) | Left mouse | RT |
 | Use tool (flare / torpedo / decoy / shock) | Right mouse | RB |
 | Cycle tool | `Q` | LB |
 | Sonar ping | `Space` | A |
@@ -266,7 +266,7 @@ Requires Godot 4.5.1 with export templates installed.
 
 ```sh
 godot --headless --import                                       # first-time import
-godot --headless --path . -s res://tests/run_tests.gd           # 134 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
+godot --headless --path . -s res://tests/run_tests.gd           # 136 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
 godot --headless --path . res://tests/flow_test.tscn            # end-to-end menu and dive flow
 godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
 python3 tools/audio/generate.py                                 # regenerate all audio (numpy + ffmpeg)

@@ -11,6 +11,8 @@ const SCAN_TIME := 1.6
 ## Trickle charge (per second) with the lamp off, up to this share of capacity.
 const EMERGENCY_CHARGE_RATE := 0.8
 const EMERGENCY_CHARGE_CAP := 0.15
+## How fast the right stick swings the lamp round (radians a second).
+const AIM_TURN_RATE := 12.0
 
 var level: Level
 var run: RunState
@@ -182,7 +184,7 @@ func tick(delta: float) -> void:
 	var move := Vector2.ZERO
 	if input_enabled:
 		move = Input.get_vector(&"move_left", &"move_right", &"move_down", &"move_up")
-		_update_aim()
+		_update_aim(delta)
 		_handle_actions()
 	elif external_move != Vector2.INF:
 		move = external_move
@@ -200,15 +202,12 @@ func tick(delta: float) -> void:
 	run.deepest_depth = maxi(run.deepest_depth, int(level.depth_at(pos.y)))
 
 
-func _update_aim() -> void:
+func _update_aim(delta: float) -> void:
 	if Settings.using_gamepad:
+		# Only the right stick aims; let go and the lamp holds where it was.
 		var stick := Input.get_vector(&"aim_left", &"aim_right", &"aim_down", &"aim_up")
 		if stick.length() > 0.3:
-			aim = stick.normalized()
-		else:
-			var move := Input.get_vector(&"move_left", &"move_right", &"move_down", &"move_up")
-			if move.length() > 0.3:
-				aim = aim.slerp(move.normalized(), 0.15)
+			aim = turn_towards(aim, stick.normalized(), AIM_TURN_RATE * delta)
 	elif _camera:
 		var mouse := get_viewport().get_mouse_position()
 		var origin := _camera.project_ray_origin(mouse)
@@ -223,6 +222,16 @@ func _update_aim() -> void:
 		facing = 1.0
 	elif aim.x < -0.2:
 		facing = -1.0
+
+
+## [param from] turned towards [param to] by at most [param max_angle]
+## radians. Turning right about, it swings over the top, so the lamp sweeps
+## across the cave as the sub turns.
+static func turn_towards(from: Vector2, to: Vector2, max_angle: float) -> Vector2:
+	var a := from.angle_to(to)
+	if absf(a) > 2.6 and from.rotated(a * 0.5).y < 0.0:
+		a -= signf(a) * TAU
+	return from.rotated(clampf(a, -max_angle, max_angle)).normalized()
 
 
 func _handle_actions() -> void:
