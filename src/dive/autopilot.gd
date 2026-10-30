@@ -119,8 +119,7 @@ func drive(delta: float) -> void:
 	if threat:
 		sub.aim = (threat.pos - sub.pos).normalized()
 		if sub.harpoon.state == Harpoon.State.IDLE and sub.pos.distance_to(threat.pos) < sub.stats.harpoon_range:
-			sub.harpoon.fire(sub.aim)
-			sub.harpoon.release()
+			sub.harpoon.throw(sub.aim)
 	else:
 		sub.aim = sub.aim.slerp(move, 0.1).normalized()
 	sub.facing = 1.0 if sub.aim.x >= 0.0 else -1.0
@@ -221,8 +220,7 @@ func _fight_boss() -> void:
 	if not _strike_close_threat() and organ and boss.vulnerable > 0.3:
 		sub.aim = (organ.pos - sub.pos).normalized()
 		if sub.harpoon.state == Harpoon.State.IDLE and sub.pos.distance_to(organ.pos) < sub.stats.harpoon_range:
-			sub.harpoon.fire(sub.aim)
-			sub.harpoon.release()
+			sub.harpoon.throw(sub.aim)
 	sub.facing = 1.0 if sub.aim.x >= 0.0 else -1.0
 
 
@@ -239,15 +237,13 @@ func _fight_mother(mother: BlindMother, delta: float) -> void:
 		BlindMother.State.STUCK:
 			sub.external_move = (to - to.normalized() * 7.0).limit_length(1.0)
 			if sub.harpoon.state == Harpoon.State.IDLE and to.length() < sub.stats.harpoon_range:
-				sub.harpoon.fire(sub.aim)
-				sub.harpoon.release()
+				sub.harpoon.throw(sub.aim)
 		_:
 			var threat := _nearest_threat()
 			if threat and threat != mother:
 				sub.aim = (threat.pos - sub.pos).normalized()
 				if sub.harpoon.state == Harpoon.State.IDLE and sub.pos.distance_to(threat.pos) < sub.stats.harpoon_range:
-					sub.harpoon.fire(sub.aim)
-					sub.harpoon.release()
+					sub.harpoon.throw(sub.aim)
 			var station := mother.lair_center + Vector2(0.0, -mother.lair_radius.y * 0.55)
 			sub.external_move = (station - sub.pos).limit_length(1.0) * 0.6
 			_ping_timer -= delta
@@ -297,8 +293,7 @@ func _fight_ironclad(boss: Ironclad, delta: float) -> void:
 			station = sub.pos + v.normal.orthogonal() * signf((sub.pos - v.pos).dot(v.normal.orthogonal()) + 0.01) * 6.0
 	sub.external_move = (station - sub.pos).limit_length(1.0)
 	if boss.exposed > 0.3 and sub.harpoon.state == Harpoon.State.IDLE and to.length() < sub.stats.harpoon_range:
-		sub.harpoon.fire(sub.aim)
-		sub.harpoon.release()
+		sub.harpoon.throw(sub.aim)
 	elif boss.exposed <= 0.0:
 		_strike_close_threat()
 
@@ -327,8 +322,7 @@ func _fight_lamplighter(angler: Lamplighter, delta: float) -> void:
 			sub.lamp_on = false
 			sub.external_move = (to - to.normalized() * 8.0).limit_length(1.0) * 0.6
 			if sub.harpoon.state == Harpoon.State.IDLE and d < sub.stats.harpoon_range:
-				sub.harpoon.fire(sub.aim)
-				sub.harpoon.release()
+				sub.harpoon.throw(sub.aim)
 		Lamplighter.State.STALK:
 			if sub.tools.current() == &"flare" and sub.run.flares > 0 and d < 20.0:
 				_tool_timer -= delta
@@ -369,8 +363,7 @@ func _strike_close_threat(reach := 9.0) -> bool:
 	sub.aim = (threat.pos - sub.pos).normalized()
 	sub.facing = 1.0 if sub.aim.x >= 0.0 else -1.0
 	if sub.harpoon.state == Harpoon.State.IDLE:
-		sub.harpoon.fire(sub.aim)
-		sub.harpoon.release()
+		sub.harpoon.throw(sub.aim)
 	return true
 
 

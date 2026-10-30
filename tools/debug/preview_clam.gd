@@ -35,5 +35,4 @@ func direct(_dt: float) -> void:
 	sub.lamp_on = t < 1.5
 	if t > 7.0 and not _fired:
 		_fired = true
-		sub.harpoon.fire(sub.aim)
-		sub.harpoon.release()
+		sub.harpoon.throw(sub.aim)

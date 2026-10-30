@@ -1,7 +1,10 @@
 class_name Harpoon
 extends Node3D
-## The submarine's tethered harpoon. Spears creatures, hooks caches and drags
-## them in, or anchors to rock so the submarine can winch itself along.
+## The submarine's tethered harpoon. Held, it flies out and stays out: it
+## spears a creature (and pulls free once the blow lands), hooks a cache and
+## reels it in, or anchors to rock so the submarine can winch itself along.
+## Let go of the trigger and it comes home, whatever it was doing; it cannot
+## be sent out again until it is back.
 
 enum State { IDLE, FLYING, ANCHORED, ATTACHED, RETRACTING }
 
@@ -16,6 +19,8 @@ var tip := Vector2.ZERO
 var direction := Vector2.RIGHT
 var target: Entity
 var holding := false
+## Thrown by script (autopilot, tests): let go as soon as it lands.
+var _throwing := false
 
 var _sub: Submarine
 var _travelled := 0.0
@@ -90,12 +95,25 @@ func fire(aim: Vector2) -> void:
 
 func release() -> void:
 	holding = false
-	if state == State.ANCHORED:
+	_throwing = false
+	if state == State.FLYING or state == State.ANCHORED or state == State.ATTACHED and _stick_timer <= 0.0:
 		_retract()
+
+
+## Fires and lets go once it lands or reaches the end of its line, as a tap
+## of the trigger held just long enough (for scripted pilots).
+func throw(aim: Vector2) -> void:
+	fire(aim)
+	holding = false
+	_throwing = state == State.FLYING
 
 
 func tick(delta: float) -> void:
 	_cooldown = maxf(_cooldown - delta, 0.0)
+	if _throwing and state != State.FLYING:
+		_throwing = false
+		if state == State.ANCHORED or state == State.ATTACHED and _stick_timer <= 0.0:
+			_retract()
 	match state:
 		State.FLYING:
 			_fly(delta)

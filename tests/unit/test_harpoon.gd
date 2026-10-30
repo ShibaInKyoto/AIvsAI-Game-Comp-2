@@ -1,6 +1,7 @@
 extends TestCase
-## The harpoon drags small creatures in, and lets go of one snagged on rock
-## rather than staying hooked (and useless) for good.
+## The harpoon strikes a creature and pulls free, reels in a cache while the
+## trigger is held, comes home the moment it is let go, and lets go of a
+## catch snagged on rock rather than staying hooked (and useless) for good.
 
 const DT := 1.0 / 60.0
 
@@ -15,9 +16,8 @@ func _open_point(level: Level, near: Vector2) -> Vector2:
 	return near
 
 
-## A level with the sub in open water and a tough lancer 6 m to its right,
-## already hooked.
-func _hooked() -> Array:
+## A level with the sub in open water, aiming right at [param target] 6 m off.
+func _stage(target: Entity) -> Array:
 	var run := RunState.new()
 	run.rebuild_stats({})
 	var layout := LevelGenerator.new().generate(BiomeLibrary.biome_for_zone(2), 4242, 2)
@@ -30,51 +30,104 @@ func _hooked() -> Array:
 	sub.setup(level, run, at - Vector2(3.0, 0.0))
 	sub.input_enabled = false
 	level.player = sub
+	if target:
+		target.pos = at + Vector2(3.0, 0.0)
+		level.add_entity(target)
+	sub.aim = Vector2.RIGHT
+	return [level, sub]
+
+
+## Ticks the harpoon (and the sub) until it leaves [param state] or time runs out.
+func _tick_while(sub: Submarine, state: Harpoon.State, seconds: float) -> float:
+	var t := 0.0
+	while t < seconds and sub.harpoon.state == state:
+		sub.harpoon.tick(DT)
+		t += DT
+	return t
+
+
+func test_strikes_a_creature_and_pulls_free() -> void:
 	var fish := Lancer.new()
-	fish.pos = at + Vector2(3.0, 0.0)
-	level.add_entity(fish)
+	var parts := _stage(fish)
+	var level: Level = parts[0]
+	var sub: Submarine = parts[1]
 	fish.max_hp = 1000.0
 	fish.hp = 1000.0
 	fish.stun(10.0)
-	sub.aim = Vector2.RIGHT
+	var start := fish.pos.distance_to(sub.pos)
+	# Held down the whole time: it still pulls free once the blow lands.
 	sub.harpoon.fire(Vector2.RIGHT)
-	sub.harpoon.release()
-	for i in 30:
-		sub.harpoon.tick(DT)
-		if sub.harpoon.state != Harpoon.State.FLYING:
-			break
-	return [level, sub, fish]
+	_tick_while(sub, Harpoon.State.FLYING, 0.5)
+	check_eq(sub.harpoon.state, Harpoon.State.ATTACHED, "the barb bites")
+	check(fish.hp < 1000.0, "and hurts")
+	_tick_while(sub, Harpoon.State.ATTACHED, 1.0)
+	check_eq(sub.harpoon.state, Harpoon.State.RETRACTING, "then pulls free and comes home")
+	check(fish.pos.distance_to(sub.pos) > start - 1.0, "the creature is not reeled in")
+	level.free()
 
 
-func test_drags_a_creature_in() -> void:
-	var parts := _hooked()
+func test_letting_go_brings_it_home() -> void:
+	var parts := _stage(null)
 	var level: Level = parts[0]
 	var sub: Submarine = parts[1]
-	var fish: Lancer = parts[2]
-	check_eq(sub.harpoon.state, Harpoon.State.ATTACHED, "the harpoon hooks the lancer")
-	var start := fish.pos.distance_to(sub.pos)
-	for i in 60:
+	sub.harpoon.fire(Vector2.RIGHT)
+	for i in 6:
 		sub.harpoon.tick(DT)
-		fish.tick(DT)
-		if sub.harpoon.state != Harpoon.State.ATTACHED:
-			break
-	check(fish.pos.distance_to(sub.pos) < start - 2.0, "the catch is reeled towards the sub")
+	check_eq(sub.harpoon.state, Harpoon.State.FLYING, "out on the line while held")
+	sub.harpoon.release()
+	check_eq(sub.harpoon.state, Harpoon.State.RETRACTING, "let go, it turns for home")
+	sub.harpoon.fire(Vector2.RIGHT)
+	check_eq(sub.harpoon.state, Harpoon.State.RETRACTING, "and cannot be sent out again on the way")
+	_tick_while(sub, Harpoon.State.RETRACTING, 2.0)
+	check_eq(sub.harpoon.state, Harpoon.State.IDLE, "until it is back")
+	level.free()
+
+
+func test_holding_reels_a_cache_in() -> void:
+	var cache := SalvageCache.new()
+	var parts := _stage(cache)
+	var level: Level = parts[0]
+	var sub: Submarine = parts[1]
+	sub.harpoon.fire(Vector2.RIGHT)
+	_tick_while(sub, Harpoon.State.FLYING, 0.5)
+	check_eq(sub.harpoon.state, Harpoon.State.ATTACHED, "the harpoon hooks the cache")
+	var start := cache.pos.distance_to(sub.pos)
+	for i in 8:
+		sub.harpoon.tick(DT)
+		cache.pos += cache.vel * DT
+	check(cache.pos.distance_to(sub.pos) < start - 0.3, "held, the catch is reeled towards the sub")
+	sub.harpoon.release()
+	check_eq(sub.harpoon.state, Harpoon.State.RETRACTING, "let go, the cache is dropped")
 	level.free()
 
 
 func test_lets_go_of_a_snagged_catch() -> void:
-	var parts := _hooked()
+	var cache := SalvageCache.new()
+	var parts := _stage(cache)
 	var level: Level = parts[0]
 	var sub: Submarine = parts[1]
-	var fish: Lancer = parts[2]
-	var pinned := fish.pos
+	sub.harpoon.fire(Vector2.RIGHT)
+	_tick_while(sub, Harpoon.State.FLYING, 0.5)
+	var pinned := cache.pos
 	var held := 0.0
 	while held < 5.0 and sub.harpoon.state == Harpoon.State.ATTACHED:
 		sub.harpoon.tick(DT)
 		# Snagged: the reel cannot move it.
-		fish.pos = pinned
-		fish.vel = Vector2.ZERO
+		cache.pos = pinned
+		cache.vel = Vector2.ZERO
 		held += DT
 	check(sub.harpoon.state != Harpoon.State.ATTACHED, "a catch that will not come is let go")
 	check(held < Harpoon.DRAG_STALL + 0.5, "soon after it stops coming (held %.1f s)" % held)
+	level.free()
+
+
+func test_a_thrown_harpoon_comes_home_by_itself() -> void:
+	var parts := _stage(null)
+	var level: Level = parts[0]
+	var sub: Submarine = parts[1]
+	sub.harpoon.throw(Vector2.RIGHT)
+	_tick_while(sub, Harpoon.State.FLYING, 2.0)
+	sub.harpoon.tick(DT)
+	check(sub.harpoon.state == Harpoon.State.RETRACTING or sub.harpoon.state == Harpoon.State.IDLE,
+		"thrown, it lands and comes home without being let go")
 	level.free()

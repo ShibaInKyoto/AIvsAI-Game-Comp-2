@@ -271,7 +271,8 @@ func on_harpoon_hit(_harpoon: Node, damage: float) -> HarpoonReaction:
 	take_damage(damage, level.player.pos if level.player else pos, &"harpoon")
 	if not alive:
 		return HarpoonReaction.IGNORE
-	return HarpoonReaction.DRAG if mass < 2.5 else HarpoonReaction.STICK
+	# The barb bites, then pulls free: a creature is struck, not reeled in.
+	return HarpoonReaction.STICK
 
 
 # --- Senses ------------------------------------------------------------------
