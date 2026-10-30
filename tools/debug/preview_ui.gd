@@ -37,7 +37,7 @@ func _ready() -> void:
 		var hangar: Node = load(Router.HANGAR).instantiate()
 		add_child(hangar)
 		await get_tree().process_frame
-		hangar.call(&"_show_tab", 3)
+		hangar.call(&"_show_tab", 4)
 		await get_tree().create_timer(1.5).timeout
 		var scroll: ScrollContainer = hangar.find_children("*", "ScrollContainer", true, false)[0]
 		# An optional third argument scrolls back up that many pixels from the end.
@@ -55,7 +55,7 @@ func _ready() -> void:
 		var hangar: Node = load(Router.HANGAR).instantiate()
 		add_child(hangar)
 		await get_tree().process_frame
-		hangar.call(&"_show_tab", 4)
+		hangar.call(&"_show_tab", 5)
 		await get_tree().create_timer(1.0).timeout
 		var scroll: ScrollContainer = hangar.find_children("*", "ScrollContainer", true, false)[0]
 		scroll.scroll_vertical = int(args[2]) if args.size() > 2 else 1650
@@ -75,7 +75,7 @@ func _ready() -> void:
 		var hangar: Node = load(Router.HANGAR).instantiate()
 		add_child(hangar)
 		await get_tree().process_frame
-		hangar.call(&"_show_tab", 2)
+		hangar.call(&"_show_tab", 3)
 		(hangar.get(&"_backdrop") as MenuBackdrop).preview_creature(id)
 		await get_tree().create_timer(3.0).timeout
 		get_viewport().get_texture().get_image().save_png(out)

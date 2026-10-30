@@ -7,16 +7,17 @@ class FrameDef:
 	var id: StringName
 	var name: String
 	var description: String
-	## Research needed to unlock (0 = available from the start).
-	var research_cost: int
+	## The zone its derelict lies in, to be found before it can be flown
+	## (-1 = in the hangar from the start; see [DerelictFrame]).
+	var found_in: int
 	var hull_color: Color
 	var apply: Callable
 
-	func _init(i: StringName, n: String, d: String, cost: int, color: Color, fx: Callable) -> void:
+	func _init(i: StringName, n: String, d: String, zone: int, color: Color, fx: Callable) -> void:
 		id = i
 		name = n
 		description = d
-		research_cost = cost
+		found_in = zone
 		hull_color = color
 		apply = fx
 
@@ -120,13 +121,14 @@ static func module(id: StringName) -> ModuleDef:
 
 
 ## Draws [param count] distinct modules weighted by rarity, skipping ones
-## that reached their stack limit or need a tool the submarine lacks.
+## that reached their stack limit, are [param locked] (not yet researched) or
+## need a tool the submarine lacks.
 static func draft(rng: RandomNumberGenerator, owned: Array[StringName], stats: SubStats,
-		count := 3) -> Array[ModuleDef]:
+		count := 3, locked: Array[StringName] = []) -> Array[ModuleDef]:
 	var pool: Array[ModuleDef] = []
 	var weights := PackedFloat32Array()
 	for m in modules():
-		if owned.count(m.id) >= m.max_stacks:
+		if owned.count(m.id) >= m.max_stacks or locked.has(m.id):
 			continue
 		if m.requires_tool != &"" and not stats.has_tool(m.requires_tool):
 			continue
@@ -147,12 +149,12 @@ static func _build_frames() -> void:
 	_frames = [
 		FrameDef.new(&"lantern", "Lantern",
 			"Balanced research submersible. Bright lamp, a flare launcher and a forgiving hull.",
-			0, Color(1.0, 0.62, 0.12), func(s: SubStats) -> void:
+			-1, Color(1.0, 0.62, 0.12), func(s: SubStats) -> void:
 				s.add_tool(&"flare")
 				s.flare_capacity = 4),
 		FrameDef.new(&"mako", "Mako",
 			"A racing hull with a torpedo bay. Fast, hard-hitting and fragile.",
-			40, Color(0.85, 0.15, 0.2), func(s: SubStats) -> void:
+			2, Color(0.85, 0.15, 0.2), func(s: SubStats) -> void:
 				s.max_hull = 75.0
 				s.max_speed *= 1.22
 				s.thrust *= 1.3
@@ -162,7 +164,7 @@ static func _build_frames() -> void:
 				s.torpedo_capacity = 3),
 		FrameDef.new(&"bathysphere", "Bathysphere",
 			"A slow armored sphere with a huge battery, long sonar and a shock emitter.",
-			90, Color(0.3, 0.75, 0.9), func(s: SubStats) -> void:
+			4, Color(0.3, 0.75, 0.9), func(s: SubStats) -> void:
 				s.max_hull = 160.0
 				s.max_battery = 145.0
 				s.max_speed *= 0.82
@@ -173,7 +175,7 @@ static func _build_frames() -> void:
 				s.flare_capacity = 2),
 		FrameDef.new(&"whisper", "Whisper",
 			"A silent stealth drone. Almost no engine noise, a narrow lamp, quick scanners and sonar decoys.",
-			150, Color(0.55, 0.5, 0.95), func(s: SubStats) -> void:
+			6, Color(0.55, 0.5, 0.95), func(s: SubStats) -> void:
 				s.max_hull = 85.0
 				s.noise_mult = 0.4
 				s.lamp_angle *= 0.75
@@ -190,47 +192,47 @@ static func _build_frames() -> void:
 static func _build_upgrades() -> void:
 	_upgrades = [
 		UpgradeDef.new(&"hull", "Hull Plating", "+20 maximum hull integrity per level.",
-			PackedInt32Array([60, 130, 240, 380, 560]), func(s: SubStats, l: int) -> void:
+			PackedInt32Array([75, 165, 300, 475, 700]), func(s: SubStats, l: int) -> void:
 				s.max_hull += 20.0 * l),
 		UpgradeDef.new(&"battery", "Battery Cells", "+20 battery capacity per level.",
-			PackedInt32Array([50, 110, 200, 320, 480]), func(s: SubStats, l: int) -> void:
+			PackedInt32Array([65, 140, 250, 400, 600]), func(s: SubStats, l: int) -> void:
 				s.max_battery += 20.0 * l),
 		UpgradeDef.new(&"thrusters", "Thrusters", "+7% speed and acceleration per level.",
-			PackedInt32Array([70, 150, 270, 420]), func(s: SubStats, l: int) -> void:
+			PackedInt32Array([90, 190, 340, 525]), func(s: SubStats, l: int) -> void:
 				s.max_speed *= 1.0 + 0.07 * l
 				s.thrust *= 1.0 + 0.07 * l),
 		UpgradeDef.new(&"lamp", "Lamp Optics", "+12% lamp range and -15% lamp drain per level.",
-			PackedInt32Array([50, 120, 230]), func(s: SubStats, l: int) -> void:
+			PackedInt32Array([65, 150, 290]), func(s: SubStats, l: int) -> void:
 				s.lamp_range *= 1.0 + 0.12 * l
 				s.lamp_drain *= 1.0 - 0.15 * l),
 		UpgradeDef.new(&"sonar", "Sonar Array", "+15% sonar range and -10% cooldown per level.",
-			PackedInt32Array([60, 140, 260]), func(s: SubStats, l: int) -> void:
+			PackedInt32Array([75, 175, 325]), func(s: SubStats, l: int) -> void:
 				s.sonar_range *= 1.0 + 0.15 * l
 				s.sonar_cooldown *= 1.0 - 0.1 * l),
 		UpgradeDef.new(&"harpoon", "Harpoon", "+20% harpoon damage and range per level.",
-			PackedInt32Array([60, 140, 260]), func(s: SubStats, l: int) -> void:
+			PackedInt32Array([75, 175, 325]), func(s: SubStats, l: int) -> void:
 				s.harpoon_damage *= 1.0 + 0.2 * l
 				s.harpoon_range *= 1.0 + 0.1 * l),
 		UpgradeDef.new(&"magnet", "Salvage Magnet", "+40% pickup radius per level.",
-			PackedInt32Array([40, 100, 200]), func(s: SubStats, l: int) -> void:
+			PackedInt32Array([50, 125, 250]), func(s: SubStats, l: int) -> void:
 				s.pickup_radius *= 1.0 + 0.4 * l),
 		UpgradeDef.new(&"insurance", "Salvage Insurance", "Bank 10% more of your salvage when you lose the sub.",
-			PackedInt32Array([80, 180, 320]), func(s: SubStats, l: int) -> void:
+			PackedInt32Array([100, 225, 400]), func(s: SubStats, l: int) -> void:
 				s.insurance += 0.1 * l),
 		UpgradeDef.new(&"flares", "Flare Launcher", "Unlocks flares on every frame. More flares per level.",
-			PackedInt32Array([90, 160]), func(s: SubStats, l: int) -> void:
+			PackedInt32Array([110, 200]), func(s: SubStats, l: int) -> void:
 				s.add_tool(&"flare")
 				s.flare_capacity = maxi(s.flare_capacity, 2) + l),
 		UpgradeDef.new(&"torpedoes", "Torpedo Bay", "Unlocks torpedoes on every frame. More torpedoes per level.",
-			PackedInt32Array([150, 260]), func(s: SubStats, l: int) -> void:
+			PackedInt32Array([190, 325]), func(s: SubStats, l: int) -> void:
 				s.add_tool(&"torpedo")
 				s.torpedo_capacity = maxi(s.torpedo_capacity, 1) + l),
 		UpgradeDef.new(&"shock", "Shock Emitter", "Unlocks the shock pulse on every frame. Cheaper per level.",
-			PackedInt32Array([180, 280]), func(s: SubStats, l: int) -> void:
+			PackedInt32Array([225, 350]), func(s: SubStats, l: int) -> void:
 				s.add_tool(&"shock")
 				s.shock_cost *= 1.0 - 0.15 * (l - 1)),
 		UpgradeDef.new(&"decoys", "Decoy Launcher", "Unlocks sonar decoys on every frame. More decoys per level.",
-			PackedInt32Array([120, 220]), func(s: SubStats, l: int) -> void:
+			PackedInt32Array([150, 275]), func(s: SubStats, l: int) -> void:
 				s.add_tool(&"decoy")
 				s.decoy_capacity = maxi(s.decoy_capacity, 1) + l),
 	]

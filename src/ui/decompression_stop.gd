@@ -93,6 +93,10 @@ func _build() -> void:
 		var frame := Catalog.frame(StringName(Game.meta.wreck_frame))
 		_column.add_child(UiUtil.label("Your lost %s lies in the next zone with %d salvage still aboard." %
 			[frame.name if frame else "submarine", Game.meta.wreck_cargo], &"", 22, UiTheme.WARN))
+	for f in Catalog.frames():
+		if f.found_in == _run.zone and not Game.meta.is_frame_unlocked(f.id):
+			_column.add_child(UiUtil.label("The hydrophones pick up a hull in the next zone that matches nothing in " +
+				"the fleet. It is not moving, but something aboard still has power.", &"", 22, UiTheme.ACCENT))
 	var event := ZoneEvents.for_zone(_run, _run.zone)
 	if event != ZoneEvents.NONE:
 		_column.add_child(UiUtil.label("Sensor forecast: %s - %s" % [ZoneEvents.display_name(event),
@@ -113,7 +117,7 @@ func _build() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash([_run.run_seed, _run.zone, "draft"])
 	var first: Button
-	for mod in Catalog.draft(rng, _run.modules, _run.stats, 3):
+	for mod in Catalog.draft(rng, _run.modules, _run.stats, 3, Research.locked_modules(Game.meta)):
 		var card := _module_card(mod)
 		_cards.add_child(card)
 		if first == null:

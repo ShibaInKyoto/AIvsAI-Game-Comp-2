@@ -6,7 +6,7 @@ func test_buy_upgrade_deducts_salvage() -> void:
 	var m := MetaState.new()
 	m.salvage = 100
 	check(m.buy_upgrade(&"hull"))
-	check_eq(m.salvage, 40)
+	check_eq(m.salvage, 25)
 	check_eq(m.upgrade_level(&"hull"), 1)
 	check(not m.buy_upgrade(&"hull"), "cannot afford level 2")
 
@@ -14,19 +14,60 @@ func test_buy_upgrade_deducts_salvage() -> void:
 func test_upgrades_cap_at_max_level() -> void:
 	var m := MetaState.new()
 	m.salvage = 100000
+	m.projects.append("optics")
 	for i in 10:
 		m.buy_upgrade(&"lamp")
 	check_eq(m.upgrade_level(&"lamp"), Catalog.upgrade(&"lamp").max_level())
 
 
-func test_unlock_frame_costs_research() -> void:
+func test_frames_are_found_not_bought() -> void:
 	var m := MetaState.new()
-	m.research = 39
-	check(not m.unlock_frame(&"mako"))
-	m.research = 45
-	check(m.unlock_frame(&"mako"))
-	check_eq(m.research, 5)
+	m.research = 500
+	check(m.unlock_frame(&"mako"), "found, the frame joins the hangar")
+	check_eq(m.research, 500, "and costs nothing")
 	check(m.is_frame_unlocked(&"mako"))
+	check(not m.unlock_frame(&"mako"), "only once")
+	for f in Catalog.frames():
+		check(f.found_in < BiomeLibrary.TOTAL_ZONES - 1, "%s is found above the hadal floor" % f.id)
+
+
+func test_research_projects_open_upgrades_and_modules() -> void:
+	var m := MetaState.new()
+	m.salvage = 1000
+	check(not m.buy_upgrade(&"lamp"), "lamp upgrades need the Optics Lab")
+	check(Research.locked_modules(m).has(&"wide_lens"), "and so does the wide lens")
+	m.research = 30
+	check(not m.research_project("optics"), "research short")
+	m.research = 100
+	check(m.research_project("optics"))
+	check_eq(m.research, 60)
+	check(m.buy_upgrade(&"lamp"), "now the yard sells lamp upgrades")
+	check(not Research.locked_modules(m).has(&"wide_lens"), "and the lockers stock the lens")
+	check(not m.research_project("optics"), "a project is done once")
+	m.research = 1000
+	check(not m.research_project("acoustic"), "acoustic dampening needs echo sounding first")
+	check(m.research_project("echo"))
+	check(not m.research_project("acoustic"), "and a scanned Stalker")
+	m.codex["stalker"] = 1
+	check(m.research_project("acoustic"))
+	var copy := MetaState.from_dict(JSON.parse_string(JSON.stringify(m.to_dict())))
+	check(copy.projects.has("acoustic") and copy.projects.has("optics"), "projects persist")
+
+
+func test_every_module_and_upgrade_can_be_researched() -> void:
+	var researched: Array[StringName] = []
+	researched.append_array(Research.STARTER_MODULES)
+	for p in Research.all():
+		researched.append_array(p.modules)
+		for r in p.requires:
+			check(Research.find(r) != null, "%s needs a real project" % p.id)
+		for u in p.upgrades:
+			check(Catalog.upgrade(u) != null, "%s opens a real upgrade" % p.id)
+	for m in Catalog.modules():
+		check(researched.count(m.id) == 1, "%s is in exactly one project or the starter set" % m.id)
+	for u in Catalog.upgrades():
+		check(Research.STARTER_UPGRADES.has(u.id) or Research.project_for_upgrade(u.id) != null,
+			"%s upgrades can be opened" % u.id)
 
 
 func test_round_trip() -> void:

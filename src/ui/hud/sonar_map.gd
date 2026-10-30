@@ -134,7 +134,7 @@ func _on_ping(origin: Vector2, ping_range: float) -> void:
 			_marks.append({"pos": e.pos, "color": UiTheme.WARN, "node": e})
 		elif e is LogBeacon:
 			_marks.append({"pos": e.pos, "color": UiTheme.GOOD, "node": e})
-		elif e is MeridianStation or e is WhaleFall or e is VasquezDrone:
+		elif e is MeridianStation or e is WhaleFall or e is VasquezDrone or e is DerelictFrame or e is LostWreck:
 			# Landmarks are drawn as rings.
 			_marks.append({"pos": e.pos, "color": UiTheme.TEXT, "node": e, "ring": true})
 

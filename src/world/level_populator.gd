@@ -68,6 +68,10 @@ static func populate(level: Level, run: RunState) -> void:
 			used.append(drone.pos)
 	if Game.meta.has_wreck() and Game.meta.wreck_zone == level.zone:
 		_spawn_lost_wreck(level, used)
+	# A sub the hangar cannot build yet, waiting where it was lost.
+	for f in Catalog.frames():
+		if f.found_in == level.zone and not Game.meta.is_frame_unlocked(f.id):
+			DerelictFrame.place(level, f.id, used)
 	_spawn_debris(level)
 	PropScatter.scatter(level)
 	# The hadal floor always keeps a log, at the station it came from.

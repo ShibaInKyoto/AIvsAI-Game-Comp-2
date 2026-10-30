@@ -40,6 +40,16 @@ func test_draft_is_distinct_and_respects_tools() -> void:
 			check(m.id != &"flare_kit", "flare kit offered to a sub that already has flares")
 
 
+func test_draft_offers_only_researched_modules() -> void:
+	var rng := RandomNumberGenerator.new()
+	var stats := SubStats.build(&"lantern", {}, [])
+	var locked := Research.locked_modules(MetaState.new())
+	for i in 30:
+		rng.seed = i
+		for m in Catalog.draft(rng, [], stats, 3, locked):
+			check(Research.STARTER_MODULES.has(m.id), "%s offered before it was researched" % m.id)
+
+
 func test_draft_respects_stack_limits() -> void:
 	var rng := RandomNumberGenerator.new()
 	var stats := SubStats.build(&"lantern", {}, [])

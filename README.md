@@ -84,8 +84,17 @@ itself. Every zone is a procedurally generated cave cross-section. Find the
   modules, repair the hull and recharge the battery for salvage, then
   *descend*, or *surface* and bank your salvage with a depth bonus. The dive
   report tells you what sank you and how to deal with it.
-* Spend salvage in the **hangar** on permanent upgrades. Spend research (from
-  scanning creatures and recovering logs) on three more submarines.
+* Back in the **hangar**, spend research (from scanning creatures, recovering
+  logs and witnessing wonders) on **research projects**. Each one adds new
+  modules to what the relay lockers can offer and opens new upgrade lines;
+  some build on others, and some need a creature scanned first (Bio-Electrics
+  needs a jelly, Acoustic Dampening a Stalker). Salvage then buys upgrades
+  level by level.
+* The other three submarines cannot be bought. Each lies as a derelict off the
+  main way through one zone: the Mako prototype in the Twilight Reef, the old
+  Bathysphere in the Midnight Caverns, the Whisper drone among the Abyssal
+  Vents. Hold alongside one while its memory core runs on your battery to
+  copy its schematics, and the hangar can build it.
 * In the second Sunlit Shelf zone a **sperm whale** passes through the blue
   behind you, eleven metres of it on slow beats of its flukes. Its clicks
   reach your sonar and chart the cave around it.
@@ -189,12 +198,13 @@ settings and key bindings are kept).
 * **Contracts** in the hangar: take a handicap for one dive (Glass Hull,
   Silent Running, Failing Lamp, Infested Waters, Weak Cells) in exchange for
   a bigger score and payout.
-* 32 modules to draft into a build. Their stats stack; the pause menu lists
-  what you have installed.
+* 32 modules to draft into a build (9 at first, the rest from research). Their
+  stats stack; the pause menu lists what you have installed.
 * 4 submarine frames: **Lantern** (balanced, flares), **Mako** (fast, torpedoes,
   fragile), **Bathysphere** (armored, long sonar, shock pulse), **Whisper**
   (near silent, quick scanner, sonar decoys).
-* 12 hangar upgrades, a creature codex (hover a scanned species in the hangar
+* 12 hangar upgrade lines (3 at first, the rest from research), 15 research
+  projects, a creature codex (hover a scanned species in the hangar
   to see it in the viewport) and 13 story logs to recover (find them all to learn
   what became of the crew). The hangar archive also lists the eleven **wonders**
   of the trench you have witnessed, each with a snapshot of the moment you
@@ -283,7 +293,7 @@ Requires Godot 4.5.1 with export templates installed.
 
 ```sh
 godot --headless --import                                       # first-time import
-godot --headless --path . -s res://tests/run_tests.gd           # 152 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
+godot --headless --path . -s res://tests/run_tests.gd           # 156 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
 godot --headless --path . res://tests/flow_test.tscn            # end-to-end menu and dive flow
 godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
 python3 tools/audio/generate.py                                 # regenerate all audio (numpy + ffmpeg)

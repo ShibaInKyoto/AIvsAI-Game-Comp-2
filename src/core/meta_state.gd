@@ -10,6 +10,8 @@ var salvage := 0
 var research := 0
 ## Upgrade id (String) -> purchased level.
 var upgrades: Dictionary = {}
+## Ids of the [Research] projects finished.
+var projects: Array[String] = []
 var unlocked_frames: Array[String] = ["lantern"]
 var selected_frame := "lantern"
 ## Creature id (String) -> number of times scanned.
@@ -118,10 +120,20 @@ func buy_upgrade(id: StringName) -> bool:
 	if level >= def.max_level():
 		return false
 	var cost := def.costs[level]
-	if salvage < cost:
+	if salvage < cost or not Research.upgrade_open(self, id):
 		return false
 	salvage -= cost
 	upgrades[String(id)] = level + 1
+	return true
+
+
+## Spends research on a project. False if it is done, blocked or unaffordable.
+func research_project(id: String) -> bool:
+	var p := Research.find(id)
+	if p == null or projects.has(id) or research < p.cost or Research.blocker(self, p) != "":
+		return false
+	research -= p.cost
+	projects.append(id)
 	return true
 
 
@@ -169,11 +181,10 @@ func is_frame_unlocked(id: StringName) -> bool:
 	return unlocked_frames.has(String(id))
 
 
+## Adds a frame to the hangar (its derelict has been found; see [DerelictFrame]).
 func unlock_frame(id: StringName) -> bool:
-	var def := Catalog.frame(id)
-	if def == null or is_frame_unlocked(id) or research < def.research_cost:
+	if Catalog.frame(id) == null or is_frame_unlocked(id):
 		return false
-	research -= def.research_cost
 	unlocked_frames.append(String(id))
 	return true
 
@@ -209,6 +220,7 @@ func to_dict() -> Dictionary:
 		"salvage": salvage,
 		"research": research,
 		"upgrades": upgrades,
+		"projects": projects,
 		"unlocked_frames": unlocked_frames,
 		"selected_frame": selected_frame,
 		"codex": codex,
@@ -252,6 +264,9 @@ static func from_dict(d: Dictionary) -> MetaState:
 	var ups: Dictionary = d.get("upgrades", {})
 	for k in ups:
 		m.upgrades[String(k)] = int(ups[k])
+	for id in d.get("projects", []):
+		if Research.find(String(id)) and not m.projects.has(String(id)):
+			m.projects.append(String(id))
 	m.unlocked_frames.clear()
 	for f in d.get("unlocked_frames", ["lantern"]):
 		m.unlocked_frames.append(String(f))

@@ -2,7 +2,7 @@ extends Node3D
 ## The hangar: spend salvage on upgrades, research on new frames, browse the
 ## codex and recovered logs, pick a pressure level and a contract, and start a dive.
 
-enum Tab { UPGRADES, FRAMES, CODEX, LOGS, CHALLENGES }
+enum Tab { UPGRADES, RESEARCH, FRAMES, CODEX, LOGS, CHALLENGES }
 
 var _backdrop: MenuBackdrop
 var _content: VBoxContainer
@@ -62,11 +62,11 @@ func _ready() -> void:
 	var tabs := HBoxContainer.new()
 	tabs.add_theme_constant_override(&"separation", 8)
 	left.add_child(tabs)
-	var tab_names := [[Tab.UPGRADES, "Upgrades"], [Tab.FRAMES, "Submarines"], [Tab.CODEX, "Codex"],
-		[Tab.LOGS, "Archive"], [Tab.CHALLENGES, "Challenges"]]
+	var tab_names := [[Tab.UPGRADES, "Upgrades"], [Tab.RESEARCH, "Research"], [Tab.FRAMES, "Submarines"],
+		[Tab.CODEX, "Codex"], [Tab.LOGS, "Archive"], [Tab.CHALLENGES, "Challenges"]]
 	for t: Array in tab_names:
 		var tab_id: Tab = t[0]
-		var b := UiUtil.button(t[1], func() -> void: _show_tab(tab_id), 196)
+		var b := UiUtil.button(t[1], func() -> void: _show_tab(tab_id), 166)
 		b.toggle_mode = true
 		tabs.add_child(b)
 		_tab_buttons.append(b)
@@ -187,6 +187,8 @@ func _show_tab(tab: Tab) -> void:
 	match tab:
 		Tab.UPGRADES:
 			_build_upgrades()
+		Tab.RESEARCH:
+			_build_research()
 		Tab.FRAMES:
 			_build_frames()
 		Tab.CODEX:
@@ -235,7 +237,11 @@ func _build_upgrades() -> void:
 			pips.add_child(pip)
 		row.add_child(pips)
 		var b: Button
-		if level >= up.max_level():
+		if not Research.upgrade_open(Game.meta, up.id):
+			b = UiUtil.button("Research first", func() -> void: _show_tab(Tab.RESEARCH), 220)
+			info.add_child(UiUtil.label("Needs the %s research project." % Research.project_for_upgrade(up.id).name,
+				&"", 17, UiTheme.WARN))
+		elif level >= up.max_level():
 			b = UiUtil.button("Maxed", func() -> void: pass, 220)
 			b.disabled = true
 		else:
@@ -249,6 +255,45 @@ func _build_upgrades() -> void:
 					Audio.play_ui(&"denied")
 				_show_tab(Tab.UPGRADES), 220)
 			b.disabled = not Game.meta.can_afford(cost)
+		b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		row.add_child(b)
+
+
+func _build_research() -> void:
+	var meta := Game.meta
+	var intro := UiUtil.label("Research comes from scanning creatures, recovering signal logs and witnessing " +
+		"wonders. Projects add modules to what the relay lockers can offer and open new upgrade lines.",
+		&"DimLabel", 18)
+	intro.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_content.add_child(intro)
+	for p in Research.all():
+		var row := _row_panel()
+		var done := meta.projects.has(p.id)
+		var info := VBoxContainer.new()
+		info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(info)
+		info.add_child(UiUtil.label(p.name, &"HeaderLabel", 26, UiTheme.ACCENT if done else UiTheme.TEXT))
+		info.add_child(UiUtil.label(p.description, &"DimLabel"))
+		var unlocks := UiUtil.label(Research.unlocks_text(p), &"MonoLabel", 17, UiTheme.GOOD if done else UiTheme.TEXT_DIM)
+		unlocks.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		info.add_child(unlocks)
+		var blocker := Research.blocker(meta, p)
+		if not done and blocker != "":
+			info.add_child(UiUtil.label(blocker + ".", &"", 17, UiTheme.WARN))
+		var b: Button
+		if done:
+			b = UiUtil.button("Done", func() -> void: pass, 220)
+			b.disabled = true
+		else:
+			var id := p.id
+			b = UiUtil.button("Research  %d" % p.cost, func() -> void:
+				if Game.meta.research_project(id):
+					Audio.play_ui(&"purchase")
+					Game.save_game()
+				else:
+					Audio.play_ui(&"denied")
+				_show_tab(Tab.RESEARCH), 220)
+			b.disabled = blocker != "" or meta.research < p.cost
 		b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		row.add_child(b)
 
@@ -285,22 +330,19 @@ func _build_frames() -> void:
 				_backdrop.refresh_sub()
 				_show_tab(Tab.FRAMES), 220)
 		else:
-			b = UiUtil.button("Unlock  %d research" % f.research_cost, func() -> void:
-				if Game.meta.unlock_frame(id):
-					Audio.play_ui(&"purchase")
-					Game.meta.selected_frame = String(id)
-					Game.save_game()
-					_backdrop.refresh_sub()
-				else:
-					Audio.play_ui(&"denied")
-				_show_tab(Tab.FRAMES), 300)
-			b.disabled = Game.meta.research < f.research_cost
+			var biome := BiomeLibrary.biome_for_zone(f.found_in)
+			var where := UiUtil.label("Not yet found. Its derelict lies somewhere in the %s (zone %d): hold " %
+				[biome.display_name, f.found_in + 1] + "alongside it to copy its schematics.", &"", 18, UiTheme.WARN)
+			where.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			info.add_child(where)
+			b = UiUtil.button("Not found", func() -> void: pass, 220)
+			b.disabled = true
 		b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		b.focus_entered.connect(func() -> void: _backdrop.preview_frame(frame_id))
 		b.mouse_entered.connect(func() -> void: _backdrop.preview_frame(frame_id))
 		row.add_child(b)
-	_content.add_child(UiUtil.label("Research comes from scanning creatures with your lamp and recovering signal " +
-		"logs.", &"DimLabel"))
+	_content.add_child(UiUtil.label("New submarines are not bought: find their derelicts down in the trench.",
+		&"DimLabel"))
 
 
 func _build_codex() -> void:
