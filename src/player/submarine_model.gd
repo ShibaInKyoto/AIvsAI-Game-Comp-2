@@ -14,11 +14,14 @@ var _dark: StandardMaterial3D
 var _steel: StandardMaterial3D
 var _prop_speed := 0.0
 var _strobe_t := 0.0
+## Glowing seams that breathe (a "pulse" finish), or false.
+var _pulse := false
 
 
 
-func build(frame_id: StringName, hull_color: Color) -> void:
-	_make_materials(hull_color)
+## Builds the frame's model in [param skin] (its factory paint if null).
+func build(frame_id: StringName, skin: SubSkins.Livery = null) -> void:
+	_make_materials(skin if skin else SubSkins.factory(frame_id))
 	propeller = Node3D.new()
 	add_child(propeller)
 	match frame_id:
@@ -39,28 +42,55 @@ func animate(delta: float, thrust: float) -> void:
 	_strobe_t += delta
 	if strobe:
 		strobe.visible = fmod(_strobe_t, 1.6) < 0.08
+	if _pulse:
+		hull_material.emission_energy_multiplier = 0.4 + 1.8 * pow(0.5 + 0.5 * sin(_strobe_t * 1.8), 2.0)
 
 
 func set_cockpit_glow(energy: float) -> void:
 	cockpit_material.emission_energy_multiplier = energy
 
 
-func set_hull_color(c: Color) -> void:
-	hull_material.albedo_color = c
+## Darkens the livery, glow and all (for a wreck).
+func darken_hull(amount: float) -> void:
+	hull_material.albedo_color = hull_material.albedo_color.darkened(amount)
+	hull_material.emission_energy_multiplier *= 1.0 - amount
+	_pulse = false
 
 
 # --- Materials ---------------------------------------------------------------------
 
-func _make_materials(hull_color: Color) -> void:
+func _make_materials(skin: SubSkins.Livery) -> void:
 	hull_material = StandardMaterial3D.new()
-	hull_material.albedo_color = hull_color
-	hull_material.albedo_texture = _plating_texture()
 	hull_material.uv1_triplanar = true
 	hull_material.uv1_scale = Vector3(0.9, 0.9, 0.9)
 	hull_material.metallic = 0.4
 	hull_material.roughness = 0.4
 	hull_material.rim_enabled = true
 	hull_material.rim = 0.25
+	if skin.pattern == &"plates" and skin.finish == &"":
+		# Plain paint over the plating.
+		hull_material.albedo_color = skin.color
+		hull_material.albedo_texture = _plating_texture()
+	else:
+		var tex := SubSkins.textures(skin)
+		hull_material.albedo_texture = tex[0]
+		match skin.finish:
+			&"chrome":
+				# Mostly mirror, but with nothing down here to mirror it keeps
+				# some of its color, and its edges catch the light.
+				hull_material.metallic = 0.75
+				hull_material.roughness = 0.16
+				hull_material.rim = 0.7
+			&"glow", &"pulse":
+				hull_material.emission_enabled = true
+				hull_material.emission = Color.WHITE
+				hull_material.emission_operator = BaseMaterial3D.EMISSION_OP_MULTIPLY
+				hull_material.emission_texture = tex[1]
+				hull_material.emission_energy_multiplier = 1.6
+				_pulse = skin.finish == &"pulse"
+			&"sheen":
+				hull_material.roughness = 0.25
+				hull_material.next_pass = SubSkins.sheen()
 
 	_dark = StandardMaterial3D.new()
 	_dark.albedo_color = Color(0.12, 0.13, 0.15)

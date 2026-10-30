@@ -95,7 +95,7 @@ func test_a_jelly_bloom_fills_the_water() -> void:
 	var parts := _stage(&"jellies")
 	var level: Level = parts[0]
 	var bloom := _count(level, LevelPopulator.SPECIES[&"jelly"])
-	check(bloom >= plain + 10, "a bloom (%d jellies against %d)" % [bloom, plain])
+	check(bloom >= plain + 7, "a bloom (%d jellies against %d)" % [bloom, plain])
 	level.free()
 
 

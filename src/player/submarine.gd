@@ -41,6 +41,8 @@ var scan_target: Creature
 var scan_progress := 0.0
 
 var model: SubmarineModel
+## The livery to build in, when not the one the pilot applied (hangar previews).
+var skin: SubSkins.Livery
 var lamp: SpotLight3D
 var fill_light: OmniLight3D
 var harpoon: Harpoon
@@ -80,7 +82,7 @@ func setup(p_level: Level, p_run: RunState, start: Vector2) -> void:
 
 	model = SubmarineModel.new()
 	add_child(model)
-	model.build(run.frame_id, Game.hull_color(run.frame_id))
+	model.build(run.frame_id, skin if skin else Game.livery(run.frame_id))
 
 	lamp = SpotLight3D.new()
 	lamp.light_color = Color(1.0, 0.95, 0.82)
@@ -407,6 +409,8 @@ func _complete_scan(c: Creature) -> void:
 	_scanned_this_run[c.species] = true
 	var first := Game.meta.record_scan(c.species)
 	run.scans += 1
+	if not run.species_scanned.has(c.species):
+		run.species_scanned.append(c.species)
 	run.research += 10 if first else 3
 	show_gain(10 if first else 3, " research", UiTheme.ACCENT)
 	scan_target = null
@@ -448,6 +452,8 @@ func take_damage(amount: float, from: Vector2, source: Node = null, knockback :=
 		amount *= Pressure.creature_damage(run.pressure)
 	amount *= Settings.damage_taken_mult()
 	run.hull -= amount
+	run.damage_taken += amount
+	run.zone_damage += amount
 	run.last_hit_by = DeathTips.cause_of(source)
 	Settings.rumble_pulse(amount / 25.0, 0.25)
 	_invulnerable = 0.35

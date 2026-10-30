@@ -30,10 +30,16 @@ var stalkers_killed := 0
 var mothers_killed := 0
 var anglers_killed := 0
 var best_pressure_win := -1
-## Ids of achieved [Milestones].
-var milestones: Array[String] = []
-## Milestone id whose paint is applied to the hull ("" = the frame's own colors).
-var paint := ""
+## Ids of the [Challenges] won.
+var challenges_won: Array[String] = []
+## Challenges shown on the HUD while diving (at most [constant Challenges.MAX_TRACKED]).
+var tracked: Array[String] = ["first_descent", "naturalist"]
+## Best progress yet on each dive challenge, by id.
+var challenge_best: Dictionary = {}
+## Livery id applied to each frame (frame id -> [SubSkins] id; none = factory paint).
+var liveries: Dictionary = {}
+## Victories over the Choir in each frame (frame id -> count).
+var frame_wins: Dictionary = {}
 ## Daily dive record for [member daily_date] (YYYY-MM-DD).
 var daily_date := ""
 var daily_best_depth := 0
@@ -58,6 +64,49 @@ func upgrade_level(id: StringName) -> int:
 
 func can_afford(cost: int) -> bool:
 	return salvage >= cost
+
+
+## The livery id applied to [param frame_id] ("" = factory paint).
+func livery(frame_id: StringName) -> String:
+	return liveries.get(String(frame_id), "")
+
+
+## Applies a won livery that fits the frame ("" restores the factory paint).
+## Returns false (and changes nothing) for one not won or made for another frame.
+func set_livery(frame_id: StringName, skin_id: String) -> bool:
+	if skin_id == "":
+		liveries.erase(String(frame_id))
+		return true
+	var skin := SubSkins.find(skin_id)
+	if skin == null or not challenges_won.has(skin_id) or not skin.is_paint() and skin.frame != frame_id:
+		return false
+	liveries[String(frame_id)] = skin_id
+	return true
+
+
+## Hands the HUD slots of tracked challenges now won to the next ones not
+## yet won, in the order the hangar lists them.
+func retire_tracked() -> void:
+	var freed := tracked.size()
+	tracked.assign(tracked.filter(func(id: String) -> bool: return not challenges_won.has(id)))
+	freed -= tracked.size()
+	for c in Challenges.all():
+		if freed <= 0:
+			break
+		if not challenges_won.has(c.id) and not tracked.has(c.id):
+			tracked.append(c.id)
+			freed -= 1
+
+
+## Tracks [param id] on the HUD, or stops tracking it. Tracking one more than
+## the HUD has room for drops the oldest.
+func toggle_tracked(id: String) -> void:
+	if tracked.has(id):
+		tracked.erase(id)
+		return
+	tracked.append(id)
+	while tracked.size() > Challenges.MAX_TRACKED:
+		tracked.pop_front()
 
 
 ## Buys the next level of an upgrade. Returns false if maxed or unaffordable.
@@ -178,8 +227,11 @@ func to_dict() -> Dictionary:
 		"mothers_killed": mothers_killed,
 		"anglers_killed": anglers_killed,
 		"best_pressure_win": best_pressure_win,
-		"milestones": milestones,
-		"paint": paint,
+		"challenges_won": challenges_won,
+		"tracked": tracked,
+		"challenge_best": challenge_best,
+		"liveries": liveries,
+		"frame_wins": frame_wins,
 		"daily_date": daily_date,
 		"daily_best_depth": daily_best_depth,
 		"daily_attempts": daily_attempts,
@@ -228,11 +280,30 @@ static func from_dict(d: Dictionary) -> MetaState:
 	m.mothers_killed = int(d.get("mothers_killed", 0))
 	m.anglers_killed = int(d.get("anglers_killed", 0))
 	m.best_pressure_win = int(d.get("best_pressure_win", -1))
-	for id in d.get("milestones", []):
-		m.milestones.append(String(id))
-	m.paint = String(d.get("paint", ""))
-	if not m.milestones.has(m.paint):
-		m.paint = ""
+	# Saves from before challenges called them milestones.
+	for id in d.get("challenges_won", d.get("milestones", [])):
+		if Challenges.find(String(id)) and not m.challenges_won.has(String(id)):
+			m.challenges_won.append(String(id))
+	if d.has("tracked"):
+		m.tracked.clear()
+		for id in d.tracked:
+			if Challenges.find(String(id)) and m.tracked.size() < Challenges.MAX_TRACKED:
+				m.tracked.append(String(id))
+	m.retire_tracked()
+	var best: Dictionary = d.get("challenge_best", {})
+	for id in best:
+		m.challenge_best[String(id)] = int(best[id])
+	var wins_by: Dictionary = d.get("frame_wins", {})
+	for f in wins_by:
+		m.frame_wins[String(f)] = int(wins_by[f])
+	var liveries: Dictionary = d.get("liveries", {})
+	# One paint for every frame, before liveries were chosen per frame.
+	var old_paint := String(d.get("paint", ""))
+	if old_paint != "" and liveries.is_empty():
+		for f in Catalog.frames():
+			liveries[String(f.id)] = old_paint
+	for f in liveries:
+		m.set_livery(StringName(f), String(liveries[f]))
 	m.daily_date = String(d.get("daily_date", ""))
 	m.daily_best_depth = int(d.get("daily_best_depth", 0))
 	m.daily_attempts = int(d.get("daily_attempts", 0))

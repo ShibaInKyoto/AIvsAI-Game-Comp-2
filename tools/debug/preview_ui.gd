@@ -5,7 +5,8 @@ extends Node
 ## prologue, ending (every log found and the lullaby heard, epilogue shown at once), logs (the hangar's
 ## archive scrolled to its end: the recordings outside the Meridian set and the
 ## wonders witnessed; nothing is saved),
-## hangar (its upgrades tab), specimen <id> (the hangar codex with that species in the viewport; nothing is saved).
+## hangar (its upgrades tab), specimen <id> (the hangar codex with that species in the viewport; nothing is saved),
+## challenges [scroll px] (the hangar challenges, a few won and a skin worn; nothing is saved).
 ## (summary banks a fake dive into the local save).
 
 
@@ -43,6 +44,22 @@ func _ready() -> void:
 		var back := int(args[2]) if args.size() > 2 else 0
 		scroll.scroll_vertical = int(scroll.get_v_scroll_bar().max_value) - back
 		await get_tree().create_timer(1.5).timeout
+		get_viewport().get_texture().get_image().save_png(out)
+		Router.quit()
+		return
+	if which == "challenges":
+		# A few won, one skin worn, scrolled to the Lantern's skins (nothing is saved).
+		Game.meta.challenges_won.assign(["first_descent", "twilight", "naturalist", "lantern_biolume"])
+		Game.meta.challenge_best["lantern_survey"] = 4
+		Game.meta.set_livery(&"lantern", "lantern_biolume")
+		var hangar: Node = load(Router.HANGAR).instantiate()
+		add_child(hangar)
+		await get_tree().process_frame
+		hangar.call(&"_show_tab", 4)
+		await get_tree().create_timer(1.0).timeout
+		var scroll: ScrollContainer = hangar.find_children("*", "ScrollContainer", true, false)[0]
+		scroll.scroll_vertical = int(args[2]) if args.size() > 2 else 1650
+		await get_tree().create_timer(2.0).timeout
 		get_viewport().get_texture().get_image().save_png(out)
 		Router.quit()
 		return

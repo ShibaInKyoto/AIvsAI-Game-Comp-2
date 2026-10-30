@@ -22,7 +22,17 @@ var kills := 0
 ## Harpoon hits on creatures that had not noticed the sub.
 var ambushes := 0
 var scans := 0
+## Each species scanned on this dive (for [Challenges]).
+var species_scanned: Array[StringName] = []
 var logs := 0
+var bulbs := 0
+## Hull damage taken on this dive, and in the zone in progress.
+var damage_taken := 0.0
+var zone_damage := 0.0
+## Zones cleared without taking any hull damage.
+var clean_zones := 0
+## Ids of the [Challenges] won on this dive.
+var challenges_won: Array[String] = []
 ## [Wonders] witnessed for the first time on this dive.
 var wonders: Array[String] = []
 var time := 0.0
@@ -94,6 +104,8 @@ func to_dict() -> Dictionary:
 		"salvage": salvage, "research": research, "kills": kills, "ambushes": ambushes, "scans": scans, "logs": logs,
 		"time": time, "pressure": pressure, "daily": daily, "daily_event": daily_event, "contract": contract,
 		"deepest_depth": deepest_depth, "last_hit_by": last_hit_by, "wonders": wonders,
+		"species_scanned": species_scanned, "bulbs": bulbs, "damage_taken": damage_taken,
+		"clean_zones": clean_zones, "challenges_won": challenges_won,
 	}
 
 
@@ -125,6 +137,13 @@ static func from_dict(d: Dictionary, upgrades: Dictionary) -> RunState:
 	r.logs = int(d.get("logs", 0))
 	for w in d.get("wonders", []):
 		r.wonders.append(String(w))
+	for id in d.get("species_scanned", []):
+		r.species_scanned.append(StringName(id))
+	r.bulbs = int(d.get("bulbs", 0))
+	r.damage_taken = float(d.get("damage_taken", 0.0))
+	r.clean_zones = int(d.get("clean_zones", 0))
+	for id in d.get("challenges_won", []):
+		r.challenges_won.append(String(id))
 	r.time = float(d.get("time", 0.0))
 	r.pressure = int(d.get("pressure", 0))
 	r.daily = bool(d.get("daily", false))

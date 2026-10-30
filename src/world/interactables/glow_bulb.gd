@@ -78,6 +78,7 @@ func is_ripe() -> bool:
 
 func _harvest(sub: Submarine) -> void:
 	_harvested = true
+	sub.run.bulbs += 1
 	Events.bulb_harvested.emit(pos)
 	var gain := CHARGE * sub.stats.bulb_mult
 	sub.add_battery(gain)

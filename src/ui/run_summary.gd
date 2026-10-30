@@ -72,9 +72,10 @@ func show_result(run: RunState, outcome: RunState.Outcome) -> void:
 		for id in run.wonders:
 			names.append(Wonders.get_wonder(id).get("name", id))
 		column.add_child(UiUtil.label("Wonders witnessed: %s" % ", ".join(names), &"", 22, UiTheme.GOOD))
-	for m in Game.last_milestones:
-		column.add_child(UiUtil.label("Milestone: %s  -  %s paint unlocked in the hangar" % [m.name, m.paint_name],
-				&"", 22, UiTheme.WARN))
+	for id in run.challenges_won:
+		var c := Challenges.find(id)
+		column.add_child(UiUtil.label("Challenge complete: %s  -  %s waiting in the hangar" % [c.name,
+				Challenges.reward_text(c)], &"", 22, UiTheme.WARN))
 	if outcome == RunState.Outcome.IMPLODED:
 		var insured := "Insurance recovered %d%% of your salvage." % int(run.stats.insurance * 100)
 		if run.stats.insurance <= 0.0:

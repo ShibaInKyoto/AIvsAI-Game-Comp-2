@@ -1,6 +1,7 @@
 extends Node3D
-## Debug helper: renders the four submarine frames side by side.
-## Usage: xvfb-run godot --path . res://tools/debug/preview_models.tscn -- <out.png>
+## Debug helper: renders the four submarine frames side by side, or with
+## "skins" every frame's challenge skins, a row per frame.
+## Usage: xvfb-run godot --path . res://tools/debug/preview_models.tscn -- <out.png> [skins]
 
 var _frames := 0
 
@@ -23,14 +24,24 @@ func _ready() -> void:
 	sun.light_energy = 1.5
 	add_child(sun)
 	var frames := Catalog.frames()
-	for i in frames.size():
-		var m := SubmarineModel.new()
-		add_child(m)
-		m.build(frames[i].id, frames[i].hull_color)
-		m.position = Vector3((i % 2) * 6.0 - 3.0, 2.0 - (i / 2) * 4.0, 0)
-		m.rotation_degrees = Vector3(10, -25, 0)
 	var cam := Camera3D.new()
 	cam.position = Vector3(0, 0, 13)
+	if OS.get_cmdline_user_args().has("skins"):
+		var skins := SubSkins.all().filter(func(s: SubSkins.Livery) -> bool: return not s.is_paint())
+		for i in skins.size():
+			var m := SubmarineModel.new()
+			add_child(m)
+			m.build(skins[i].frame, skins[i])
+			m.position = Vector3((i % 3) * 5.5 - 5.5, 5.4 - (i / 3) * 3.6, 0)
+			m.rotation_degrees = Vector3(10, -25, 0)
+		cam.position = Vector3(0, 0, 19)
+	else:
+		for i in frames.size():
+			var m := SubmarineModel.new()
+			add_child(m)
+			m.build(frames[i].id)
+			m.position = Vector3((i % 2) * 6.0 - 3.0, 2.0 - (i / 2) * 4.0, 0)
+			m.rotation_degrees = Vector3(10, -25, 0)
 	cam.fov = 45
 	add_child(cam)
 

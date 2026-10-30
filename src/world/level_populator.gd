@@ -351,7 +351,7 @@ static func _spawn_migration(level: Level, used: PackedVector2Array) -> void:
 ## A jelly bloom: stingers drifting all through the open water.
 static func _spawn_bloom(level: Level) -> void:
 	var start := PackedVector2Array([level.layout.start])
-	for _i in 12 + level.zone / 2:
+	for _i in 6 + level.zone:
 		var p := level.layout.random_open_point(level.rng, 2.0, start, SAFE_RADIUS * 0.6)
 		if p == Vector2.INF:
 			continue

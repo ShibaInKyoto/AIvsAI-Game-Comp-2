@@ -54,23 +54,36 @@ func test_corrupt_data_falls_back() -> void:
 	check(copy.is_frame_unlocked(&"lantern"))
 
 
-func test_milestones_award_once_and_persist() -> void:
+func test_challenges_award_once_and_persist() -> void:
 	var m := MetaState.new()
 	m.deepest_zone = 4
-	var first := Milestones.check(m, null)
-	var ids := first.map(func(x: Milestones.Milestone) -> String: return x.id)
-	check(ids.has("first_descent") and ids.has("twilight") and ids.has("midnight"), "depth milestones awarded")
-	check(not ids.has("vents"), "deeper milestone not awarded yet")
-	check(Milestones.check(m, null).is_empty(), "nothing awarded twice")
-	m.paint = "midnight"
+	var first := Challenges.check(m, null)
+	var ids := first.map(func(x: Challenges.Challenge) -> String: return x.id)
+	check(ids.has("first_descent") and ids.has("twilight") and ids.has("midnight"), "depth challenges won")
+	check(not ids.has("vents"), "deeper challenge not won yet")
+	check(Challenges.check(m, null).is_empty(), "nothing won twice")
+	check(m.set_livery(&"mako", "midnight"), "a paint fits any frame")
 	var copy := MetaState.from_dict(JSON.parse_string(JSON.stringify(m.to_dict())))
-	check_eq(copy.paint, "midnight")
-	check(copy.milestones.has("twilight"))
+	check_eq(copy.livery(&"mako"), "midnight")
+	check_eq(copy.livery(&"lantern"), "", "each frame keeps its own")
+	check(copy.challenges_won.has("twilight"))
 
 
-func test_paint_requires_milestone() -> void:
-	var copy := MetaState.from_dict({"paint": "answer", "milestones": []})
-	check_eq(copy.paint, "", "unearned paint is dropped")
+func test_liveries_must_be_won_and_fit() -> void:
+	var m := MetaState.new()
+	check(not m.set_livery(&"lantern", "answer"), "unearned paint refused")
+	m.challenges_won.append("mako_carbon")
+	check(not m.set_livery(&"lantern", "mako_carbon"), "a skin made for the Mako does not fit the Lantern")
+	check(m.set_livery(&"mako", "mako_carbon"), "but fits the Mako")
+	var copy := MetaState.from_dict({"liveries": {"lantern": "answer"}, "challenges_won": []})
+	check_eq(copy.livery(&"lantern"), "", "unearned livery is dropped on load")
+
+
+func test_old_saves_keep_their_paint() -> void:
+	var copy := MetaState.from_dict({"paint": "twilight", "milestones": ["first_descent", "twilight"]})
+	check(copy.challenges_won.has("twilight"), "milestones carry over as challenges won")
+	for f in Catalog.frames():
+		check_eq(copy.livery(f.id), "twilight", "the old paint goes on every frame")
 
 
 func test_daily_record_resets_each_day() -> void:

@@ -208,10 +208,15 @@ settings and key bindings are kept).
   wall-crawling isopods, stinging siphonophore chains, caches that turn out to
   be mimics, shoals, ghostfin packs that hunt the lamp on the hadal floor, and
   the Stalker, which hunts by sound across the whole zone.
-* 17 milestones (silence the Choir, scan every species, kill a Stalker...), each
-  unlocking a hull paint.
-* **Zone objectives** for bonus salvage or research: open caches, hunt, scan
-  species, stay silent, harvest bulbs, recover a log.
+* **29 challenges**, each won once. 17 career goals (silence the Choir, scan
+  every species, kill a Stalker...) each unlock a hull paint for any sub.
+  12 harder ones, three per submarine, must be done in that sub (25 kills in
+  one dive in the Mako, three clean zones in a row in the Whisper...). Each of
+  those unlocks a skin for that sub that changes more than its color: survey
+  stripes, tiger-shark bands, hazard chevrons, rust, camouflage or scales, with
+  chrome, glowing seams or an oil-slick sheen. Paints and skins are applied
+  per submarine. Track up to three challenges in the hangar to keep their
+  progress on the HUD while you dive.
 * **Zone events**: strong currents, blackouts, feeding frenzies, wreck
   fields (the broken hulls of an earlier expedition, salvage spilled around
   them), whale falls (a great skeleton on the floor, glowing with bone worms
@@ -278,7 +283,7 @@ Requires Godot 4.5.1 with export templates installed.
 
 ```sh
 godot --headless --import                                       # first-time import
-godot --headless --path . -s res://tests/run_tests.gd           # 148 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
+godot --headless --path . -s res://tests/run_tests.gd           # 152 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
 godot --headless --path . res://tests/flow_test.tscn            # end-to-end menu and dive flow
 godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
 python3 tools/audio/generate.py                                 # regenerate all audio (numpy + ffmpeg)

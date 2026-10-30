@@ -24,6 +24,8 @@ var _anchor := Vector2.ZERO
 var _run: RunState
 ## A codex species shown in place of the submarine (see [method preview_creature]).
 var _specimen: Node3D
+## A livery shown instead of the applied one (see [method preview_skin]).
+var _skin: SubSkins.Livery
 
 
 func _ready() -> void:
@@ -97,8 +99,16 @@ func refresh_sub() -> void:
 
 ## Shows another frame (e.g. a locked one being browsed) without selecting it.
 func preview_frame(frame_id: StringName) -> void:
-	if sub and frame_id != _run.frame_id:
+	if sub and (frame_id != _run.frame_id or _skin):
 		_show_frame(frame_id)
+
+
+## Shows a livery (won or not) on the frame it fits: its own for a skin, the
+## selected one for a paint.
+func preview_skin(skin: SubSkins.Livery) -> void:
+	if sub == null or skin == _skin:
+		return
+	_show_frame(StringName(Game.meta.selected_frame) if skin.is_paint() else skin.frame, skin)
 
 
 ## Shows a scanned species where the submarine idles (&"" brings the sub back).
@@ -156,7 +166,7 @@ func preview_creature(id: StringName) -> void:
 	_specimen = specimen
 
 
-func _show_frame(frame_id: StringName) -> void:
+func _show_frame(frame_id: StringName, skin: SubSkins.Livery = null) -> void:
 	if sub == null:
 		return
 	var pos := sub.pos
@@ -164,7 +174,9 @@ func _show_frame(frame_id: StringName) -> void:
 	_run.frame_id = frame_id
 	_run.rebuild_stats(Game.meta.upgrades)
 	_run.refill()
+	_skin = skin
 	sub = Submarine.new()
+	sub.skin = skin
 	level.add_child(sub)
 	sub.setup(level, _run, pos)
 	sub.input_enabled = false

@@ -22,7 +22,8 @@ func setup() -> void:
 	var model := SubmarineModel.new()
 	add_child(model)
 	var crushed := kind != "power"
-	model.build(frame_id, Game.hull_color(frame_id).darkened(0.6 if crushed else 0.35))
+	model.build(frame_id, Game.livery(frame_id))
+	model.darken_hull(0.6 if crushed else 0.35)
 	model.set_cockpit_glow(0.0)
 	if crushed:
 		# Crumpled by the pressure, lying crooked where it came to rest.

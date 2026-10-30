@@ -82,7 +82,7 @@ func _on_erase() -> void:
 	if _erase_armed <= 0.0:
 		_erase_armed = ERASE_ARM_TIME
 		_erase.text = "Press again to erase ALL progress"
-		_erase.tooltip_text = "Upgrades, frames, records, logs and milestones. Settings are kept."
+		_erase.tooltip_text = "Upgrades, frames, records, logs and challenges. Settings are kept."
 		_erase.add_theme_color_override(&"font_color", UiTheme.DANGER)
 		_erase.add_theme_color_override(&"font_focus_color", UiTheme.DANGER)
 		_erase.add_theme_color_override(&"font_hover_color", UiTheme.DANGER)

@@ -2,7 +2,7 @@ extends Node3D
 ## The hangar: spend salvage on upgrades, research on new frames, browse the
 ## codex and recovered logs, pick a pressure level and a contract, and start a dive.
 
-enum Tab { UPGRADES, FRAMES, CODEX, LOGS, MILESTONES }
+enum Tab { UPGRADES, FRAMES, CODEX, LOGS, CHALLENGES }
 
 var _backdrop: MenuBackdrop
 var _content: VBoxContainer
@@ -63,7 +63,7 @@ func _ready() -> void:
 	tabs.add_theme_constant_override(&"separation", 8)
 	left.add_child(tabs)
 	var tab_names := [[Tab.UPGRADES, "Upgrades"], [Tab.FRAMES, "Submarines"], [Tab.CODEX, "Codex"],
-		[Tab.LOGS, "Archive"], [Tab.MILESTONES, "Milestones"]]
+		[Tab.LOGS, "Archive"], [Tab.CHALLENGES, "Challenges"]]
 	for t: Array in tab_names:
 		var tab_id: Tab = t[0]
 		var b := UiUtil.button(t[1], func() -> void: _show_tab(tab_id), 196)
@@ -193,8 +193,8 @@ func _show_tab(tab: Tab) -> void:
 			_build_codex()
 		Tab.LOGS:
 			_build_logs()
-		Tab.MILESTONES:
-			_build_milestones()
+		Tab.CHALLENGES:
+			_build_challenges()
 	_refresh_header()
 
 
@@ -259,7 +259,7 @@ func _build_frames() -> void:
 		var frame_id := f.id
 		row.get_parent().mouse_entered.connect(func() -> void: _backdrop.preview_frame(frame_id))
 		var swatch := ColorRect.new()
-		swatch.color = f.hull_color
+		swatch.color = Game.livery(f.id).color
 		swatch.custom_minimum_size = Vector2(14, 80)
 		row.add_child(swatch)
 		var info := VBoxContainer.new()
@@ -397,53 +397,102 @@ func _build_wonders() -> void:
 			info.add_child(UiUtil.label("Not yet witnessed. Somewhere %s." % w.where, &"DimLabel"))
 
 
-func _build_milestones() -> void:
+func _build_challenges() -> void:
 	var meta := Game.meta
+	var frame := StringName(meta.selected_frame)
 	var head := HBoxContainer.new()
 	_content.add_child(head)
-	head.add_child(UiUtil.label("%d / %d milestones  -  each unlocks a hull paint" % [meta.milestones.size(),
-		Milestones.all().size()], &"MonoLabel"))
+	head.add_child(UiUtil.label("%d / %d won  -  track up to %d to keep them on your HUD" % [
+		meta.challenges_won.size(), Challenges.all().size(), Challenges.MAX_TRACKED], &"MonoLabel"))
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.add_child(spacer)
-	var default_paint := UiUtil.button("Factory paint", func() -> void: _set_paint(""), 220)
-	default_paint.disabled = meta.paint == ""
-	head.add_child(default_paint)
+	var factory := UiUtil.button("Factory paint", func() -> void: _apply_livery(frame, ""), 220)
+	factory.disabled = meta.livery(frame) == ""
+	head.add_child(factory)
 	var best := "the Choir still sings"
 	if meta.best_pressure_win >= 0:
 		best = "best win at pressure %d" % meta.best_pressure_win
 	var records := "Records:  %d dives  -  %d victories  -  deepest %s m  -  %d creatures  -  %d Stalkers  -  %s"
 	_content.add_child(UiUtil.label(records % [meta.dives, meta.wins, UiUtil.thousands(meta.deepest_depth),
 		meta.total_kills, meta.stalkers_killed, best], &"DimLabel", 18))
-	for m in Milestones.all():
-		var row := _row_panel()
-		var achieved := meta.milestones.has(m.id)
-		var swatch := ColorRect.new()
-		swatch.color = m.paint if achieved else Color(0.15, 0.2, 0.22)
-		swatch.custom_minimum_size = Vector2(14, 64)
-		row.add_child(swatch)
-		var info := VBoxContainer.new()
-		info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		row.add_child(info)
-		info.add_child(UiUtil.label(m.name, &"HeaderLabel", 24, UiTheme.ACCENT if achieved else UiTheme.TEXT_DIM))
-		info.add_child(UiUtil.label("%s   Reward: %s paint" % [m.description, m.paint_name], &"DimLabel"))
-		var id := m.id
-		var b: Button
-		if not achieved:
-			b = UiUtil.button("Locked", func() -> void: pass, 200)
-			b.disabled = true
-		elif meta.paint == id:
-			b = UiUtil.button("Applied", func() -> void: pass, 200)
-			b.disabled = true
+	var section := ""
+	for c in Challenges.all():
+		var reward := c.reward()
+		var heading := "PAINTS  -  for any submarine" if reward.is_paint() else "%s SKINS" % \
+			Catalog.frame(reward.frame).name.to_upper()
+		if heading != section:
+			section = heading
+			_content.add_child(UiUtil.spacer(6))
+			_content.add_child(UiUtil.label(heading, &"HeaderLabel", 22, UiTheme.ACCENT))
+		_challenge_row(c, reward)
+
+
+func _challenge_row(c: Challenges.Challenge, reward: SubSkins.Livery) -> void:
+	var meta := Game.meta
+	var row := _row_panel()
+	var won := meta.challenges_won.has(c.id)
+	row.get_parent().mouse_entered.connect(func() -> void: _backdrop.preview_skin(reward))
+	row.add_child(_swatch(reward, won))
+	var info := VBoxContainer.new()
+	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(info)
+	var title := c.name + ("   (one dive)" if c.per_dive else "")
+	info.add_child(UiUtil.label(title, &"HeaderLabel", 24, UiTheme.ACCENT if won else UiTheme.TEXT))
+	var desc := UiUtil.label(c.description, &"DimLabel")
+	desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	info.add_child(desc)
+	var progress := Challenges.progress_text(c, meta, null)
+	if c.per_dive and not won:
+		progress = "best %d / %d" % [int(meta.challenge_best.get(c.id, 0)), c.target] if c.target > 1 else "not yet"
+	info.add_child(UiUtil.label("Reward: %s   -   %s" % [Challenges.reward_text(c), progress], &"MonoLabel", 17,
+		UiTheme.GOOD if won else UiTheme.TEXT_DIM))
+	var buttons := VBoxContainer.new()
+	buttons.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(buttons)
+	var id := c.id
+	var track: Button
+	if won:
+		# Won: wear it (a skin goes on its own frame, a paint on the selected one).
+		var on := StringName(meta.selected_frame) if reward.is_paint() else reward.frame
+		if meta.livery(on) == id:
+			track = UiUtil.button("Applied", func() -> void: pass, 200)
+			track.disabled = true
 		else:
-			b = UiUtil.button("Apply paint", func() -> void: _set_paint(id), 200)
-		b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		row.add_child(b)
+			track = UiUtil.button("Apply", func() -> void: _apply_livery(on, id), 200)
+	else:
+		track = UiUtil.button("Tracked" if meta.tracked.has(id) else "Track", func() -> void:
+			Game.meta.toggle_tracked(id)
+			Game.save_game()
+			Audio.play_ui(&"tool_cycle", -6.0)
+			_show_tab(Tab.CHALLENGES), 200)
+		track.toggle_mode = true
+		track.button_pressed = meta.tracked.has(id)
+	track.focus_entered.connect(func() -> void: _backdrop.preview_skin(reward))
+	track.mouse_entered.connect(func() -> void: _backdrop.preview_skin(reward))
+	buttons.add_child(track)
 
 
-func _set_paint(id: String) -> void:
-	Game.meta.paint = id
-	Game.save_game()
-	Audio.play_ui(&"module_install", -4.0)
-	_backdrop.refresh_sub()
-	_show_tab(Tab.MILESTONES)
+## A sample of a livery: its pattern for a skin, its color for a paint.
+func _swatch(skin: SubSkins.Livery, won: bool) -> Control:
+	if skin.is_paint():
+		var rect := ColorRect.new()
+		rect.color = skin.color if won else skin.color.darkened(0.7)
+		rect.custom_minimum_size = Vector2(16, 72)
+		return rect
+	var tex := TextureRect.new()
+	tex.texture = SubSkins.textures(skin)[0]
+	tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	tex.custom_minimum_size = Vector2(72, 72)
+	tex.modulate = Color.WHITE if won else Color(0.4, 0.4, 0.4)
+	return tex
+
+
+func _apply_livery(frame: StringName, id: String) -> void:
+	if Game.meta.set_livery(frame, id):
+		Game.save_game()
+		Audio.play_ui(&"module_install", -4.0)
+	if frame == StringName(Game.meta.selected_frame):
+		_backdrop.refresh_sub()
+	_show_tab(Tab.CHALLENGES)

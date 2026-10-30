@@ -15,7 +15,6 @@ var run: RunState
 ## Salvage banked by the last victorious dive (shown by the ending).
 var last_victory_banked := 0
 ## Milestones unlocked when the last run ended (shown by the summary).
-var last_milestones: Array[Milestones.Milestone] = []
 ## Score of the dive that just ended and its place in the records (-1 = unplaced).
 var last_score := 0
 var last_rank := -1
@@ -28,26 +27,24 @@ func _ready() -> void:
 			meta.stalkers_killed += 1
 		elif id == &"mother":
 			meta.mothers_killed += 1
-			check_milestones()
+			check_challenges()
 		elif id == &"lamplighter":
 			meta.anglers_killed += 1
-			check_milestones())
+			check_challenges())
 
 
-## Hull color for a frame, honoring the chosen milestone paint.
-func hull_color(frame_id: StringName) -> Color:
-	var m := Milestones.find(meta.paint)
-	if m:
-		return m.paint
-	var f := Catalog.frame(frame_id)
-	return f.hull_color if f else Color(1.0, 0.6, 0.1)
+## The livery a frame wears: the one applied to it, or its factory paint.
+func livery(frame_id: StringName) -> SubSkins.Livery:
+	var skin := SubSkins.find(meta.livery(frame_id))
+	return skin if skin else SubSkins.factory(frame_id)
 
 
-## Awards newly met milestones and announces them. Returns them.
-func check_milestones() -> Array[Milestones.Milestone]:
-	var fresh := Milestones.check(meta, run)
-	for m in fresh:
-		Events.toast.emit("Milestone: %s  -  %s paint unlocked" % [m.name, m.paint_name], UiTheme.WARN)
+## Awards newly completed challenges and announces them. Returns them.
+func check_challenges() -> Array[Challenges.Challenge]:
+	var fresh := Challenges.check(meta, run)
+	for c in fresh:
+		Events.toast.emit("Challenge complete: %s  -  %s unlocked" % [c.name, Challenges.reward_text(c)],
+			UiTheme.WARN)
 		Audio.play(&"purchase", -2.0)
 	if not fresh.is_empty():
 		save_game()
@@ -195,6 +192,7 @@ func end_run(outcome: RunState.Outcome) -> int:
 	elif outcome == RunState.Outcome.VICTORY:
 		kept = int(run.salvage * Pressure.depth_bonus(run.zone + 2))
 		meta.wins += 1
+		meta.frame_wins[String(run.frame_id)] = int(meta.frame_wins.get(String(run.frame_id), 0)) + 1
 		meta.best_pressure_win = maxi(meta.best_pressure_win, run.pressure)
 		meta.pressure_unlocked = maxi(meta.pressure_unlocked, mini(run.pressure + 1, Pressure.MAX_LEVEL))
 	# Expedition pay: every zone reached is worth something - to a pilot who
@@ -211,7 +209,8 @@ func end_run(outcome: RunState.Outcome) -> int:
 	if run.daily:
 		meta.daily_best_depth = maxi(meta.daily_best_depth, run.deepest_depth)
 		meta.daily_won = meta.daily_won or outcome == RunState.Outcome.VICTORY
-	last_milestones = Milestones.check(meta, run)
+	Challenges.check(meta, run)
+	meta.retire_tracked()
 	last_score = DiveScore.total(run)
 	last_rank = meta.record_dive(DiveScore.record(run, today()))
 	clear_saved_run()

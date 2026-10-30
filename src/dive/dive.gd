@@ -11,12 +11,12 @@ var hud: Hud
 var state := State.LOADING
 var autopilot: Autopilot
 var heartbeat: Heartbeat
-var objective: ZoneObjective
 var _prologue: Prologue
 var _pause_menu: PauseMenu
 var _layout_result: LevelLayout
 var _call_timer := 45.0
 var _freeze := 0.0
+var _challenge_timer := 0.0
 
 
 
@@ -41,7 +41,7 @@ func _ready() -> void:
 		photo.open(camera))
 	Settings.changed.connect(_on_settings_changed)
 	Events.hitstop.connect(func(d: float) -> void: _freeze = maxf(_freeze, d))
-	Events.creature_scanned.connect(func(_id: StringName, _first: bool) -> void: Game.check_milestones())
+	Events.creature_scanned.connect(func(_id: StringName, _first: bool) -> void: Game.check_challenges())
 	if Autopilot.requested():
 		autopilot = Autopilot.new()
 		add_child(autopilot)
@@ -62,9 +62,6 @@ func load_zone(zone: int) -> void:
 	var run := Game.run
 	var biome := BiomeLibrary.biome_for_zone(zone)
 	var layout := await _generate(biome, run.zone_seed(zone), zone)
-	if objective:
-		objective.release()
-		objective = null
 	if level:
 		level.queue_free()
 		level = null
@@ -75,7 +72,7 @@ func load_zone(zone: int) -> void:
 		event = autopilot.force_event
 	level.build(layout, Settings.quality, run.pressure, event)
 	LevelPopulator.populate(level, run)
-	# Deferred so zone objectives see the exit before the stop screen opens.
+	# Deferred: the level is mid-tick when the sub reaches the exit.
 	level.exit_reached.connect(_on_exit_reached, CONNECT_DEFERRED)
 	if level.boss:
 		level.boss.defeated.connect(_on_victory)
@@ -93,9 +90,8 @@ func load_zone(zone: int) -> void:
 	var water := WaterFx.new()
 	level.add_child(water)
 	water.setup(biome, layout.size(), camera, Settings.quality, level.current)
-	objective = ZoneObjective.roll(level, sub, run.run_seed)
+	run.zone_damage = 0.0
 	hud.bind(sub, level, camera)
-	hud.objective = objective
 	if autopilot:
 		autopilot.bind(sub, level)
 	if Tutorial.wanted():
@@ -105,7 +101,7 @@ func load_zone(zone: int) -> void:
 
 	Audio.play_music(biome.music)
 	Audio.play_ambience(biome.ambience)
-	Game.check_milestones()
+	Game.check_challenges()
 	# On a first dive the prologue plays while the zone loads; start when it ends.
 	if is_instance_valid(_prologue) and not _prologue.done:
 		await _prologue.finished
@@ -152,8 +148,10 @@ func _process(frame_delta: float) -> void:
 	level.tick(delta)
 	_distant_calls(delta)
 	heartbeat.tick(level, sub, delta)
-	if objective:
-		objective.tick()
+	_challenge_timer -= delta
+	if _challenge_timer <= 0.0:
+		_challenge_timer = 0.5
+		Game.check_challenges()
 	# Pull the camera back while the Choir sings so its whole body is in view.
 	var want_zoom := 1.0
 	if level.boss and level.boss.active:
@@ -221,7 +219,10 @@ func _on_exit_reached() -> void:
 	if not Game.meta.tutorial_done:
 		Game.meta.tutorial_done = true
 		Game.save_game()
+	if run.zone_damage <= 0.0:
+		run.clean_zones += 1
 	run.zone += 1
+	Game.check_challenges()
 	if autopilot and not autopilot.show_stops:
 		DecompressionStop.service(run)
 		_continue_after_stop()
