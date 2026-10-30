@@ -3,6 +3,11 @@ extends Node3D
 ## Live 3D scene behind the menus: a real generated zone with the submarine
 ## idling in its entry chamber, a slowly drifting camera and periodic pings.
 
+## Codex specimens too big for the viewport, and how far to shrink them.
+const SPECIMEN_SCALE: Dictionary[StringName, float] = {&"choir": 0.28}
+## Specimens whose bodies take shape as they swim.
+const WARM_UP: Array[StringName] = [&"shoal"]
+
 var level: Level
 var sub: Submarine
 var camera: Camera3D
@@ -18,7 +23,7 @@ var _ping_timer := 2.0
 var _anchor := Vector2.ZERO
 var _run: RunState
 ## A codex species shown in place of the submarine (see [method preview_creature]).
-var _specimen: Creature
+var _specimen: Node3D
 
 
 func _ready() -> void:
@@ -102,13 +107,14 @@ func preview_creature(id: StringName) -> void:
 	if is_instance_valid(_specimen):
 		# Out of the entity list now: freeing it later from outside a level tick
 		# would leave a dead entry behind.
-		level.entities.erase(_specimen)
+		if _specimen is Entity:
+			level.entities.erase(_specimen)
 		_specimen.queue_free()
 	_specimen = null
 	if sub:
 		sub.model.visible = true
-	var specimen: Creature = null
-	if LevelPopulator.SPECIES.has(id) and id != &"shoal":
+	var specimen: Node3D = null
+	if LevelPopulator.SPECIES.has(id):
 		specimen = LevelPopulator.SPECIES[id].new()
 	elif id == &"mimic":
 		specimen = Mimic.new()
@@ -116,16 +122,37 @@ func preview_creature(id: StringName) -> void:
 		specimen = Lamplighter.new()
 	elif id == &"ironclad":
 		specimen = Ironclad.new()
+	elif id == &"choir":
+		specimen = ChoirBoss.specimen()
 	if specimen == null or sub == null:
 		return
 	# Hide only the hull: the sub's lamp and fill light keep the specimen lit.
 	sub.model.visible = false
-	level.add_entity(specimen)
-	specimen.active_radius = 0.0
-	specimen.targetable = false
-	specimen.scannable = false
-	specimen.pos = sub.pos
-	specimen.sync_transform()
+	if specimen is Creature:
+		var c := specimen as Creature
+		# Placed first: some build their bodies round where they start.
+		c.pos = sub.pos
+		level.add_entity(c)
+		c.active_radius = 0.0
+		c.targetable = false
+		c.scannable = false
+		c.pos = sub.pos
+		# Bodies laid out as they move (a school's fish, the Mother's coils)
+		# get a moment to settle into shape.
+		if WARM_UP.has(id):
+			# With the sub out of the picture, or a school would scatter from it.
+			level.player = null
+			for i in 40:
+				c.tick(1.0 / 30.0)
+			level.player = sub
+			c.vel = Vector2.ZERO
+			c.pos = sub.pos
+		c.sync_transform()
+	else:
+		level.add_child(specimen)
+		specimen.position = Vector3(sub.pos.x, sub.pos.y, 0.0)
+	# The giants, shrunk to fit the viewport.
+	specimen.scale = Vector3.ONE * SPECIMEN_SCALE.get(id, 1.0)
 	_specimen = specimen
 
 

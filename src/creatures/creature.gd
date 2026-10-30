@@ -57,6 +57,8 @@ var _touch_cooldown := 0.0
 var _phase := 0.0
 var _turn_speed := 6.0
 var _roll := 0.0
+## Swim stroke so far (see creature.gdshader).
+var _swim_clock := 0.0
 
 
 func setup() -> void:
@@ -150,8 +152,12 @@ func on_touch_player(sub: Submarine) -> void:
 
 
 func _update_visuals(delta: float) -> void:
+	_swim_clock += delta * (0.6 + vel.length() * 0.15)
 	if upright:
-		model.basis = Basis(Vector3.BACK, PI * 0.5 - clampf(vel.x * 0.06, -0.4, 0.4))
+		# Leans gently into its drift (smoothed: a pulsing swimmer's speed
+		# changes every frame).
+		_roll = lerpf(_roll, clampf(vel.x * 0.06, -0.4, 0.4), 1.0 - exp(-2.5 * delta))
+		model.basis = Basis(Vector3.BACK, PI * 0.5 - _roll)
 		_update_instance_params()
 		return
 	if not lock_facing and vel.length_squared() > 0.04:
@@ -168,7 +174,7 @@ func _update_instance_params() -> void:
 	for v in visuals:
 		v.set_instance_shader_parameter(&"marked", _marked / _mark_total if _marked > 0.0 else 0.0)
 		v.set_instance_shader_parameter(&"hit_flash", _flash)
-		v.set_instance_shader_parameter(&"swim_speed", 0.6 + vel.length() * 0.15)
+		v.set_instance_shader_parameter(&"swim_clock", _swim_clock)
 
 
 # --- Damage and status -------------------------------------------------------

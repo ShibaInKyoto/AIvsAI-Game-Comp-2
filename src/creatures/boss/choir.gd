@@ -59,23 +59,48 @@ func setup() -> void:
 	Events.sonar_pinged.connect(_on_ping)
 
 
-func _build_heart() -> void:
-	_heart_mat = ShaderMaterial.new()
-	_heart_mat.shader = Creature.SHADER
-	_heart_mat.set_shader_parameter(&"back_color", Color(0.18, 0.06, 0.22))
-	_heart_mat.set_shader_parameter(&"belly_color", Color(0.3, 0.12, 0.35))
-	_heart_mat.set_shader_parameter(&"glow_color", Color(1.0, 0.3, 0.85))
-	_heart_mat.set_shader_parameter(&"glow_strength", 4.5)
-	_heart_mat.set_shader_parameter(&"glow_pulse", 0.6)
-	_heart_mat.set_shader_parameter(&"rim_strength", 0.8)
-	_heart_mat.set_shader_parameter(&"swim_amp", 0.0)
-	var heart_mesh := MeshKit.lathe(PackedVector2Array([
+## The Choir's heart: a veined, glowing bulb thirteen metres long.
+static func heart_mesh() -> ArrayMesh:
+	return MeshKit.lathe(PackedVector2Array([
 			Vector2(0.0, 0.5), Vector2(0.2, 4.0), Vector2(0.5, 5.5), Vector2(0.8, 4.5), Vector2(1.0, 1.0)]),
 		13.0, 28, 22, 1.15, 1.15, func(t: float, a: float) -> float:
 			var veins := 1.0 - smoothstep(0.0, 0.12, absf(sin(a * 5.0 + t * 9.0)))
 			return clampf(veins * 0.9 + (0.6 if t > 0.92 else 0.0), 0.0, 1.0))
+
+
+static func heart_material() -> ShaderMaterial:
+	var mat := ShaderMaterial.new()
+	mat.shader = Creature.SHADER
+	mat.set_shader_parameter(&"back_color", Color(0.18, 0.06, 0.22))
+	mat.set_shader_parameter(&"belly_color", Color(0.3, 0.12, 0.35))
+	mat.set_shader_parameter(&"glow_color", Color(1.0, 0.3, 0.85))
+	mat.set_shader_parameter(&"glow_strength", 4.5)
+	mat.set_shader_parameter(&"glow_pulse", 0.6)
+	mat.set_shader_parameter(&"rim_strength", 0.8)
+	mat.set_shader_parameter(&"swim_amp", 0.0)
+	return mat
+
+
+## A small still copy of the heart, for the codex viewport.
+static func specimen() -> Node3D:
+	var heart := MeshInstance3D.new()
+	heart.mesh = heart_mesh()
+	heart.material_override = heart_material()
+	heart.rotation.z = PI * 0.5
+	var holder := Node3D.new()
+	holder.add_child(heart)
+	var light := OmniLight3D.new()
+	light.light_color = Color(1.0, 0.35, 0.85)
+	light.omni_range = 30.0
+	light.position = Vector3(0.0, 0.0, 9.0)
+	holder.add_child(light)
+	return holder
+
+
+func _build_heart() -> void:
+	_heart_mat = heart_material()
 	_heart = MeshInstance3D.new()
-	_heart.mesh = heart_mesh
+	_heart.mesh = heart_mesh()
 	_heart.material_override = _heart_mat
 	_heart.rotation.z = PI * 0.5
 	_heart.position = Vector3(0, 0, -9.0)

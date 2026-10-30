@@ -25,7 +25,9 @@ uniform float swim_vertical = 0.25;
 instance uniform float marked = 0.0;
 instance uniform float hit_flash = 0.0;
 instance uniform float phase = 0.0;
-instance uniform float swim_speed = 1.0;
+// Swim cycles so far, advanced each frame by how fast the creature swims
+// (accumulated on the CPU so a change of pace never makes the stroke jump).
+instance uniform float swim_clock = 0.0;
 instance uniform float glow_boost = 1.0;
 
 varying vec3 world_pos;
@@ -34,7 +36,7 @@ void vertex() {
 	float x = VERTEX.x / max(body_length, 0.01);
 	float tail = smoothstep(0.35, -0.55, x);
 	// INSTANCE_CUSTOM.x carries a per-fish phase when drawn through a MultiMesh.
-	float w = sin(TIME * swim_freq * swim_speed + phase + INSTANCE_CUSTOM.x * 6.28 - VERTEX.x * swim_wave);
+	float w = sin(swim_clock * swim_freq + phase + INSTANCE_CUSTOM.x * 6.28 - VERTEX.x * swim_wave);
 	VERTEX.z += w * swim_amp * tail * (1.0 - swim_vertical);
 	VERTEX.y += w * swim_amp * tail * swim_vertical;
 	world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;

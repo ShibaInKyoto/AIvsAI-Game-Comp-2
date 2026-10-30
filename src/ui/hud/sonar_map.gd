@@ -32,6 +32,9 @@ var _reveal_tex: ImageTexture
 var _mat: ShaderMaterial
 var _size_m := Vector2.ONE
 var _marks: Array[Dictionary] = []
+## Where the rock has moved since it was charted: redrawn only once a ping
+## reaches it.
+var _stale: Array[Rect2] = []
 var _map_rect: TextureRect
 var _overlay: Control
 
@@ -71,6 +74,7 @@ func bind(p_level: Level, p_sub: Submarine) -> void:
 	_map_rect.texture = _reveal_tex
 	_map_rect.material = _mat
 	_marks.clear()
+	_stale.clear()
 	# The entry chamber is always known.
 	reveal(level.layout.start, 14.0)
 	if not Events.sonar_pinged.is_connected(_on_ping):
@@ -87,24 +91,46 @@ func _chart(px: Rect2i) -> void:
 			_terrain_img.set_pixel(x, y, Color.from_hsv(0, 0, clampf(0.5 + v * 0.25, 0.0, 1.0)))
 
 
-## Redraws the part of the chart where the rock has moved.
+## The rock has moved: the chart keeps showing it as it was until a ping
+## reaches the place.
 func _on_terrain_changed(rect: Rect2) -> void:
 	if _terrain_img == null or level == null:
 		return
+	_stale.append(rect)
+
+
+## Redraws the part of the chart covered by [param rect] (world metres).
+func _recharted(rect: Rect2) -> void:
 	var bounds := Rect2i(0, 0, _terrain_img.get_width(), _terrain_img.get_height())
 	var px := Rect2i(floori(rect.position.x), floori(-rect.end.y), ceili(rect.size.x) + 1, ceili(rect.size.y) + 1)
 	px = px.intersection(bounds)
 	if px.has_area():
 		_chart(px)
-		_terrain_tex.update(_terrain_img)
 
 
 func _on_ping(origin: Vector2, ping_range: float) -> void:
 	reveal(origin, ping_range)
+	# Rock that moved since it was charted shows as it is now.
+	var reach := Rect2(origin - Vector2.ONE * ping_range, Vector2.ONE * ping_range * 2.0)
+	var still: Array[Rect2] = []
+	for r in _stale:
+		if r.intersects(reach):
+			_recharted(r)
+		else:
+			still.append(r)
+	if still.size() != _stale.size():
+		_terrain_tex.update(_terrain_img)
+	_stale = still
 	for e in level.entities:
-		if not e.alive or e.pos.distance_to(origin) >= ping_range or _marked(e):
+		if not e.alive or e.pos.distance_to(origin) >= ping_range:
 			continue
-		if e is SalvageCache:
+		var mark := _mark_of(e)
+		if not mark.is_empty():
+			# Loot drifts and sinks: a fresh ping shows where it is now.
+			mark.pos = e.pos
+			continue
+		# A mimic lying still answers sonar just like the cache it pretends to be.
+		if e is SalvageCache or e is Mimic and (e as Mimic).state == Mimic.State.DORMANT:
 			_marks.append({"pos": e.pos, "color": UiTheme.WARN, "node": e})
 		elif e is LogBeacon:
 			_marks.append({"pos": e.pos, "color": UiTheme.GOOD, "node": e})
@@ -113,11 +139,11 @@ func _on_ping(origin: Vector2, ping_range: float) -> void:
 			_marks.append({"pos": e.pos, "color": UiTheme.TEXT, "node": e, "ring": true})
 
 
-func _marked(e: Entity) -> bool:
+func _mark_of(e: Entity) -> Dictionary:
 	for m in _marks:
 		if m.node == e:
-			return true
-	return false
+			return m
+	return {}
 
 
 ## Marks a circle of the chart as charted.
@@ -163,6 +189,9 @@ func _draw_marks() -> void:
 	for m in _marks:
 		if not is_instance_valid(m.node) or not (m.node as Entity).alive:
 			continue
+		# A mimic that has shown itself is no loot.
+		if m.node is Mimic and (m.node as Mimic).state != Mimic.State.DORMANT:
+			continue
 		if m.get("ring", false):
 			_overlay.draw_arc(_to_map(m.pos), 4.0, 0, TAU, 12, m.color, 1.5)
 		else:
@@ -172,4 +201,5 @@ func _draw_marks() -> void:
 	if sub:
 		var p := _to_map(sub.pos)
 		_overlay.draw_circle(p, 3.5, Color.WHITE)
-		_overlay.draw_line(p, p + sub.aim * 9.0, Color(1, 1, 1, 0.7), 1.5)
+		# The chart's y runs down the screen, the world's up.
+		_overlay.draw_line(p, p + Vector2(sub.aim.x, -sub.aim.y) * 9.0, Color(1, 1, 1, 0.7), 1.5)

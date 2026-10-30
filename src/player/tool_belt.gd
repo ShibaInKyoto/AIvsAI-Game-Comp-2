@@ -103,7 +103,8 @@ func _fire_torpedo(aim: Vector2) -> bool:
 	_sub.run.torpedoes -= 1
 	var torpedo := Torpedo.new()
 	torpedo.pos = _sub.pos + aim * 1.8
-	torpedo.vel = aim * 8.0 + _sub.vel
+	# Straight down the aim, carrying only the sub's speed along it.
+	torpedo.vel = aim * (8.0 + maxf(_sub.vel.dot(aim), 0.0))
 	torpedo.damage = _sub.stats.torpedo_damage
 	torpedo.owner_sub = _sub
 	_sub.level.add_entity(torpedo)
