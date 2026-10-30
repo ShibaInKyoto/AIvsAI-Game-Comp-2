@@ -7,7 +7,7 @@ enum Outcome { NONE, SURFACED, IMPLODED, VICTORY }
 var run_seed := 0
 var frame_id: StringName = &"lantern"
 var zone := 0
-## The zone the dive began in (deeper than 0 for a deep start).
+## The zone the dive began in (always the first).
 var start_zone := 0
 var modules: Array[StringName] = []
 var stats: SubStats
@@ -62,19 +62,6 @@ func rebuild_stats(upgrades: Dictionary) -> void:
 	battery = minf(battery, stats.max_battery)
 
 
-## Begins the dive in [param biome] instead of at the surface, with one
-## module drafted for each zone (and stop) skipped.
-func start_deep(biome: int, upgrades: Dictionary) -> void:
-	zone = clampi(biome, 0, BiomeLibrary.BIOME_COUNT - 1) * BiomeLibrary.ZONES_PER_BIOME
-	start_zone = zone
-	var rng := RandomNumberGenerator.new()
-	rng.seed = run_seed
-	for i in zone:
-		var offer := Catalog.draft(rng, modules, stats, 1)
-		if not offer.is_empty():
-			add_module(offer[0].id, upgrades)
-
-
 ## Metres descended this dive: depth below where it started.
 func descent() -> int:
 	return maxi(deepest_depth - int(BiomeLibrary.zone_depth_range(start_zone).x), 0) if start_zone > 0 \
@@ -95,6 +82,11 @@ func add_module(id: StringName, upgrades: Dictionary) -> void:
 
 
 ## Snapshot for resuming an interrupted dive (stats are rebuilt on load).
+## Whether the sub was lost to an empty battery (it sank whole).
+func lost_power() -> bool:
+	return last_hit_by == &"power"
+
+
 func to_dict() -> Dictionary:
 	return {
 		"run_seed": run_seed, "frame_id": frame_id, "zone": zone, "start_zone": start_zone, "modules": modules,

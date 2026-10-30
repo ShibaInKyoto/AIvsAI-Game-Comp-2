@@ -1,12 +1,13 @@
 class_name DecompressionStop
 extends CanvasLayer
-## Between zones: the sub docks at a relay buoy. Battery recharges, one
-## module is drafted from three, the hull can be repaired for salvage, and
+## Between zones: the sub docks at a relay buoy. One module is drafted from
+## three, the hull can be repaired and the battery recharged for salvage, and
 ## the player decides whether to go deeper or surface and bank everything.
 
 signal finished(choice: StringName)
 
 const REPAIR_AMOUNT := 40.0
+const RECHARGE_AMOUNT := 40.0
 
 var _run: RunState
 var _column: VBoxContainer
@@ -14,15 +15,16 @@ var _cards: HBoxContainer
 var _picked := false
 var _descend: Button
 var _repair: Button
+var _recharge: Button
 var _status: Label
+var _installed: Label
 
 
 func open(run: RunState) -> void:
 	_run = run
 	layer = 40
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	# Docking restores power and some ammunition.
-	run.battery = run.stats.max_battery
+	# The buoy restocks a little ammunition; power and repairs cost salvage.
 	run.torpedoes = mini(run.torpedoes + 1, run.stats.torpedo_capacity)
 	run.flares = mini(run.flares + 2, run.stats.flare_capacity)
 	run.decoys = mini(run.decoys + 1, run.stats.decoy_capacity)
@@ -31,7 +33,30 @@ func open(run: RunState) -> void:
 
 
 func _repair_cost() -> int:
-	return 12 + _run.zone * 6
+	return repair_cost(_run.zone)
+
+
+func _recharge_cost() -> int:
+	return recharge_cost(_run.zone)
+
+
+static func repair_cost(zone: int) -> int:
+	return 12 + zone * 6
+
+
+static func recharge_cost(zone: int) -> int:
+	return 10 + zone * 5
+
+
+## What a careful pilot buys at a stop without lingering (the autopilot):
+## charge first, then the hull, while the salvage lasts.
+static func service(run: RunState) -> void:
+	while run.battery < run.stats.max_battery * 0.75 and run.salvage >= recharge_cost(run.zone):
+		run.salvage -= recharge_cost(run.zone)
+		run.battery = minf(run.battery + RECHARGE_AMOUNT, run.stats.max_battery)
+	while run.hull < run.stats.max_hull * 0.6 and run.salvage >= repair_cost(run.zone):
+		run.salvage -= repair_cost(run.zone)
+		run.hull = minf(run.hull + REPAIR_AMOUNT, run.stats.max_hull)
 
 
 func _build() -> void:
@@ -75,6 +100,9 @@ func _build() -> void:
 			&"", 22, UiTheme.WARN))
 	_status = UiUtil.label("", &"MonoLabel")
 	_column.add_child(_status)
+	_installed = UiUtil.label("", &"DimLabel", 17)
+	_installed.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_column.add_child(_installed)
 	_column.add_child(UiUtil.spacer(6))
 	_column.add_child(UiUtil.label("Install one module from the relay's salvage locker:"))
 
@@ -96,16 +124,27 @@ func _build() -> void:
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	_column.add_child(UiUtil.spacer(8))
 	_column.add_child(row)
-	_repair = UiUtil.button("", _on_repair, 330)
+	_repair = UiUtil.button("", _on_repair, 360)
 	row.add_child(_repair)
+	_recharge = UiUtil.button("", _on_recharge, 360)
+	row.add_child(_recharge)
+	# Then the choice: on down, or up and home.
+	row = HBoxContainer.new()
+	row.add_theme_constant_override(&"separation", 18)
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	_column.add_child(row)
 	_descend = UiUtil.button("Descend", func() -> void: _finish(&"descend"), 300)
 	row.add_child(_descend)
 	var bonus := Pressure.depth_bonus(_run.zone)
 	var surface := UiUtil.button("Surface  (bank %d salvage)" % int(_run.salvage * bonus),
 			func() -> void: _finish(&"surface"), 420)
 	row.add_child(surface)
-	var terms := "Surfacing now banks all salvage with a x%.1f depth bonus. Implode and you keep only %d%%."
-	_column.add_child(UiUtil.label(terms % [bonus, int(_run.stats.insurance * 100)], &"DimLabel"))
+	var terms := "Surfacing now banks all salvage with a x%.1f depth bonus. Lose the sub and you bank %d%% of it." % [
+		bonus, int(_run.stats.insurance * 100)]
+	if _run.stats.insurance <= 0.0:
+		terms = "Surfacing now banks all salvage with a x%.1f depth bonus. Lose the sub and it all goes down with it." % (
+			bonus)
+	_column.add_child(UiUtil.label(terms, &"DimLabel"))
 	_refresh()
 	if first:
 		first.grab_focus()
@@ -188,13 +227,42 @@ func _on_repair() -> void:
 	_refresh()
 
 
+func _on_recharge() -> void:
+	var cost := _recharge_cost()
+	if _run.salvage < cost or _run.battery >= _run.stats.max_battery:
+		Audio.play_ui(&"denied")
+		return
+	_run.salvage -= cost
+	_run.battery = minf(_run.battery + RECHARGE_AMOUNT, _run.stats.max_battery)
+	Audio.play_ui(&"repair")
+	_refresh()
+
+
+## The installed modules in a line: "Silent Screws, Wide-Angle Lens x2".
+static func installed_text(run: RunState) -> String:
+	var names: Array[String] = []
+	var seen: Array[StringName] = []
+	for id in run.modules:
+		if seen.has(id):
+			continue
+		seen.append(id)
+		var mod := Catalog.module(id)
+		var count := run.modules.count(id)
+		names.append((mod.name if mod else String(id)) + (" x%d" % count if count > 1 else ""))
+	return ", ".join(names)
+
+
 func _refresh() -> void:
 	_status.text = "HULL %d/%d    BATTERY %d/%d    SALVAGE %d    MODULES %d" % [
 		ceili(_run.hull), int(_run.stats.max_hull), int(_run.battery), int(_run.stats.max_battery),
 		_run.salvage, _run.modules.size()]
+	_installed.text = "Installed: " + installed_text(_run) if not _run.modules.is_empty() else ""
 	var cost := _repair_cost()
 	_repair.text = "Repair hull +%d  (%d salvage)" % [int(REPAIR_AMOUNT), cost]
 	_repair.disabled = _run.salvage < cost or _run.hull >= _run.stats.max_hull
+	var charge_cost := _recharge_cost()
+	_recharge.text = "Recharge +%d  (%d salvage)" % [int(RECHARGE_AMOUNT), charge_cost]
+	_recharge.disabled = _run.salvage < charge_cost or _run.battery >= _run.stats.max_battery
 	_descend.text = "Descend" if _picked else "Descend without a module"
 
 

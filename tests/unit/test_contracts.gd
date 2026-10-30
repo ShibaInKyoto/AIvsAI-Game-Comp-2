@@ -10,7 +10,7 @@ func test_every_contract_changes_the_dive_and_pays_for_it() -> void:
 		check(c.rewards() != "", "%s lists its rewards" % c.name)
 		var stats := SubStats.build(&"lantern", {}, [], c.id)
 		var changed := stats.max_hull != plain.max_hull or stats.sonar_cost != plain.sonar_cost \
-			or stats.lamp_range != plain.lamp_range or stats.insurance != plain.insurance or c.creature_mult != 1.0
+			or stats.lamp_range != plain.lamp_range or stats.max_battery != plain.max_battery or c.creature_mult != 1.0
 		check(changed, "%s is a real handicap" % c.name)
 	check_near(SubStats.build(&"lantern", {}, [], &"glass_hull").max_hull, plain.max_hull * 0.6, 0.01,
 		"Glass Hull takes 40% of the hull")

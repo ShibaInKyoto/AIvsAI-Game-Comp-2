@@ -46,10 +46,10 @@ var records: Array[Dictionary] = []
 var wreck_zone := -1
 var wreck_frame := ""
 var wreck_cargo := 0
+## How it was lost: "implosion" (crushed) or "power" (dark but whole).
+var wreck_kind := ""
 ## Contract taken in the hangar for the next dive ("" = none); used up when it starts.
 var contract_selected := ""
-## Biome to start dives in (0 = the surface); see [method deepest_start].
-var start_biome := 0
 
 
 func upgrade_level(id: StringName) -> int:
@@ -94,26 +94,22 @@ func record_dive(entry: Dictionary) -> int:
 	return rank
 
 
-func record_wreck(zone: int, frame: StringName, cargo: int) -> void:
+func record_wreck(zone: int, frame: StringName, cargo: int, kind := "implosion") -> void:
 	wreck_zone = zone
 	wreck_frame = String(frame)
 	wreck_cargo = cargo
+	wreck_kind = kind
 
 
 func clear_wreck() -> void:
 	wreck_zone = -1
 	wreck_frame = ""
 	wreck_cargo = 0
+	wreck_kind = ""
 
 
 func has_wreck() -> bool:
 	return wreck_zone >= 0 and wreck_cargo > 0
-
-
-## The deepest biome a dive may start in: any whose first zone was reached.
-func deepest_start() -> int:
-	@warning_ignore("integer_division")
-	return clampi(deepest_zone / BiomeLibrary.ZONES_PER_BIOME, 0, BiomeLibrary.BIOME_COUNT - 1)
 
 
 func best_score() -> int:
@@ -192,8 +188,8 @@ func to_dict() -> Dictionary:
 		"wreck_zone": wreck_zone,
 		"wreck_frame": wreck_frame,
 		"wreck_cargo": wreck_cargo,
+		"wreck_kind": wreck_kind,
 		"contract_selected": contract_selected,
-		"start_biome": start_biome,
 	}
 
 
@@ -247,8 +243,8 @@ static func from_dict(d: Dictionary) -> MetaState:
 	m.wreck_zone = clampi(int(d.get("wreck_zone", -1)), -1, BiomeLibrary.TOTAL_ZONES - 1)
 	m.wreck_frame = String(d.get("wreck_frame", ""))
 	m.wreck_cargo = maxi(int(d.get("wreck_cargo", 0)), 0)
+	m.wreck_kind = String(d.get("wreck_kind", "implosion"))
 	m.contract_selected = String(d.get("contract_selected", ""))
-	m.start_biome = clampi(int(d.get("start_biome", 0)), 0, m.deepest_start())
 	if Contracts.find(StringName(m.contract_selected)) == null:
 		m.contract_selected = ""
 	if Catalog.frame(StringName(m.wreck_frame)) == null:

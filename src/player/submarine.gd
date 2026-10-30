@@ -9,8 +9,9 @@ const RADIUS := 1.15
 const COLLISION_DAMAGE_SPEED := 7.5
 const SCAN_TIME := 1.6
 ## Trickle charge (per second) with the lamp off, up to this share of capacity.
-const EMERGENCY_CHARGE_RATE := 0.8
-const EMERGENCY_CHARGE_CAP := 0.15
+## Seconds of reserve power once the battery is empty: reach a glow bulb or
+## the life support fails.
+const POWER_GRACE := 10.0
 ## How fast the right stick swings the lamp round (radians a second).
 const AIM_TURN_RATE := 12.0
 
@@ -25,6 +26,8 @@ var facing := 1.0
 var lamp_on := true
 var boosting := false
 var alive := true
+## Seconds the life support has been running on reserve (0 while charged).
+var power_failing := 0.0
 var input_enabled := true
 ## Takes no damage at all (the menu backdrop's idling sub).
 var invulnerable := false
@@ -272,23 +275,26 @@ func try_ping() -> bool:
 func _update_battery(delta: float, move: Vector2) -> void:
 	var drain_mult := Pressure.battery_drain(run.pressure)
 	boosting = input_enabled and Input.is_action_pressed(&"boost") and move.length() > 0.1 and run.battery > 0.5
-	var drain := 0.0
+	# Life support always draws a little, the motors more as they work.
+	var drain := stats.life_support_drain + stats.thrust_drain * clampf(move.length(), 0.0, 1.0)
 	if lamp_on:
 		drain += stats.lamp_drain
 	if boosting:
 		drain += stats.boost_drain
 	run.battery = maxf(run.battery - drain * drain_mult * delta, 0.0)
-	# Emergency cells: running dark slowly restores enough charge for the odd
-	# ping, so an empty battery is never a dead end.
-	if drain == 0.0 and run.battery < stats.max_battery * EMERGENCY_CHARGE_CAP:
-		run.battery = minf(run.battery + EMERGENCY_CHARGE_RATE * delta, stats.max_battery * EMERGENCY_CHARGE_CAP)
 	if run.battery <= 0.0:
-		if lamp_on:
+		if power_failing == 0.0:
 			lamp_on = false
-			Events.toast.emit("Battery depleted - lamp offline. Emergency cells recharge while running dark.",
-					Color(1.0, 0.4, 0.3))
 			Audio.play(&"power_down")
+			Audio.play(&"warning", -2.0)
+			Events.toast.emit("BATTERY EMPTY - life support failing. Reach a glow bulb!", UiTheme.DANGER)
 		boosting = false
+		lamp_on = false
+		power_failing += delta
+		if power_failing >= POWER_GRACE and alive and not invulnerable:
+			_die_powerless()
+	else:
+		power_failing = 0.0
 	var low := run.battery < stats.max_battery * 0.2
 	if low and not _low_battery_warned:
 		_low_battery_warned = true
@@ -521,6 +527,22 @@ func heal(amount: float) -> void:
 
 func add_battery(amount: float) -> void:
 	run.battery = minf(run.battery + amount, stats.max_battery)
+
+
+## The cells are dry and the reserve spent: the sub goes dark and sinks whole,
+## its cargo aboard.
+func _die_powerless() -> void:
+	alive = false
+	run.last_hit_by = &"power"
+	engine_audio.stop()
+	lamp_on = false
+	lamp.visible = false
+	harpoon.release()
+	bubbles.emitting = false
+	Audio.play(&"power_down", 2.0)
+	var tween := create_tween()
+	tween.tween_interval(2.6)
+	tween.tween_callback(func() -> void: died.emit())
 
 
 func _die() -> void:

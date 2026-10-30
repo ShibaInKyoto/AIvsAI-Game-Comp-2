@@ -77,6 +77,7 @@ static func populate(level: Level, run: RunState) -> void:
 	# The first Abyssal Vents zone has a chamber sealed with singing glass.
 	if level.zone == SingingGlass.ZONE:
 		SingingGlass.place(level, rng, used)
+	_spawn_lair_bulbs(level, used)
 	_settle(level)
 	# Something huge passes through the second Sunlit Shelf zone.
 	if level.zone == PassingWhale.ZONE:
@@ -413,6 +414,7 @@ static func _spawn_lost_wreck(level: Level, used: PackedVector2Array) -> void:
 		var wreck := LostWreck.new()
 		wreck.frame_id = StringName(Game.meta.wreck_frame)
 		wreck.cargo = Game.meta.wreck_cargo
+		wreck.kind = Game.meta.wreck_kind
 		wreck.pos = p
 		level.add_entity(wreck)
 		used.append(p)
@@ -525,6 +527,32 @@ static func _spawn_log(level: Level, used: PackedVector2Array) -> void:
 	beacon.log_id = id
 	level.add_entity(beacon)
 	used.append(p)
+
+
+## A guardian's fight runs on the battery: a couple of glow bulbs on the
+## walls of the Lamplighter's and the Mother's lairs, to be fought over (the
+## Ironclad's lair has its glow mats).
+static func _spawn_lair_bulbs(level: Level, used: PackedVector2Array) -> void:
+	var guardian := level.guardian
+	if guardian == null or guardian is Ironclad:
+		return
+	var layout := level.layout
+	var placed: Array[Vector2] = []
+	for a: LevelLayout.Anchor in layout.anchors:
+		if placed.size() >= 2:
+			break
+		var d := (a.pos - guardian.lair_center) / guardian.lair_radius
+		if d.length() > 1.0 or d.length() < 0.45 or a.pos.distance_to(layout.exit) < 8.0:
+			continue
+		if placed.any(func(q: Vector2) -> bool: return q.distance_to(a.pos) < 12.0) or not _far_from(a.pos, used, 4.0):
+			continue
+		var bulb := GlowBulb.new()
+		bulb.pos = a.pos + a.normal * 0.5
+		bulb.normal = a.normal
+		bulb.color = level.biome.glow_color
+		level.add_entity(bulb)
+		placed.append(a.pos)
+		used.append(bulb.pos)
 
 
 ## The last pass over a populated zone: whatever swims or drifts is pushed

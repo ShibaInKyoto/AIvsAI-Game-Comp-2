@@ -27,6 +27,8 @@ const TIPS: Dictionary[StringName, String] = {
 	&"rock": "Ramming rock at speed cracks the hull. Ease off the boost in tight tunnels.",
 	&"torpedo": "Torpedoes do not care who fired them. Keep your distance from the blast.",
 	&"vent": "Thermal vents rumble and glow before they erupt. Wait it out beside the column, not in it.",
+	&"power": "The battery is life support: the motors, the lamp and every ping draw on it. Glow bulbs " +
+		"recharge it, and a stop recharges it for salvage. Run dark when you can.",
 	&"rockfall": "Loud noises shake stalactites loose. Do not ping or boost right under one - unless " +
 		"something is waiting below it.",
 }
@@ -51,6 +53,8 @@ static func cause_of(source: Node) -> StringName:
 ## A short "sunk by" phrase for a cause id.
 static func describe(cause: StringName) -> String:
 	match cause:
+		&"power":
+			return "an empty battery"
 		&"rock":
 			return "the rock itself"
 		&"torpedo":

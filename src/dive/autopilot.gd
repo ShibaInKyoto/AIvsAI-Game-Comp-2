@@ -16,7 +16,7 @@ var shot_interval := 4.0
 var show_stops := false
 ## --event=<id> forces a zone event in every zone (for screenshots).
 var force_event: StringName = &""
-var ping_interval := 9.0
+var ping_interval := 12.0
 var _elapsed := 0.0
 var _shot_timer := 1.5
 var _path_index := 0
@@ -38,6 +38,9 @@ var _frame_ms_sum := 0.0
 var _frames := 0
 var _reported := false
 var _glass: SingingGlass
+## Where the route leads: the exit, or a glow bulb when the battery runs low.
+var _goal := Vector2.ZERO
+var _bulb: GlowBulb
 
 
 static func requested() -> bool:
@@ -58,7 +61,7 @@ func _ready() -> void:
 	show_stops = OS.get_cmdline_user_args().has("--stops")
 	force_event = StringName(arg("event", ""))
 	_force_exit_at = float(arg("force-exit", "-1"))
-	ping_interval = float(arg("ping", "9"))
+	ping_interval = float(arg("ping", "12"))
 	var zone := int(arg("zone", "-1"))
 	if zone >= 0 and Game.run:
 		Game.run.zone = zone
@@ -86,6 +89,8 @@ func bind(p_sub: Submarine, p_level: Level) -> void:
 	_guardian_seen = false
 	_path_index = 0
 	_last_pos = sub.pos
+	_goal = level.layout.exit
+	_bulb = null
 	_route = _plan_route(sub.pos)
 	_glass = null
 	for e in level.entities:
@@ -114,6 +119,9 @@ func drive(delta: float) -> void:
 	if _ran_dark:
 		_ran_dark = false
 		sub.lamp_on = true
+	_seek_power()
+	# The lamp is life support's biggest draw: kept off once charge runs low.
+	sub.lamp_on = sub.run.battery > sub.stats.max_battery * 0.3
 	var move := _route_move()
 	var threat := _nearest_threat()
 	if threat:
@@ -127,7 +135,7 @@ func drive(delta: float) -> void:
 	_use_tools(threat, move, delta)
 
 	_ping_timer -= delta
-	if _ping_timer <= 0.0:
+	if _ping_timer <= 0.0 and sub.run.battery > sub.stats.sonar_cost + sub.stats.max_battery * 0.3:
 		_ping_timer = ping_interval
 		sub.try_ping()
 	_ring_glass()
@@ -166,7 +174,7 @@ func _route_move() -> Vector2:
 		ahead -= 1
 	var target := path[ahead]
 	if _path_index >= path.size() - 2:
-		target = level.layout.exit
+		target = _goal
 	var move := (target - sub.pos).normalized()
 	# Pressed against a wall, push off it rather than grinding into it.
 	if level.field.sample(sub.pos) < Submarine.RADIUS + 0.25:
@@ -184,11 +192,39 @@ static func _nearest_index(route: PackedVector2Array, p: Vector2) -> int:
 	return best
 
 
+## Running low on charge, it detours to the nearest ripe glow bulb, then
+## carries on to the exit.
+func _seek_power() -> void:
+	if _bulb and (not is_instance_valid(_bulb) or not _bulb.is_ripe()):
+		_bulb = null
+		_goal = level.layout.exit
+		_route = _plan_route(sub.pos)
+		_path_index = _nearest_index(_route, sub.pos)
+	if _bulb or sub.run.battery > sub.stats.max_battery * 0.35:
+		return
+	var best: GlowBulb = null
+	for e in level.entities:
+		var g := e as GlowBulb
+		if g and g.is_ripe() and g.pos.distance_to(sub.pos) < 50.0 \
+				and (best == null or g.pos.distance_to(sub.pos) < best.pos.distance_to(sub.pos)):
+			best = g
+	if best == null:
+		return
+	_goal = best.pos + best.normal * 1.2
+	var route := _plan_route(sub.pos)
+	if route.is_empty() or route == level.layout.main_path:
+		_goal = level.layout.exit
+		return
+	_bulb = best
+	_route = route
+	_path_index = 0
+
+
 ## The roomiest route from [param from] to the exit: the shortest path keeps
 ## only just enough clearance, so it can hug a wall round a sharp corner.
 func _plan_route(from: Vector2) -> PackedVector2Array:
 	for clearance: float in [2.2, 1.7, 1.3]:
-		var route := level.layout.find_path(from, level.layout.exit, clearance)
+		var route := level.layout.find_path(from, _goal, clearance)
 		if not route.is_empty():
 			return route
 	return level.layout.main_path

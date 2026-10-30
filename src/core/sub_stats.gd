@@ -11,6 +11,9 @@ var thrust := 26.0
 var max_speed := 8.5
 var boost_mult := 1.65
 var boost_drain := 8.0
+## The battery is life support: it drains slowly always, and with thrust.
+var life_support_drain := 0.04
+var thrust_drain := 0.12
 var drag := 1.4
 ## Multiplier on all noise the submarine makes.
 var noise_mult := 1.0
@@ -18,11 +21,11 @@ var noise_mult := 1.0
 var lamp_range := 28.0
 var lamp_angle := 26.0
 var lamp_energy := 14.0
-var lamp_drain := 0.55
+var lamp_drain := 0.35
 
 var sonar_range := 70.0
 var sonar_cooldown := 2.6
-var sonar_cost := 6.0
+var sonar_cost := 5.0
 ## How long sonar marks on creatures last, in seconds.
 var sonar_mark_time := 3.5
 var sonar_stun := false
@@ -49,8 +52,9 @@ var ink_cloud := false
 var cache_bonus := 0
 var always_compass := false
 var scan_speed := 1.0
-## Fraction of run salvage kept if the submarine implodes.
-var insurance := 0.5
+## Fraction of run salvage banked when the sub is lost (none without the
+## Salvage Insurance upgrade).
+var insurance := 0.0
 ## Tools available on the secondary slot, in cycle order.
 var tools: Array[StringName] = []
 

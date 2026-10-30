@@ -223,6 +223,7 @@ func _on_exit_reached() -> void:
 		Game.save_game()
 	run.zone += 1
 	if autopilot and not autopilot.show_stops:
+		DecompressionStop.service(run)
 		_continue_after_stop()
 		return
 	var stop := DecompressionStop.new()

@@ -55,8 +55,6 @@ func _ready() -> void:
 		resume = UiUtil.button("Resume dive   (zone %d, %s)" % [saved.zone + 1, biome.display_name], _on_resume, 360)
 		_menu.add_child(resume)
 	var dive_text := "New dive" if saved else "Dive"
-	if Game.meta.start_biome > 0:
-		dive_text += "   (from the %s)" % BiomeLibrary.get_biome(Game.meta.start_biome).display_name
 	var dive := UiUtil.button(dive_text, _on_dive, 360)
 	_menu.add_child(dive)
 	var daily := "Daily dive: %s" % ZoneEvents.display_name(ZoneEvents.daily(Game.today()))

@@ -128,7 +128,7 @@ has not noticed the sub can be **ambushed** (harpoon hits deal double), and
 * Optional zone objectives for bonus salvage or research.
 * 17 milestones, each unlocking a hull paint.
 * Optional dive contracts (a handicap for one dive for a bigger score and payout).
-* Deep starts in any biome already reached, with a free module per stop skipped.
+* Every dive starts at the surface; the pause menu lists the modules drafted so far.
 * A dive score (depth, kills, ambushes, scans, logs, salvage, outcome, x pressure)
   and a top-five records table on the title screen.
 

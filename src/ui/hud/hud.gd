@@ -23,6 +23,7 @@ var _boss_box: VBoxContainer
 var _boss_name: Label
 var _boss_bar: ProgressBar
 var _battery_label: Label
+var _power_alarm: Label
 var _salvage_label: Label
 var _research_label: Label
 var _tool_label: Label
@@ -94,6 +95,13 @@ func _ready() -> void:
 	var bat := _gauge(gauges, "BATTERY", Color(0.35, 0.95, 1.0))
 	_battery_bar = bat[0]
 	_battery_label = bat[1]
+	# Above the gauges: the countdown once the battery is empty.
+	_power_alarm = Label.new()
+	_power_alarm.theme_type_variation = &"HeaderLabel"
+	_power_alarm.add_theme_color_override(&"font_color", UiTheme.DANGER)
+	_place(_power_alarm, Control.PRESET_BOTTOM_LEFT, Vector2(40, -170), Vector2(560, 40))
+	_power_alarm.visible = false
+	root.add_child(_power_alarm)
 
 	# Tool slot (bottom right).
 	var tool_box := VBoxContainer.new()
@@ -256,6 +264,11 @@ func _process(delta: float) -> void:
 	_battery_bar.max_value = sub.stats.max_battery
 	_battery_bar.value = run.battery
 	_battery_label.text = "%d" % ceili(run.battery)
+	_power_alarm.visible = sub.power_failing > 0.0 and sub.alive
+	if _power_alarm.visible:
+		var left := maxf(Submarine.POWER_GRACE - sub.power_failing, 0.0)
+		_power_alarm.text = "LIFE SUPPORT FAILING   %.0f" % ceilf(left)
+		_power_alarm.modulate.a = 0.55 + 0.45 * absf(sin(sub.power_failing * 5.0))
 	_shown_salvage = move_toward(_shown_salvage, run.salvage, maxf(40.0, absf(run.salvage - _shown_salvage) * 4.0) * delta)
 	_salvage_label.text = "%d SALVAGE" % roundi(_shown_salvage)
 	_research_label.text = "%d research" % run.research

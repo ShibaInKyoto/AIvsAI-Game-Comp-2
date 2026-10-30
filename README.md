@@ -53,8 +53,12 @@ Reef, Midnight Caverns, Abyssal Vents and Hadal Trench, then the hadal floor
 itself. Every zone is a procedurally generated cave cross-section. Find the
 **descent** (the glowing fissure at the bottom) to go deeper.
 
-* **Your lamp** lights the way and scans creatures for research. It drains
-  battery, and some things hunt light.
+* **Your battery is your life support.** It drains slowly all the time and
+  faster as the motors work, the lamp burns and the sonar pings. Glow bulbs
+  on the walls recharge it. Let it run dry and you have ten seconds of
+  reserve to reach one before the life support fails.
+* **Your lamp** lights the way and scans creatures for research. It is the
+  battery's biggest drain, and some things hunt light.
 * **Your sonar ping** charts the cave on your map, finds the descent and marks
   creatures through the dark. Everything with ears hears it.
 * **Every movement makes noise.** The faint ring around the sub shows how far
@@ -69,14 +73,17 @@ itself. Every zone is a procedurally generated cave cross-section. Find the
 * **Loose stalactites** hang in the caverns. A ping, a boost or a blast nearby
   shakes them down onto whatever is below, and each one shatters loudly enough
   to bring down its neighbours. Harpoon one to drop it on purpose.
-* **Salvage** comes from caches (ram them or drag them in with the harpoon),
-  debris and creatures. **Glow bulbs** on the walls recharge your battery.
-* If you implode, what insurance does not cover goes down with the sub. On
-  your next dive its **wreck** lies in the zone where it sank, cargo aboard.
+* **Salvage** comes from caches (hook them with the harpoon and reel them in),
+  debris and creatures.
+* Lose the sub and its salvage goes down with it: only the Salvage Insurance
+  upgrade banks any of it (research is transmitted as you find it, so that
+  is never lost). On your next dive its **wreck** lies in the zone where it
+  sank: crushed, with half its cargo, if it imploded; dark but whole, with
+  all of it, if its battery ran dry.
 * Between zones you dock at a **decompression stop**: install one of three
-  modules, repair the hull, then *descend*, or *surface* and bank your salvage
-  with a depth bonus. If you implode, insurance keeps only part of it, and
-  the dive report tells you what sank you and how to deal with it.
+  modules, repair the hull and recharge the battery for salvage, then
+  *descend*, or *surface* and bank your salvage with a depth bonus. The dive
+  report tells you what sank you and how to deal with it.
 * Spend salvage in the **hangar** on permanent upgrades. Spend research (from
   scanning creatures and recovering logs) on three more submarines.
 * In the second Sunlit Shelf zone a **sperm whale** passes through the blue
@@ -179,13 +186,11 @@ settings and key bindings are kept).
 * Every dive ends with a **score** (depth, kills, ambushes, scans, logs and
   salvage, multiplied by pressure), and the title screen keeps your five best
   in **Records**.
-* **Deep starts**: once you have reached a biome you can begin dives there
-  (Hangar > Start), with a free module for every stop you skip. Pay and score
-  count only what you descend.
 * **Contracts** in the hangar: take a handicap for one dive (Glass Hull,
-  Silent Running, Failing Lamp, Infested Waters, No Insurance) in exchange for
+  Silent Running, Failing Lamp, Infested Waters, Weak Cells) in exchange for
   a bigger score and payout.
-* 32 modules to draft into a build. Their stats stack.
+* 32 modules to draft into a build. Their stats stack; the pause menu lists
+  what you have installed.
 * 4 submarine frames: **Lantern** (balanced, flares), **Mako** (fast, torpedoes,
   fragile), **Bathysphere** (armored, long sonar, shock pulse), **Whisper**
   (near silent, quick scanner, sonar decoys).
@@ -266,7 +271,7 @@ Requires Godot 4.5.1 with export templates installed.
 
 ```sh
 godot --headless --import                                       # first-time import
-godot --headless --path . -s res://tests/run_tests.gd           # 139 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
+godot --headless --path . -s res://tests/run_tests.gd           # 141 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
 godot --headless --path . res://tests/flow_test.tscn            # end-to-end menu and dive flow
 godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
 python3 tools/audio/generate.py                                 # regenerate all audio (numpy + ffmpeg)

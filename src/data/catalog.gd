@@ -214,7 +214,7 @@ static func _build_upgrades() -> void:
 		UpgradeDef.new(&"magnet", "Salvage Magnet", "+40% pickup radius per level.",
 			PackedInt32Array([40, 100, 200]), func(s: SubStats, l: int) -> void:
 				s.pickup_radius *= 1.0 + 0.4 * l),
-		UpgradeDef.new(&"insurance", "Salvage Insurance", "Keep +10% of your salvage when you implode.",
+		UpgradeDef.new(&"insurance", "Salvage Insurance", "Bank 10% more of your salvage when you lose the sub.",
 			PackedInt32Array([80, 180, 320]), func(s: SubStats, l: int) -> void:
 				s.insurance += 0.1 * l),
 		UpgradeDef.new(&"flares", "Flare Launcher", "Unlocks flares on every frame. More flares per level.",

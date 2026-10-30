@@ -154,8 +154,6 @@ func start_run(daily := false) -> void:
 	else:
 		run.run_seed = randi() & 0x7fffffff
 	run.rebuild_stats(meta.upgrades)
-	if not daily and meta.start_biome > 0:
-		run.start_deep(mini(meta.start_biome, meta.deepest_start()), meta.upgrades)
 	run.refill()
 	meta.dives += 1
 	save_game()
@@ -169,6 +167,8 @@ static func today() -> String:
 
 ## Guaranteed salvage for the depth reached, independent of the outcome.
 static func expedition_pay(r: RunState) -> int:
+	if r.outcome == RunState.Outcome.IMPLODED:
+		return 0
 	return (r.zone - r.start_zone) * 8
 
 
@@ -182,16 +182,23 @@ func end_run(outcome: RunState.Outcome) -> int:
 	if outcome == RunState.Outcome.SURFACED:
 		kept = int(run.salvage * Pressure.depth_bonus(run.zone))
 	elif outcome == RunState.Outcome.IMPLODED:
+		# Lost: only insurance pays (none without the upgrade).
 		kept = int(run.salvage * clampf(run.stats.insurance, 0.0, 1.0))
-		# What insurance does not cover sinks with the sub, to be recovered next dive.
-		if run.hull <= 0.0 and run.salvage - kept >= WRECK_MIN_CARGO:
-			meta.record_wreck(run.zone, run.frame_id, run.salvage - kept)
+		# What it does not cover goes down with the sub, to be recovered next
+		# dive: all of it when the sub sank whole, half when it was crushed.
+		var aboard := run.salvage - kept
+		if run.lost_power():
+			if aboard >= WRECK_MIN_CARGO:
+				meta.record_wreck(run.zone, run.frame_id, aboard, "power")
+		elif run.hull <= 0.0 and aboard / 2 >= WRECK_MIN_CARGO:
+			meta.record_wreck(run.zone, run.frame_id, aboard / 2, "implosion")
 	elif outcome == RunState.Outcome.VICTORY:
 		kept = int(run.salvage * Pressure.depth_bonus(run.zone + 2))
 		meta.wins += 1
 		meta.best_pressure_win = maxi(meta.best_pressure_win, run.pressure)
 		meta.pressure_unlocked = maxi(meta.pressure_unlocked, mini(run.pressure + 1, Pressure.MAX_LEVEL))
-	# Expedition pay: every zone reached is worth something, even in defeat.
+	# Expedition pay: every zone reached is worth something - to a pilot who
+	# brings the sub back.
 	kept += expedition_pay(run)
 	kept = roundi(kept * Contracts.salvage_mult(run.contract))
 	run.research = roundi(run.research * Contracts.research_mult(run.contract))

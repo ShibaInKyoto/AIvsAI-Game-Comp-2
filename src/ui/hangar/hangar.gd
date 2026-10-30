@@ -12,8 +12,6 @@ var _tab_buttons: Array[Button] = []
 var _pressure_label: Label
 var _contract_button: Button
 var _contract_desc: Label
-var _start_button: Button
-var _start_desc: Label
 var _scroll: ScrollContainer
 
 
@@ -85,20 +83,6 @@ func _ready() -> void:
 	_content.add_theme_constant_override(&"separation", 10)
 	scroll.add_child(_content)
 
-	if Game.meta.deepest_start() > 0:
-		var start_row := HBoxContainer.new()
-		start_row.add_theme_constant_override(&"separation", 14)
-		left.add_child(start_row)
-		start_row.add_child(UiUtil.label("START", &"HeaderLabel", 22))
-		_start_button = UiUtil.button("", _cycle_start, 250)
-		start_row.add_child(_start_button)
-		_start_desc = UiUtil.label("", &"DimLabel", 17)
-		_start_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		_start_desc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		_start_desc.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		start_row.add_child(_start_desc)
-		_refresh_start()
-
 	var contract_row := HBoxContainer.new()
 	contract_row.add_theme_constant_override(&"separation", 14)
 	left.add_child(contract_row)
@@ -165,24 +149,6 @@ func _refresh_header() -> void:
 
 
 ## Steps through the biomes a dive can start in.
-func _cycle_start() -> void:
-	Game.meta.start_biome = (Game.meta.start_biome + 1) % (Game.meta.deepest_start() + 1)
-	Game.save_game()
-	_refresh_start()
-
-
-func _refresh_start() -> void:
-	var biome := Game.meta.start_biome
-	_start_button.text = BiomeLibrary.get_biome(biome).display_name
-	if biome == 0:
-		_start_desc.text = "Dives begin at the surface. You can start in any biome you have reached."
-	else:
-		var skipped := biome * BiomeLibrary.ZONES_PER_BIOME
-		_start_desc.text = ("Begin in zone %d with %d free modules for the stops you skip. Salvage pay and score " +
-			"count only what you descend.") % [skipped + 1, skipped]
-
-
-## Steps through the contracts (and none) for the next dive.
 func _cycle_contract() -> void:
 	var ids: Array[String] = [""]
 	for c in Contracts.all():

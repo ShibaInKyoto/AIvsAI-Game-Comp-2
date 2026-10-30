@@ -55,8 +55,8 @@ static func all() -> Array[Contract]:
 					s.lamp_drain *= 2.0),
 			Contract.new(&"infested", "Infested Waters", "40% more creatures in every zone.", 1.4, 1.3, 1.0, 1.4,
 				func(_s: SubStats) -> void: pass),
-			Contract.new(&"uninsured", "No Insurance", "Implode and the insurers pay nothing.", 1.2, 1.5, 1.0, 1.0,
-				func(s: SubStats) -> void: s.insurance = 0.0),
+			Contract.new(&"weak_cells", "Weak Cells", "Battery capacity -30%: life support runs out sooner.",
+				1.25, 1.4, 1.0, 1.0, func(s: SubStats) -> void: s.max_battery *= 0.7),
 		]
 	return _all
 

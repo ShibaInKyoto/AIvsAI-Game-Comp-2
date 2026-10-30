@@ -17,7 +17,11 @@ func show_result(run: RunState, outcome: RunState.Outcome) -> void:
 	match outcome:
 		RunState.Outcome.IMPLODED:
 			title = "SIGNAL LOST"
-			if run.hull > 0.0:
+			if run.lost_power():
+				title = "POWER LOST"
+				subtitle = "The %s's cells ran dry at %d m. It sank dark, but whole." % [
+					Catalog.frame(run.frame_id).name, run.deepest_depth]
+			elif run.hull > 0.0:
 				subtitle = "You abandoned the dive at %d m." % run.deepest_depth
 			else:
 				subtitle = "The %s imploded at %d m, sunk by %s." % [Catalog.frame(run.frame_id).name,
@@ -57,9 +61,6 @@ func show_result(run: RunState, outcome: RunState.Outcome) -> void:
 	for r: Array in rows:
 		grid.add_child(UiUtil.label(r[0], &"DimLabel", 22))
 		grid.add_child(UiUtil.label(r[1], &"MonoLabel", 24))
-	if run.start_zone > 0:
-		column.add_child(UiUtil.label("Deep start: %s" % BiomeLibrary.biome_for_zone(run.start_zone).display_name,
-				&"DimLabel", 20))
 	var terms := Contracts.find(run.contract)
 	if terms:
 		column.add_child(UiUtil.label("Contract: %s  (%s)" % [terms.name, terms.rewards()], &"", 20, UiTheme.WARN))
@@ -75,13 +76,17 @@ func show_result(run: RunState, outcome: RunState.Outcome) -> void:
 		column.add_child(UiUtil.label("Milestone: %s  -  %s paint unlocked in the hangar" % [m.name, m.paint_name],
 				&"", 22, UiTheme.WARN))
 	if outcome == RunState.Outcome.IMPLODED:
-		column.add_child(UiUtil.label("Insurance recovered %d%% of your salvage." % int(run.stats.insurance * 100),
-				&"DimLabel"))
-		if run.hull <= 0.0 and Game.meta.has_wreck() and Game.meta.wreck_zone == run.zone:
-			column.add_child(UiUtil.label("The rest went down with the %s: %d salvage in its wreck in zone %d. " %
-					[Catalog.frame(run.frame_id).name, Game.meta.wreck_cargo, run.zone + 1] +
+		var insured := "Insurance recovered %d%% of your salvage." % int(run.stats.insurance * 100)
+		if run.stats.insurance <= 0.0:
+			insured = "Uninsured: none of the salvage aboard was banked (research was transmitted as you went)."
+		column.add_child(UiUtil.label(insured, &"DimLabel"))
+		var sank := run.hull <= 0.0 or run.lost_power()
+		if sank and Game.meta.has_wreck() and Game.meta.wreck_zone == run.zone:
+			var how := "all of it still aboard" if run.lost_power() else "what the implosion did not scatter"
+			column.add_child(UiUtil.label("The %s went down with %d salvage in its wreck in zone %d, %s. " %
+					[Catalog.frame(run.frame_id).name, Game.meta.wreck_cargo, run.zone + 1, how] +
 					"Recover it on your next dive.", &"", 20, UiTheme.WARN))
-		if run.hull <= 0.0:
+		if sank:
 			var tip := UiUtil.label("TIP  " + DeathTips.tip(run.last_hit_by), &"", 20, UiTheme.ACCENT)
 			tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			column.add_child(tip)

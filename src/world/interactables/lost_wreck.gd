@@ -1,11 +1,14 @@
 class_name LostWreck
 extends Entity
-## The wreck of the pilot's last submarine, lying in the zone where it
-## imploded with the cargo insurance did not cover still aboard. Touching it,
-## or hooking it with the harpoon, recovers that cargo.
+## The wreck of the pilot's last submarine, lying in the zone where it was
+## lost with the cargo insurance did not cover still aboard. Crushed when it
+## imploded, but whole (and dark) when its battery ran dry. Touching it, or
+## hooking it with the harpoon, recovers that cargo.
 
 var frame_id: StringName = &"lantern"
 var cargo := 0
+## "implosion" or "power" (see [member MetaState.wreck_kind]).
+var kind := "implosion"
 var _recovered := false
 var _announced := false
 var _t := 0.0
@@ -18,12 +21,18 @@ func setup() -> void:
 	targetable = true
 	var model := SubmarineModel.new()
 	add_child(model)
-	model.build(frame_id, Game.hull_color(frame_id).darkened(0.5))
+	var crushed := kind != "power"
+	model.build(frame_id, Game.hull_color(frame_id).darkened(0.6 if crushed else 0.35))
 	model.set_cockpit_glow(0.0)
-	# Lying crooked on the floor where it came to rest.
-	model.rotation = Vector3(0.3, level.rng.randf_range(-0.5, 0.5), level.rng.randf_range(-0.45, 0.45))
+	if crushed:
+		# Crumpled by the pressure, lying crooked where it came to rest.
+		model.scale = Vector3(0.92, 0.62, 0.8)
+		model.rotation = Vector3(0.45, level.rng.randf_range(-0.6, 0.6), level.rng.randf_range(-0.6, 0.6))
+	else:
+		# Whole, settled on its skids, every light out.
+		model.rotation = Vector3(0.08, level.rng.randf_range(-0.25, 0.25), level.rng.randf_range(-0.12, 0.12))
 	var leak := Fx.bubble_emitter()
-	leak.amount_ratio = 0.35
+	leak.amount_ratio = 0.35 if crushed else 0.08
 	leak.position = Vector3(0.0, 0.6, 0.0)
 	add_child(leak)
 	leak.emitting = true
@@ -43,8 +52,9 @@ func tick(delta: float) -> void:
 	_t += delta
 	if not _announced:
 		_announced = true
-		Events.toast.emit("The wreck of your %s lies somewhere in this zone, %d salvage still aboard." %
-			[display_name(), cargo], UiTheme.WARN)
+		var how := "dark but whole" if kind == "power" else "crushed"
+		Events.toast.emit("The wreck of your %s lies somewhere in this zone, %s, %d salvage still aboard." %
+			[display_name(), how, cargo], UiTheme.WARN)
 	# A slow distress blink.
 	_beacon.light_energy = 2.2 if fmod(_t, 2.0) < 0.25 else 0.15
 	vel = vel.lerp(Vector2(0, -0.5), 1.0 - exp(-1.0 * delta))
