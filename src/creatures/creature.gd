@@ -10,6 +10,8 @@ const THINK_INTERVAL := 0.2
 const AMBUSH_MULT := 2.0
 ## Seconds after noticing the sub before a creature counts as unaware again.
 const AWARE_TIME := 6.0
+## How far a hurt creature's cry carries to others of its kind.
+const ALARM_RADIUS := 10.0
 
 static var _materials: Dictionary[StringName, ShaderMaterial] = {}
 
@@ -59,6 +61,8 @@ var _turn_speed := 6.0
 var _roll := 0.0
 ## Swim stroke so far (see creature.gdshader).
 var _swim_clock := 0.0
+## Hurt once, it knows the sub is there for good: no second ambush.
+var _wary := false
 
 
 func setup() -> void:
@@ -183,6 +187,7 @@ func take_damage(amount: float, from: Vector2, _kind: StringName = &"") -> void:
 	if not alive:
 		return
 	_wake()
+	_raise_alarm()
 	hp -= amount
 	_flash = 1.0
 	vel += (pos - from).normalized() * clampf(amount * 0.25, 1.0, 8.0) / maxf(mass, 0.5)
@@ -233,10 +238,24 @@ func alert() -> void:
 	_noticed_at = level.time
 
 
-## True if this creature has not noticed the sub recently: harpooning it then
-## is an ambush.
+## True if this creature has not noticed the sub recently (and has never
+## been hurt): harpooning it then is an ambush.
 func is_unaware() -> bool:
-	return ambushable and level.time - _noticed_at > AWARE_TIME
+	return ambushable and not _wary and level.time - _noticed_at > AWARE_TIME
+
+
+## Hurt: it is on its guard from now on, and so are others of its kind close by.
+func _raise_alarm() -> void:
+	if _wary:
+		return
+	_wary = true
+	_noticed_at = level.time
+	for e in level.targets_in_radius(pos, ALARM_RADIUS):
+		var other := e as Creature
+		if other and other != self and other.alive and other.species == species and not other._wary:
+			other._wary = true
+			other._noticed_at = level.time
+			other.alert()
 
 
 func alert_fraction() -> float:

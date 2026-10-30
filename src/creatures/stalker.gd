@@ -206,7 +206,9 @@ func on_damaged(amount: float, from: Vector2) -> void:
 		_recent_damage = 0.0
 		Audio.play_at(&"stalker_roar", pos, 0.0)
 	elif state != State.HUNT and state != State.FLEE:
-		state = State.INVESTIGATE
+		# Struck, it knows where the blow came from: it hunts, not wonders.
+		alert()
+		state = State.HUNT
 		_target = from
 		_timer = 6.0
 
