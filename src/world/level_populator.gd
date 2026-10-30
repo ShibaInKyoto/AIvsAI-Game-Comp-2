@@ -77,6 +77,7 @@ static func populate(level: Level, run: RunState) -> void:
 	# The first Abyssal Vents zone has a chamber sealed with singing glass.
 	if level.zone == SingingGlass.ZONE:
 		SingingGlass.place(level, rng, used)
+	_settle(level)
 	# Something huge passes through the second Sunlit Shelf zone.
 	if level.zone == PassingWhale.ZONE:
 		PassingWhale.place(level)
@@ -242,7 +243,7 @@ static func _spawn_lair_vents(level: Level, lair: LevelLayout.Chamber, used: Pac
 			continue
 		var n := field.normal(p)
 		var vent := ThermalVent.new()
-		vent.pos = p + n * 0.3
+		vent.pos = p + n * ThermalVent.LIFT
 		vent.normal = n
 		vent.in_lair = true
 		level.add_entity(vent)
@@ -435,7 +436,7 @@ static func _spawn_vents(level: Level, used: PackedVector2Array) -> void:
 		if placed.any(func(q: Vector2) -> bool: return q.distance_to(a.pos) < 25.0):
 			continue
 		var vent := ThermalVent.new()
-		vent.pos = a.pos + a.normal * 0.3
+		vent.pos = a.pos + a.normal * ThermalVent.LIFT
 		vent.normal = a.normal
 		level.add_entity(vent)
 		placed.append(a.pos)
@@ -524,6 +525,59 @@ static func _spawn_log(level: Level, used: PackedVector2Array) -> void:
 	beacon.log_id = id
 	level.add_entity(beacon)
 	used.append(p)
+
+
+## The last pass over a populated zone: whatever swims or drifts is pushed
+## clear of the rock by its own size and apart from its neighbours, and
+## nothing waits down the descent fissure or on its lip, out of reach without
+## leaving the zone.
+static func _settle(level: Level) -> void:
+	var field := level.field
+	var layout := level.layout
+	var loose: Array[Entity] = []
+	for e in level.entities:
+		var free_swimmer: bool = e is Creature and not WALL_DWELLERS.has((e as Creature).species) \
+			and not (e is Guardian) and not e.get(&"entranced")
+		if free_swimmer or e is SalvageCache or e is Pickup or e is LogBeacon:
+			loose.append(e)
+	var gone: Array[Entity] = []
+	for e in loose:
+		if layout.has_exit and _past_exit(layout, e.pos):
+			gone.append(e)
+			continue
+		var r := maxf(e.radius, 0.4) + 0.2
+		if field.sample(e.pos) < r:
+			e.pos = field.resolve_circle(e.pos, r)
+	for e in gone:
+		level.entities.erase(e)
+		e.free()
+	# Apart from one another: caches, logs and creatures (pickups scatter in
+	# little piles on purpose).
+	var bodies: Array[Entity] = []
+	for e in loose:
+		if is_instance_valid(e) and not gone.has(e) and not (e is Pickup) and not (e is Shoal):
+			bodies.append(e)
+	for _pass in 3:
+		for i in bodies.size():
+			for j in range(i + 1, bodies.size()):
+				var a := bodies[i]
+				var b := bodies[j]
+				var gap := a.radius + b.radius + 0.4
+				var d := a.pos.distance_to(b.pos)
+				if d >= gap:
+					continue
+				var dir := (b.pos - a.pos).normalized() if d > 0.01 else Vector2.RIGHT
+				var push := (gap - d) * 0.5
+				a.pos = field.resolve_circle(a.pos - dir * push, maxf(a.radius, 0.4) + 0.2)
+				b.pos = field.resolve_circle(b.pos + dir * push, maxf(b.radius, 0.4) + 0.2)
+	for e in bodies:
+		e.sync_transform()
+
+
+## Whether [param p] is down the descent fissure or on its lip.
+static func _past_exit(layout: LevelLayout, p: Vector2) -> bool:
+	var exit := layout.exit
+	return p.distance_to(exit) < 4.0 or (p.y < exit.y - 1.0 and absf(p.x - exit.x) < 6.0)
 
 
 static func _far_from(p: Vector2, others: PackedVector2Array, dist: float) -> bool:

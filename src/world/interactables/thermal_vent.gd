@@ -18,7 +18,8 @@ const CREATURE_SCALD := 14.0
 const SCALD_INTERVAL := 0.45
 const NOISE := 26.0
 
-static var _crack_mesh: Mesh
+## How far the vent sits out of the rock face (see [method LevelPopulator]).
+const LIFT := 0.3
 ## The first eruption a pilot sees explains itself, once per session.
 static var _explained := false
 
@@ -38,9 +39,6 @@ func setup() -> void:
 	radius = 1.2
 	active_radius = 80.0
 	_timer = level.rng.randf_range(2.0, 9.0)
-	if _crack_mesh == null:
-		_crack_mesh = MeshKit.transformed(MeshKit.ball(1.0, 1.0, 14, 6),
-			Transform3D(Basis().scaled(Vector3(1.3, 0.22, 0.9)), Vector3.ZERO))
 	var holder := Node3D.new()
 	# Local +Y points out of the floor, along the eruption column.
 	holder.rotation.z = normal.angle() - PI * 0.5
@@ -49,8 +47,9 @@ func setup() -> void:
 	_mat.albedo_color = Color(0.15, 0.06, 0.03)
 	_mat.emission_enabled = true
 	_mat.emission = Color(1.0, 0.42, 0.12)
+	_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	var crack := MeshInstance3D.new()
-	crack.mesh = _crack_mesh
+	crack.mesh = _crack(level.rng)
 	crack.material_override = _mat
 	crack.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	holder.add_child(crack)
@@ -66,6 +65,32 @@ func setup() -> void:
 	_light.position = Vector3(0.0, 2.5, 1.0)
 	_light.visible = false
 	holder.add_child(_light)
+
+
+## A jagged glowing seam split into the rock, following the relief from the
+## back of the cave to its front edge so it lies flush (local +Y out of the
+## rock, Z across the cave towards the camera).
+static func _crack(rng: RandomNumberGenerator) -> ArrayMesh:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var steps := 14
+	var left := PackedVector3Array()
+	var right := PackedVector3Array()
+	var wander := 0.0
+	for k in steps + 1:
+		var t := float(k) / steps
+		var z := lerpf(-2.6, 1.1, t)
+		# Widest in the middle, closing to a hairline at either end.
+		var w := 0.6 * pow(sin(t * PI), 0.7) * rng.randf_range(0.6, 1.1) + 0.03
+		wander = clampf(wander + rng.randf_range(-0.25, 0.25), -0.5, 0.5)
+		var y := PropScatter.surface_offset(z) - LIFT + 0.04
+		left.append(Vector3(wander - w, y, z))
+		right.append(Vector3(wander + w, y, z))
+	for k in steps:
+		for v in [left[k], left[k + 1], right[k], right[k], left[k + 1], right[k + 1]]:
+			st.set_normal(Vector3(0.0, 1.0, 0.0))
+			st.add_vertex(v)
+	return st.commit()
 
 
 func tick(delta: float) -> void:

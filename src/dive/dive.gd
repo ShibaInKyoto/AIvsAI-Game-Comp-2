@@ -144,8 +144,10 @@ func _process(frame_delta: float) -> void:
 		camera.tick(delta)
 		return
 	Game.run.time += delta
-	if autopilot:
+	if autopilot and state == State.PLAYING:
 		autopilot.drive(delta)
+	if state == State.DESCENDING:
+		_guide_descent(delta)
 	sub.tick(delta)
 	level.tick(delta)
 	_distant_calls(delta)
@@ -160,6 +162,15 @@ func _process(frame_delta: float) -> void:
 		want_zoom = 1.3
 	camera.zoom = lerpf(camera.zoom, want_zoom, 1.0 - exp(-0.8 * delta))
 	camera.tick(delta)
+
+
+## Down the fissure: the sub is drawn gently to its middle and sinks into it,
+## its own momentum bled off so it cannot slam into the rock.
+func _guide_descent(delta: float) -> void:
+	var exit := level.layout.exit
+	var target := Vector2(exit.x, exit.y - 3.0)
+	sub.vel = sub.vel.lerp(Vector2.ZERO, 1.0 - exp(-3.0 * delta))
+	sub.external_move = (target - sub.pos).limit_length(2.0) * 0.25
 
 
 ## Every so often something far below sings. More often the deeper you go.
@@ -196,7 +207,9 @@ func _on_exit_reached() -> void:
 		return
 	state = State.DESCENDING
 	sub.input_enabled = false
-	sub.external_move = Vector2(0, -1)
+	# Nothing can hurt it on the way down: no rock, no late bite.
+	sub.invulnerable = true
+	sub.external_move = Vector2.ZERO
 	Audio.play(&"zone_exit", -2.0)
 	# Let the current carry the sub down the fissure for a moment.
 	if not autopilot:
