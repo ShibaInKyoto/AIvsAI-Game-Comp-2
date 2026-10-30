@@ -13,6 +13,7 @@ const DISCHARGE_STUN := 2.0
 var _pulse_t := 0.0
 var _drift := Vector2.ZERO
 var _bell: MeshInstance3D
+var _discharged := false
 
 
 func setup() -> void:
@@ -86,8 +87,11 @@ func on_touch_player(sub: Submarine) -> void:
 
 
 func die() -> void:
-	if not alive:
+	# A discharge can set off another jelly's, and that one can reach back:
+	# each lets go only once.
+	if not alive or _discharged:
 		return
+	_discharged = true
 	Fx.shockwave(level, pos, DISCHARGE_RADIUS, glow_color)
 	Audio.play_at(&"shock", pos, 0.0, 0.05, 1.3)
 	for e in level.targets_in_radius(pos, DISCHARGE_RADIUS):

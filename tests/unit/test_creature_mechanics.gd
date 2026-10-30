@@ -84,3 +84,18 @@ func test_a_lancer_that_dashes_into_rock_is_stunned() -> void:
 			break
 	check(stunned, "it is left reeling (dash towards %s)" % wall)
 	level.free()
+
+
+func test_a_bloom_of_jellies_goes_off_in_a_chain() -> void:
+	var level := _level()
+	var at := _open(level, 6.0)
+	var jellies: Array[Creature] = []
+	for i in 4:
+		var jelly: Creature = LevelPopulator.SPECIES[&"jelly"].new()
+		jelly.pos = at + Vector2(i * 2.0, 0.0)
+		level.add_entity(jelly)
+		jelly.hp = 1.0
+		jellies.append(jelly)
+	jellies[0].take_damage(1000.0, at)
+	check(jellies.all(func(j: Creature) -> bool: return not j.alive), "each discharge sets off the next, once")
+	level.free()
