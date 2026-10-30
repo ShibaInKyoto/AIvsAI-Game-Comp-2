@@ -1,11 +1,14 @@
 extends "res://tools/debug/preview_stage.gd"
 ## Debug helper: stages the hadal floor and saves screenshots of the Choir's
 ## song waves rolling out across its arena, the sub answering them with
-## pings and the voice organs opening.
-## Usage: xvfb-run godot --path . res://tools/debug/preview_choir.tscn -- <out_dir> [seed] [zoom]
+## pings and the voice organs opening. With "reach" the organs are silenced at
+## once, to show the heart surging forward and a tentacle slamming the arena;
+## with "duet", the song's last part.
+## Usage: xvfb-run godot --path . res://tools/debug/preview_choir.tscn -- <out_dir> [seed] [zoom] [reach|duet]
 
 var _choir: ChoirBoss
 var _ping_at := 3.0
+var _part := ""
 
 
 func _ready() -> void:
@@ -23,6 +26,9 @@ func _ready() -> void:
 	add_hud()
 	shot_prefix = "choir"
 	shot_times = [4.0, 6.5, 8.8, 10.2, 12.5]
+	_part = args[3] if args.size() > 3 else ""
+	if _part != "":
+		shot_times = [3.5, 5.3, 6.4, 7.0, 9.0]
 
 
 func direct(_dt: float) -> void:
@@ -38,6 +44,15 @@ func direct(_dt: float) -> void:
 			organ = o
 	if organ:
 		sub.aim = (organ.pos - sub.pos).normalized()
+	if _part != "" and t > 0.3 and _choir.active and _choir.part == ChoirBoss.Part.CALL:
+		for o in _choir.organs.duplicate():
+			_choir.vulnerable = 1.0
+			o.take_damage(100000.0, sub.pos)
+		if _part == "duet":
+			_choir.heart.take_damage(0.0, sub.pos)
+			_choir.begin_duet()
+	if _choir.part != ChoirBoss.Part.CALL:
+		sub.aim = (_choir.pos - sub.pos).normalized()
 	if t >= _ping_at:
 		_ping_at += 2.6
 		sub.sonar_cooldown = 0.0

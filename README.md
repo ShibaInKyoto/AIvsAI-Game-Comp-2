@@ -105,7 +105,9 @@ itself. Every zone is a procedurally generated cave cross-section. Find the
 * At the bottom of the Twilight Reef the way down is guarded by **the
   Lamplighter**, an angler the size of a whale that sees only light. Run dark,
   ping to break her lure's pull, then shine your lamp in her eyes up close (or
-  feed her a flare) and strike while she is dazzled.
+  feed her a flare) and strike while she is dazzled. Nothing else hurts her.
+  Wounded, she charges again and again, and she learns to douse her lure and
+  come for you in the dark, lighting it only to strike.
 * In the Midnight Caverns waits a **glow-worm grotto**: a chamber whose ceiling
   hangs with thousands of glowing threads. They go dark at sound, the dark
   spreading out from every noise, and light again after a few quiet seconds.
@@ -121,8 +123,15 @@ itself. Every zone is a procedurally generated cave cross-section. Find the
   isopod the size of a bus whose plates turn every weapon. Only the vents in
   its lair crack its shell: hang above a vent and ping so it walks over to
   listen, wait for the eruption, and strike while the seams glow. It never
-  goes looking for an eruption itself, and it rears up to slam anything that
-  comes close.
+  goes looking for an eruption itself. It stalks you across its floor even
+  when you are quiet, rears up to slam anything that comes close, and spits
+  scalding water at anything out of reach.
+* **Guardians cannot be stun-locked.** Each takes no damage at all except in
+  its own opening (dazzled, wedged in rock, shell cracked), and once that
+  opening closes it is on its guard for eight seconds: the Lamplighter's eyes
+  are shut to light, the Mother's lunges glance off rock, the Ironclad's shell
+  is tempered against the heat. Shock pulses and concussive pings only make
+  a guardian flinch.
 * In the Hadal Trench **the rock moves**. Twice a zone the Choir sings and the
   trench rearranges itself around you: the tunnel behind you flows shut, and
   a new chamber opens ahead where there was solid rock, with something
@@ -146,8 +155,20 @@ itself. Every zone is a procedurally generated cave cross-section. Find the
   speakers play Okafor's lullaby, and something far below sings it back.
 * At the bottom of the trench waits **the Choir**. It sings in waves. Answer
   each wave with a sonar ping as it reaches you (an answer costs no battery; a
-  missed wave hurts and drains it), then harpoon its voice organs while they
-  glow open.
+  missed wave hurts and drains it). Its song has three parts. In **the Call**,
+  harpoon its four voice organs while an answer holds them open. In **the
+  Reach**, the heart surges forward out of the dark: waves come from voices
+  all round the arena as well as the heart, tentacles rise, follow you and
+  slam down along their line, and each answer opens the heart's throat to
+  your harpoon. In **the Duet**, the wounded heart falls silent and listens.
+  Its hunters hang still, and it sings on, faster and faster, until you have
+  answered it twelve times in a row.
+* Some creatures do more than bite. A **lantern chain** cannot be killed (the
+  colony closes round any wound) and stings whatever brushes it, hunters
+  included. A dying **jelly** lets go of its whole charge, stunning anything
+  close. A **lancer** that dashes into rock is left reeling. A creature you
+  ambush once, and others of its kind nearby, will not be caught unaware
+  again.
 * Quit whenever you like: the dive is saved at the start of every zone and
   **Resume dive** on the title screen picks it up again.
 
@@ -293,7 +314,7 @@ Requires Godot 4.5.1 with export templates installed.
 
 ```sh
 godot --headless --import                                       # first-time import
-godot --headless --path . -s res://tests/run_tests.gd           # 156 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
+godot --headless --path . -s res://tests/run_tests.gd           # 163 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
 godot --headless --path . res://tests/flow_test.tscn            # end-to-end menu and dive flow
 godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
 python3 tools/audio/generate.py                                 # regenerate all audio (numpy + ffmpeg)

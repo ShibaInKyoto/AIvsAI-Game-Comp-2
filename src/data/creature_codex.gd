@@ -35,9 +35,11 @@ static func entries() -> Array[Entry]:
 					"rushes past. Drift by gently. Harpooned while swollen, it bursts and sprays spines at " +
 					"everything nearby."),
 			Entry.new(&"jelly", "Drifter Jelly", "Medusa errans", "Low",
-				"Drifts on the currents and drifts towards light. Its tentacles carry a charge that shorts batteries on contact."),
+				"Drifts on the currents and drifts towards light. Its tentacles carry a charge that shorts batteries " +
+					"on contact, and killed it lets the whole charge go at once - stunning anything close by."),
 			Entry.new(&"lancer", "Lancer", "Sphyraena sonans", "Medium",
-				"A needle-nosed hunter that strikes at sound. It winds up before every dash - cut your engines and it loses you."),
+				"A needle-nosed hunter that strikes at sound. It winds up before every dash - cut your engines and it " +
+					"loses you. A dash that ends in rock leaves it stunned."),
 			Entry.new(&"lurelight", "Lurelight", "Melanocetus mendax", "High",
 				"An ambush angler that hangs a living lantern in the dark. Whatever swims up to " +
 					"the light is swallowed. Sonar shows the body behind the bait."),
@@ -52,7 +54,8 @@ static func entries() -> Array[Entry]:
 					"through power lines. A shock pulse or a burst of speed shakes them off."),
 			Entry.new(&"siphon", "Lantern Chain", "Praya catenata", "Low",
 				"Not one animal but thousands, strung into a living chain longer than a bus. " +
-					"Every bell can sting. Drift around it, not through it."),
+					"Every bell can sting, and no harpoon can kill it: the colony closes round the wound. " +
+					"Drift around it, not through it - or lead the hunters through it."),
 			Entry.new(&"mimic", "Mimic", "Cista mendax", "High",
 				"It wears the shape of an expedition crate. Sonar marks it as alive - that is the only warning you get."),
 			Entry.new(&"ghostfin", "Ghostfin", "Phantasmichthys gregarius", "Medium",

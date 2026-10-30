@@ -1,10 +1,15 @@
 class_name Siphonophore
 extends Creature
 ## A drifting colony: a chain of glowing bells strung behind a swimming head,
-## tens of meters long. Beautiful, slow and stinging along its whole length.
+## tens of meters long. Beautiful, slow and stinging along its whole length -
+## and not something a harpoon can kill: a colony of thousands just closes
+## round the wound. It stings whatever brushes it, hunters included, so it is
+## a hazard to steer round, or to lead a pack of hunters through.
 
 const SEGMENTS := 18
 const SPACING := 1.3
+## What a sting does to another creature.
+const CREATURE_STING := 14.0
 
 var segments := PackedVector2Array()
 var _goal := Vector2.ZERO
@@ -23,6 +28,8 @@ func setup() -> void:
 	hostile = false
 	glow_color = level.biome.glow_color.lerp(Color(0.6, 0.8, 1.0), 0.5)
 	super.setup()
+	# Weapons find nothing to hold on to (it can still be scanned).
+	targetable = false
 	_home = pos
 	_goal = wander_point(_home, 25.0)
 	for i in SEGMENTS:
@@ -65,6 +72,27 @@ func build_model() -> void:
 func think() -> void:
 	if pos.distance_to(_goal) < 3.0:
 		_goal = wander_point(_home, 28.0)
+	_sting_creatures()
+
+
+## Unkillable: blows pass through the colony.
+func take_damage(_amount: float, _from: Vector2, _kind: StringName = &"") -> void:
+	pass
+
+
+## Hunters that brush the chain are stung (and remember it).
+func _sting_creatures() -> void:
+	var reach := SEGMENTS * SPACING
+	for e in level.entities:
+		var c := e as Creature
+		if c == null or c == self or not c.alive or c is Siphonophore or c.pos.distance_to(pos) > reach + c.radius:
+			continue
+		for i in range(0, SEGMENTS, 2):
+			if segments[i].distance_to(c.pos) < c.radius + 0.7:
+				c.take_damage(CREATURE_STING, segments[i], &"sting")
+				c.stun(0.8)
+				Audio.play_at(&"jelly_shock", c.pos, -6.0)
+				break
 
 
 func behave(delta: float) -> void:

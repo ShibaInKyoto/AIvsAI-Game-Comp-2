@@ -20,7 +20,7 @@ const LUNGE_DAMAGE := 32.0
 const PROWL_SPEED := 5.0
 ## Per phase (thirds of her health): lunge speed, seconds stuck, rest between lunges.
 const LUNGE_SPEED: Array[float] = [24.0, 27.0, 30.0]
-const STUCK_TIME: Array[float] = [3.6, 3.0, 2.5]
+const STUCK_TIME: Array[float] = [4.2, 3.6, 3.0]
 const REST: Array[float] = [1.6, 1.1, 0.7]
 
 var state := State.DORMANT
@@ -44,7 +44,7 @@ var _gills: MeshInstance3D
 func setup() -> void:
 	species = &"mother"
 	title = "THE BLIND MOTHER"
-	max_hp = 320.0
+	max_hp = 280.0
 	radius = 2.3
 	mass = 60.0
 	contact_damage = 14.0

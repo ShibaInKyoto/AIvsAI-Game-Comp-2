@@ -1,8 +1,9 @@
 class_name Lancer
 extends Creature
 ## Needle-nosed hunter that strikes at sound. Investigates noise, winds up
-## (its stripe flares as a tell) and dashes in a straight line. Left alone it
-## hunts shoals, and while it feeds it pays the sub no attention.
+## (its stripe flares as a tell) and dashes in a straight line; a dash that
+## ends in rock leaves it stunned. Left alone it hunts shoals, and while it
+## feeds it pays the sub no attention.
 
 enum State { WANDER, INVESTIGATE, WINDUP, DASH, RECOVER }
 
@@ -10,6 +11,8 @@ const DASH_SPEED := 23.0
 const WINDUP_TIME := 0.55
 const DASH_TIME := 0.55
 const HUNT_RANGE := 12.0
+## Seconds a dash into rock leaves it reeling.
+const BONK_STUN := 1.8
 ## Seconds spent swallowing a caught fish.
 const FEED_TIME := 3.0
 
@@ -153,7 +156,17 @@ func behave(delta: float) -> void:
 			vel = _dash_dir * DASH_SPEED
 			if is_instance_valid(_prey) and _prey.alive and pos.distance_to(_prey.pos) < 2.5:
 				_catch()
-			elif _timer <= 0.0 or level.field.sample(pos + _dash_dir * (radius + 0.6)) < 0.3:
+			elif level.field.sample(pos + _dash_dir * (radius + 0.6)) < 0.3:
+				# Straight into the rock: it is left reeling.
+				_prey = null
+				state = State.RECOVER
+				_timer = 1.3
+				_set_glow(1.0)
+				vel = -_dash_dir * 3.0
+				stun(BONK_STUN)
+				Audio.play_at(&"impact_rock", pos, -4.0, 0.05, 1.4)
+				Fx.float_text(level, pos + Vector2(0.0, 1.5), "STUNNED", UiTheme.GOOD)
+			elif _timer <= 0.0:
 				_prey = null
 				state = State.RECOVER
 				_timer = 1.3

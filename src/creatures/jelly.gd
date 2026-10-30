@@ -1,9 +1,14 @@
 class_name Jelly
 extends Creature
 ## Drifter jelly: pulses slowly along, drifts towards light and shocks
-## anything it touches, draining batteries.
+## anything it touches, draining batteries. Killed, it lets go of its whole
+## charge at once: everything close by is shocked, hunters stunned - a jelly
+## drifting past a pack is a weapon, and one burst right beside the sub is not.
 
 const SHOCK_DRAIN := 12.0
+const DISCHARGE_RADIUS := 4.5
+const DISCHARGE_DAMAGE := 18.0
+const DISCHARGE_STUN := 2.0
 
 var _pulse_t := 0.0
 var _drift := Vector2.ZERO
@@ -78,3 +83,20 @@ func on_touch_player(sub: Submarine) -> void:
 	sub.run.battery = maxf(sub.run.battery - SHOCK_DRAIN, 0.0)
 	Fx.flash(level, pos, glow_color, 8.0, 0.25)
 	Audio.play_at(&"jelly_shock", pos, 0.0)
+
+
+func die() -> void:
+	if not alive:
+		return
+	Fx.shockwave(level, pos, DISCHARGE_RADIUS, glow_color)
+	Audio.play_at(&"shock", pos, 0.0, 0.05, 1.3)
+	for e in level.targets_in_radius(pos, DISCHARGE_RADIUS):
+		var c := e as Creature
+		if c and c != self and c.alive:
+			c.stun(DISCHARGE_STUN)
+			c.take_damage(DISCHARGE_DAMAGE, pos, &"shock")
+	var sub := level.player
+	if sub and sub.alive and sub.pos.distance_to(pos) < DISCHARGE_RADIUS:
+		sub.run.battery = maxf(sub.run.battery - SHOCK_DRAIN, 0.0)
+		Fx.flash(level, sub.pos, glow_color, 6.0, 0.25)
+	super.die()

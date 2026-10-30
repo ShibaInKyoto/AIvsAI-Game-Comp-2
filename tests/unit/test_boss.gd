@@ -1,6 +1,7 @@
 extends TestCase
 ## The final encounter must be winnable by answering every wave and striking
-## the organs while they are open, and lost waves must hurt.
+## the organs while they are open, then the heart, then holding a duet; and
+## lost waves must hurt.
 
 const DT := 1.0 / 60.0
 
@@ -109,4 +110,82 @@ func test_no_hazards_in_the_arena() -> void:
 	for e in level.entities:
 		if e is ThermalVent or e is Stalactite:
 			check(e.pos.distance_to(arena.center) > arena.radius.x, "%s clear of the arena" % e.get_class())
+	level.free()
+
+
+## Answers every wave for [param seconds] (or until the song reaches part
+## [param until]); [param strike] runs each step.
+func _answer_for(level: Level, sub: Submarine, run: RunState, seconds: float, strike: Callable,
+		until := -1) -> void:
+	for i in int(seconds / DT):
+		if level.boss.part == until:
+			return
+		run.hull = sub.stats.max_hull
+		var boss := level.boss
+		if boss.active and boss.next_arrival(sub.pos) < 0.1:
+			sub.try_ping()
+		strike.call(boss)
+		sub.tick(DT)
+		level.tick(DT)
+		if not boss.active:
+			return
+
+
+func test_the_heart_then_the_duet() -> void:
+	var parts := _setup()
+	var level: Level = parts[0]
+	var sub: Submarine = parts[1]
+	var run: RunState = parts[2]
+	var boss := level.boss
+	# Wake it, then silence the organs.
+	_answer_for(level, sub, run, 2.0, func(_b: ChoirBoss) -> void: pass)
+	for o in boss.organs.duplicate():
+		boss.vulnerable = 1.0
+		o.take_damage(100000.0, sub.pos)
+	check_eq(boss.part, ChoirBoss.Part.REACH, "its organs gone, the heart reaches out")
+	check(is_instance_valid(boss.heart), "and can be struck")
+	var heart := boss.heart
+	boss.vulnerable = 0.0
+	var hp := heart.hp
+	heart.take_damage(50.0, sub.pos)
+	check_eq(heart.hp, hp, "its throat is shut until the song is answered")
+	var voiced := [false]
+	_answer_for(level, sub, run, 60.0, func(b: ChoirBoss) -> void:
+		for w: Dictionary in b.get(&"_waves"):
+			voiced[0] = voiced[0] or w.origin != b.pos
+		if b.part == ChoirBoss.Part.REACH and b.vulnerable > 0.0:
+			heart.take_damage(8.0, sub.pos), ChoirBoss.Part.DUET)
+	check(voiced[0], "waves come from voices round the arena too")
+	check_eq(boss.part, ChoirBoss.Part.DUET, "wounded, the heart falls silent and listens")
+	check(boss.active, "but the song is not over")
+	_answer_for(level, sub, run, 90.0, func(_b: ChoirBoss) -> void: pass)
+	check(not boss.active and boss.duet >= ChoirBoss.DUET_NEED,
+		"a long run of answers ends the song (%d answered)" % boss.duet)
+	level.free()
+
+
+func test_a_rising_tentacle_slams_a_sub_that_stays_on_its_line() -> void:
+	var parts := _setup()
+	var level: Level = parts[0]
+	var sub: Submarine = parts[1]
+	var run: RunState = parts[2]
+	var boss := level.boss
+	_answer_for(level, sub, run, 2.0, func(_b: ChoirBoss) -> void: pass)
+	for o in boss.organs.duplicate():
+		boss.vulnerable = 1.0
+		o.take_damage(100000.0, sub.pos)
+	var hit := false
+	for i in int(16.0 / DT):
+		# Answer everything, so only a slam can hurt.
+		if boss.next_arrival(sub.pos) < 0.1:
+			sub.try_ping()
+		var before := run.hull
+		sub.pos = boss.pos + Vector2(0.0, -14.0)
+		sub.vel = Vector2.ZERO
+		sub.tick(DT)
+		level.tick(DT)
+		if run.hull < before - ChoirBoss.SLAM_DAMAGE * 0.5:
+			hit = true
+			break
+	check(hit, "a sub that sits still is slammed")
 	level.free()

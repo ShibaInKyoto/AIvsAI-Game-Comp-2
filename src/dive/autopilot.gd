@@ -38,6 +38,7 @@ var _frame_ms_sum := 0.0
 var _frames := 0
 var _reported := false
 var _glass: SingingGlass
+var _choir_part := -1
 ## Where the route leads: the exit, or a glow bulb when the battery runs low.
 var _goal := Vector2.ZERO
 var _bulb: GlowBulb
@@ -233,12 +234,18 @@ func _plan_route(from: Vector2) -> PackedVector2Array:
 ## Holds position near an organ, answers every wave and strikes open organs.
 func _fight_boss() -> void:
 	var boss := level.boss
+	if boss.part != _choir_part:
+		_choir_part = boss.part
+		print("AUTOPILOT: the Choir's song reached part %d at %.1f s, hull %.0f" % [boss.part, _elapsed, sub.run.hull])
 	var eta := boss.next_arrival(sub.pos)
 	if eta < 0.12:
 		sub.try_ping()
 	# The nearest organ in sight whose standoff point (9 m off it) the hull can
 	# swim to in a straight line; with none, follow the route on into the open
 	# arena (heading straight across rock wedges the sub for the whole fight).
+	if boss.part != ChoirBoss.Part.CALL:
+		_fight_heart(boss)
+		return
 	var organ: ChoirOrgan = null
 	for o in boss.organs:
 		var standoff := o.pos - (o.pos - sub.pos).normalized() * 9.0
@@ -260,6 +267,25 @@ func _fight_boss() -> void:
 	sub.facing = 1.0 if sub.aim.x >= 0.0 else -1.0
 
 
+## The Reach and the Duet: keep off the heart (and out of a rising
+## tentacle's arc), answering, and harpoon the heart whenever its throat opens.
+func _fight_heart(boss: ChoirBoss) -> void:
+	var to := boss.pos - sub.pos
+	var standoff := boss.pos - to.normalized() * 15.0
+	sub.external_move = (standoff - sub.pos).limit_length(1.0)
+	var line := boss.slam_line()
+	if not is_nan(line):
+		# Off the line a tentacle is about to slam down along.
+		var across := Vector2.from_angle(line).orthogonal()
+		var side := signf(across.dot(sub.pos - boss.pos))
+		sub.external_move = across * (side if side != 0.0 else 1.0)
+	sub.aim = to.normalized()
+	if not _strike_close_threat() and boss.part == ChoirBoss.Part.REACH and boss.vulnerable > 0.3:
+		if sub.harpoon.state == Harpoon.State.IDLE and to.length() < sub.stats.harpoon_range + boss.heart.radius:
+			sub.harpoon.throw(sub.aim)
+	sub.facing = 1.0 if sub.aim.x >= 0.0 else -1.0
+
+
 ## Against the Blind Mother: hold station near the lair floor and ping to draw
 ## a lunge, sidestep the charge, then harpoon her while she is stuck.
 func _fight_mother(mother: BlindMother, delta: float) -> void:
@@ -272,6 +298,9 @@ func _fight_mother(mother: BlindMother, delta: float) -> void:
 			sub.external_move = Vector2(-to.y, to.x).normalized()
 		BlindMother.State.STUCK:
 			sub.external_move = (to - to.normalized() * 7.0).limit_length(1.0)
+			# Every second of her gills open counts: call the harpoon back from anything else.
+			if sub.harpoon.state == Harpoon.State.ATTACHED and sub.harpoon.target != mother:
+				sub.harpoon.release()
 			if sub.harpoon.state == Harpoon.State.IDLE and to.length() < sub.stats.harpoon_range:
 				sub.harpoon.throw(sub.aim)
 		_:
@@ -283,7 +312,8 @@ func _fight_mother(mother: BlindMother, delta: float) -> void:
 			var station := mother.lair_center + Vector2(0.0, -mother.lair_radius.y * 0.55)
 			sub.external_move = (station - sub.pos).limit_length(1.0) * 0.6
 			_ping_timer -= delta
-			if _ping_timer <= 0.0:
+			# While she is wary of the rock a lunge would only glance off it: keep quiet.
+			if _ping_timer <= 0.0 and mother.stun_guard <= 0.0:
 				_ping_timer = 3.0
 				sub.try_ping()
 
@@ -328,10 +358,27 @@ func _fight_ironclad(boss: Ironclad, delta: float) -> void:
 		if v and v.state != ThermalVent.State.DORMANT and v.column_strength(sub.pos, Submarine.RADIUS + 1.5) > 0.0:
 			station = sub.pos + v.normal.orthogonal() * signf((sub.pos - v.pos).dot(v.normal.orthogonal()) + 0.01) * 6.0
 	sub.external_move = (station - sub.pos).limit_length(1.0)
+	# Out of the way of scalding globs on their way in - unless that is into a column.
+	for e in level.entities:
+		var glob := e as ScaldGlob
+		if glob and glob.pos.distance_to(sub.pos) < 9.0 and glob.vel.dot(sub.pos - glob.pos) > 0.0:
+			var across := glob.vel.normalized().orthogonal()
+			var dodge := across * signf(across.dot(sub.pos - glob.pos) + 0.01)
+			if not _in_any_column(sub.pos + dodge * 3.0):
+				sub.external_move = dodge
+			break
 	if boss.exposed > 0.3 and sub.harpoon.state == Harpoon.State.IDLE and to.length() < sub.stats.harpoon_range:
 		sub.harpoon.throw(sub.aim)
 	elif boss.exposed <= 0.0:
 		_strike_close_threat()
+
+
+func _in_any_column(p: Vector2) -> bool:
+	for e in level.entities:
+		var v := e as ThermalVent
+		if v and v.state != ThermalVent.State.DORMANT and v.column_strength(p, Submarine.RADIUS + 1.5) > 0.0:
+			return true
+	return false
 
 
 ## Against the Lamplighter: run dark and ping to break the lure's pull, keep
@@ -359,6 +406,20 @@ func _fight_lamplighter(angler: Lamplighter, delta: float) -> void:
 			sub.external_move = (to - to.normalized() * 8.0).limit_length(1.0) * 0.6
 			if sub.harpoon.state == Harpoon.State.IDLE and d < sub.stats.harpoon_range:
 				sub.harpoon.throw(sub.aim)
+		Lamplighter.State.LURK:
+			# Lure dark: keep moving away and ping to see where she is.
+			sub.lamp_on = false
+			sub.external_move = (-to.normalized()).rotated(0.6)
+			if sub.sonar_cooldown <= 0.0 and sub.run.battery > sub.stats.sonar_cost + 10.0:
+				sub.try_ping()
+		Lamplighter.State.STALK when angler.stun_guard > 0.0:
+			# Eyes shut to light: hang back in the dark until she opens them.
+			sub.lamp_on = false
+			var hold := (to - to.normalized() * 18.0).limit_length(1.0)
+			if sub.pos.distance_to(angler.lure_pos()) < Lamplighter.SNAP_REACH + 4.0:
+				hold = away_from_lure
+			sub.external_move = hold * 0.7
+			_strike_close_threat()
 		Lamplighter.State.STALK:
 			if sub.tools.current() == &"flare" and sub.run.flares > 0 and d < 20.0:
 				_tool_timer -= delta

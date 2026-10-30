@@ -289,11 +289,16 @@ func _process(delta: float) -> void:
 			_tool_hint.text += "   %s cycle" % Prompt.key(&"cycle_tool")
 
 	var guardian := level.guardian
-	_boss_box.visible = is_instance_valid(guardian) and guardian.active
-	if _boss_box.visible:
+	var choir := level.boss
+	_boss_box.visible = is_instance_valid(guardian) and guardian.active or choir != null and choir.active
+	if is_instance_valid(guardian) and guardian.active:
 		_boss_name.text = guardian.title
 		_boss_bar.max_value = guardian.max_hp
 		_boss_bar.value = guardian.hp
+	elif choir and choir.active:
+		_boss_name.text = choir.title
+		_boss_bar.max_value = choir.meter_max
+		_boss_bar.value = choir.meter
 
 	var low_hull := clampf(1.0 - run.hull / maxf(sub.stats.max_hull, 1.0) * 3.0, 0.0, 1.0)
 	var mat := _vignette.material as ShaderMaterial
