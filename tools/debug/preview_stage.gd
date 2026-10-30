@@ -23,7 +23,7 @@ var _shots := 0
 
 ## Builds [param zone] from [param run_seed] for a [param frame] sub,
 ## populated with the zone's usual content unless [param bare].
-func stage(zone: int, run_seed: int, frame := &"lantern", bare := false) -> void:
+func stage(zone: int, run_seed: int, frame := &"lantern", bare := false, event := &"") -> void:
 	if OS.get_cmdline_user_args().size() > 0:
 		_out = OS.get_cmdline_user_args()[0]
 	run = RunState.new()
@@ -36,7 +36,7 @@ func stage(zone: int, run_seed: int, frame := &"lantern", bare := false) -> void
 	var layout := LevelGenerator.new().generate(BiomeLibrary.biome_for_zone(zone), run.zone_seed(zone), zone)
 	level = Level.new()
 	add_child(level)
-	level.build(layout, 2)
+	level.build(layout, 2, 0, ZoneEvents.for_zone(run, zone) if event == &"?" else event)
 	if not bare:
 		LevelPopulator.populate(level, run)
 

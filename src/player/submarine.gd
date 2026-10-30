@@ -262,7 +262,7 @@ func try_ping() -> bool:
 		return false
 	run.battery -= stats.sonar_cost
 	sonar_cooldown = stats.sonar_cooldown
-	level.ping(pos, stats.sonar_range, stats.sonar_mark_time)
+	level.ping(pos, stats.sonar_range * level.sonar_scale, stats.sonar_mark_time)
 	level.emit_noise(pos, stats.sonar_range * 0.5, self)
 	Audio.play(&"sonar_ping", -2.0)
 	if stats.sonar_stun:
@@ -281,7 +281,7 @@ func _update_battery(delta: float, move: Vector2) -> void:
 		drain += stats.lamp_drain
 	if boosting:
 		drain += stats.boost_drain
-	run.battery = maxf(run.battery - drain * drain_mult * delta, 0.0)
+	run.battery = maxf(run.battery - drain * drain_mult * level.drain_scale * delta, 0.0)
 	if run.battery <= 0.0:
 		if power_failing == 0.0:
 			lamp_on = false

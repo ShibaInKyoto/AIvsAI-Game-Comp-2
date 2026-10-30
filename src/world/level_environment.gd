@@ -9,6 +9,8 @@ var fog_volume: FogVolume
 
 ## Multiplier on ambient light (zone events darken or brighten a zone).
 var ambient_scale := 1.0
+## Multiplier on how far you can see through the water (a silt storm thickens it).
+var fog_scale := 1.0
 var _biome: BiomeDef
 var _fog_material: FogMaterial
 
@@ -40,8 +42,8 @@ func setup(biome: BiomeDef, level_size: Vector2) -> void:
 
 	environment.fog_enabled = true
 	environment.fog_mode = Environment.FOG_MODE_DEPTH
-	environment.fog_depth_begin = 24.0
-	environment.fog_depth_end = 75.0
+	environment.fog_depth_begin = 24.0 * fog_scale
+	environment.fog_depth_end = 75.0 * fog_scale
 	environment.fog_depth_curve = 1.2
 	environment.fog_density = 0.65
 	environment.fog_sky_affect = 0.0
@@ -72,7 +74,7 @@ func setup(biome: BiomeDef, level_size: Vector2) -> void:
 	# out of the space between camera and cave keeps the scene crisp while
 	# lamp beams still glow.
 	_fog_material = FogMaterial.new()
-	_fog_material.density = biome.fog_density
+	_fog_material.density = biome.fog_density / fog_scale
 	_fog_material.edge_fade = 0.3
 	fog_volume = FogVolume.new()
 	fog_volume.shape = RenderingServer.FOG_VOLUME_SHAPE_BOX

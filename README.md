@@ -215,7 +215,14 @@ settings and key bindings are kept).
 * **Zone events**: strong currents, blackouts, feeding frenzies, wreck
   fields (the broken hulls of an earlier expedition, salvage spilled around
   them), whale falls (a great skeleton on the floor, glowing with bone worms
-  and crowded with feeding fish), dead calm and bioluminescent blooms.
+  and crowded with feeding fish), dead calm and bioluminescent blooms. Also:
+  silt storms (everything, you included, sees half as far), magnetic anomalies
+  (sonar reaches half as far, the descent compass wanders), migrations
+  (schools streaming down the main tunnel with lancers on their tails),
+  tremors (every half minute the zone shakes and rock comes down from the
+  ceilings), warm layers (your cells drain slower, everything else moves
+  faster) and jelly blooms. The next zone's event shows in the forecast at
+  each decompression stop.
 * **Pressure levels** unlock after you beat the Choir. Each level stacks a new
   modifier on top of the ones below it.
 
@@ -271,7 +278,7 @@ Requires Godot 4.5.1 with export templates installed.
 
 ```sh
 godot --headless --import                                       # first-time import
-godot --headless --path . -s res://tests/run_tests.gd           # 141 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
+godot --headless --path . -s res://tests/run_tests.gd           # 148 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
 godot --headless --path . res://tests/flow_test.tscn            # end-to-end menu and dive flow
 godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
 python3 tools/audio/generate.py                                 # regenerate all audio (numpy + ffmpeg)

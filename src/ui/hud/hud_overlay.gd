@@ -99,6 +99,10 @@ func _draw() -> void:
 			_label(exit_screen + Vector2(0, -40), "DESCENT", UiTheme.GOOD)
 		else:
 			var dir := (exit_screen - rect.get_center()).normalized()
+			if hud.level.event == &"magnetic":
+				# The rock's iron drags the needle about.
+				var t := hud.level.time
+				dir = dir.rotated(sin(t * 0.6) * 0.55 + sin(t * 1.7 + 1.0) * 0.25)
 			var edge_p := _clip_to_rect(rect, rect.get_center(), dir)
 			_arrow(edge_p, dir, UiTheme.GOOD)
 			_label(edge_p - dir * 46.0, "%d m" % int(dist), UiTheme.GOOD)

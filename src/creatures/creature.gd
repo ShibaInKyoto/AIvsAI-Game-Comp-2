@@ -113,7 +113,7 @@ func tick(delta: float) -> void:
 			think()
 		behave(delta)
 	vel += level.current_at(pos) * delta * 0.6
-	move_and_collide_field(delta, 0.2)
+	move_and_collide_field(delta * level.creature_pace, 0.2)
 	_check_player_contact()
 	_update_visuals(delta)
 
@@ -315,7 +315,7 @@ func can_see_player(sight_range: float) -> bool:
 	if sub == null or not sub.alive:
 		return false
 	var d := pos.distance_to(sub.pos)
-	var effective := sight_range if sub.lamp_on else sight_range * 0.3
+	var effective := (sight_range if sub.lamp_on else sight_range * 0.3) * level.sight_scale
 	if d > effective:
 		return false
 	return level.field.line_of_sight(pos, sub.pos)

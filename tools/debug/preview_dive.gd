@@ -3,11 +3,13 @@ extends "res://tools/debug/preview_stage.gd"
 ## screenshots of the sub a third of the way along the main path, lamp on,
 ## pinging once.
 ## Usage: xvfb-run godot --path . res://tools/debug/preview_dive.tscn -- <out_dir> [zone] [seed] [along] [zoom]
+## [zone event]
 
 
 func _ready() -> void:
 	var args := OS.get_cmdline_user_args()
-	stage(int(args[1]) if args.size() > 1 else 2, int(args[2]) if args.size() > 2 else 23)
+	stage(int(args[1]) if args.size() > 1 else 2, int(args[2]) if args.size() > 2 else 23, &"lantern", false,
+		StringName(args[5]) if args.size() > 5 else &"")
 	var path := level.layout.main_path
 	var along := float(args[3]) if args.size() > 3 else 0.33
 	place_sub(path[int((path.size() - 1) * along)], float(args[4]) if args.size() > 4 else 0.85)

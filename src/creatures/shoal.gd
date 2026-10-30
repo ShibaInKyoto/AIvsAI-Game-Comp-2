@@ -12,12 +12,18 @@ var fish_pos := PackedVector2Array()
 var fish_vel := PackedVector2Array()
 ## A big, harmless creature this school shelters under (a manta), or null.
 var follow: Creature
+## Waypoints a migrating school swims along (see the "migration" zone event),
+## back and forth; with none it wanders round where it started.
+var route := PackedVector2Array()
+## The waypoint on [member route] it is making for.
+var leg := 0
 var _multimesh: MultiMesh
 var _goal := Vector2.ZERO
 var _panic := 0.0
 var _home := Vector2.ZERO
 ## Where the last hunter lunged from (Vector2.INF if none).
 var _scare_from := Vector2.INF
+var _leg_step := 1
 
 
 func setup() -> void:
@@ -78,6 +84,13 @@ func think() -> void:
 		# Keep to the water just under it, wherever it glides.
 		_home = follow.pos
 		_goal = follow.pos + Vector2(0.0, -1.8)
+	elif not route.is_empty():
+		if pos.distance_to(route[leg]) < 4.0:
+			if leg + _leg_step < 0 or leg + _leg_step >= route.size():
+				_leg_step = -_leg_step
+			leg = clampi(leg + _leg_step, 0, route.size() - 1)
+		_home = route[leg]
+		_goal = route[leg]
 	elif pos.distance_to(_goal) < 3.0:
 		_goal = wander_point(_home, 18.0)
 	var sub := level.player

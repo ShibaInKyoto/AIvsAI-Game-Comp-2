@@ -49,8 +49,15 @@ static func populate(level: Level, run: RunState) -> void:
 	_spawn_vents(level, used)
 	_spawn_stalactites(level, used)
 	_spawn_caches(level, used)
-	if level.event == &"whalefall":
-		_spawn_whale_fall(level, used)
+	match level.event:
+		&"whalefall":
+			_spawn_whale_fall(level, used)
+		&"migration":
+			_spawn_migration(level, used)
+		&"jellies":
+			_spawn_bloom(level)
+		&"tremors":
+			level.add_entity(Tremors.new())
 	# Above the hadal floor the trench is still moving, and something answers pings.
 	if level.biome.id == &"hadal" and layout.has_exit:
 		level.add_entity(TrenchShift.new())
@@ -312,6 +319,47 @@ static func _spawn_station(level: Level, used: PackedVector2Array) -> void:
 
 ## A whale fall gathers life: shoals feeding over the carcass and the
 ## worms' glow on the floor beside it, harvestable like any glow bulb.
+## A migration: schools strung out along the main path, all swimming on
+## down it, and hunters following them.
+static func _spawn_migration(level: Level, used: PackedVector2Array) -> void:
+	var path := level.layout.main_path
+	if path.size() < 2:
+		return
+	var route := PackedVector2Array([path[0]])
+	for p in path:
+		if p.distance_to(route[route.size() - 1]) >= 8.0:
+			route.append(p)
+	var schools := 5 + level.zone / 3
+	for k in schools:
+		var leg := clampi(int((k + 0.5) / schools * route.size()), 0, route.size() - 1)
+		var p := level.field.resolve_circle(route[leg], 2.5)
+		if p.distance_to(level.layout.start) < SAFE_RADIUS * 0.5 or not level.layout.is_reachable(p):
+			continue
+		var shoal: Shoal = SPECIES[&"shoal"].new()
+		shoal.pos = p
+		shoal.route = route
+		shoal.leg = leg
+		level.add_entity(shoal)
+		if k % 2 == 1 and level.biome.creatures.has(&"lancer"):
+			var q := level.field.resolve_circle(p + Vector2(level.rng.randf_range(-7.0, 7.0), 4.0), 1.2)
+			if level.field.sample(q) > 1.2 and level.layout.is_reachable(q) and _far_from(q, used, 4.0):
+				var hunter: Creature = SPECIES[&"lancer"].new()
+				hunter.pos = q
+				level.add_entity(hunter)
+
+
+## A jelly bloom: stingers drifting all through the open water.
+static func _spawn_bloom(level: Level) -> void:
+	var start := PackedVector2Array([level.layout.start])
+	for _i in 12 + level.zone / 2:
+		var p := level.layout.random_open_point(level.rng, 2.0, start, SAFE_RADIUS * 0.6)
+		if p == Vector2.INF:
+			continue
+		var jelly: Creature = SPECIES[&"jelly"].new()
+		jelly.pos = p
+		level.add_entity(jelly)
+
+
 static func _spawn_whale_fall(level: Level, used: PackedVector2Array) -> void:
 	var rng := level.rng
 	var fall := WhaleFall.place(level, rng, used)
@@ -365,7 +413,9 @@ static func _spawn_stalactites(level: Level, used: PackedVector2Array) -> void:
 	var rng := level.rng
 	var placed: Array[Vector2] = []
 	var guard := 0
-	while placed.size() < level.biome.stalactite_count and guard < 600 and not layout.anchors.is_empty():
+	# A zone with tremors has plenty of loose rock for them to bring down.
+	var count := level.biome.stalactite_count * 2 + 3 if level.event == &"tremors" else level.biome.stalactite_count
+	while placed.size() < count and guard < 600 and not layout.anchors.is_empty():
 		guard += 1
 		var a: LevelLayout.Anchor = layout.anchors[rng.randi() % layout.anchors.size()]
 		if a.normal.y > -0.8 or a.pos.distance_to(layout.start) < 22.0 \

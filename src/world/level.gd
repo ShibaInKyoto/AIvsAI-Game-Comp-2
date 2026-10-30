@@ -27,6 +27,12 @@ var pressure := 0
 var event: StringName = &""
 ## Base water current for the "currents" event, in m/s.
 var current := Vector2.ZERO
+## Zone event effects, against the usual: how far creatures can see, how far
+## a ping reaches, how fast creatures move and how fast the sub's cells drain.
+var sight_scale := 1.0
+var sonar_scale := 1.0
+var creature_pace := 1.0
+var drain_scale := 1.0
 ## Every flare currently burning (creatures that hunt light are drawn to them).
 var flares: Array[Entity] = []
 ## Set once a sonar ping has reached the descent; the HUD compass then shows it.
@@ -61,6 +67,14 @@ func build(zone_layout: LevelLayout, quality: int, pressure_level := 0, zone_eve
 	if event == &"currents":
 		var a := (rng.randf() - 0.5) * PI * 0.8 + (0.0 if rng.randf() < 0.5 else PI)
 		current = Vector2(cos(a), sin(a) * 0.4) * 2.6
+	match event:
+		&"silt":
+			sight_scale = 0.5
+		&"magnetic":
+			sonar_scale = 0.55
+		&"warm":
+			creature_pace = 1.2
+			drain_scale = 0.6
 	depth_range = BiomeLibrary.zone_depth_range(zone)
 
 	environment_rig = LevelEnvironment.new()
@@ -69,6 +83,8 @@ func build(zone_layout: LevelLayout, quality: int, pressure_level := 0, zone_eve
 		environment_rig.ambient_scale = 0.35
 	elif event == &"bloom":
 		environment_rig.ambient_scale = 1.35
+	elif event == &"silt":
+		environment_rig.fog_scale = 0.4
 	environment_rig.setup(biome, layout.size())
 	environment_rig.apply_quality(quality)
 
