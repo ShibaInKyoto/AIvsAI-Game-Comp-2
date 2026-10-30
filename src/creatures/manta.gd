@@ -27,6 +27,7 @@ func setup() -> void:
 	species = &"manta"
 	max_hp = 140.0
 	radius = 1.7
+	reach = 3.2
 	mass = 6.0
 	contact_damage = 0.0
 	salvage_drop = 4

@@ -43,6 +43,7 @@ func setup() -> void:
 	species = &"stalker"
 	max_hp = 230.0
 	radius = 1.6
+	reach = BODY_LENGTH * 0.5
 	mass = 20.0
 	contact_damage = 30.0
 	hearing = 1.6

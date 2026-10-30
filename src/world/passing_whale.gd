@@ -23,7 +23,7 @@ const MIN_RUN := 24.0
 const TRIGGER_RANGE := 50.0
 const WITNESS_RANGE := 16.0
 const CLICK_PING_RANGE := 34.0
-const CLICK_PING_EVERY := 4.0
+const CLICK_PING_EVERY := 3.0
 const FADE := 3.0
 const RESEARCH := 5
 const SKIN := Color(0.46, 0.5, 0.55)
@@ -193,7 +193,7 @@ func _begin(sub: Submarine) -> void:
 func _set_off(dir: float) -> void:
 	state = State.PASSING
 	heading = dir
-	_x = from.x if heading > 0.0 else to.x
+	_x = _start_x()
 	_t = 0.0
 	_rig.visible = true
 	_rig.rotation.y = 0.0 if heading > 0.0 else PI
@@ -202,8 +202,8 @@ func _set_off(dir: float) -> void:
 func _swim(delta: float, sub: Submarine) -> void:
 	_t += delta
 	_x += heading * SPEED * delta
-	var start_x := from.x if heading > 0.0 else to.x
-	var end_x := to.x if heading > 0.0 else from.x
+	var start_x := _start_x()
+	var end_x := _end_x()
 	var gone := absf(_x - start_x)
 	var left := absf(end_x - _x)
 	if left <= 0.0 or signf(end_x - _x) != heading:
@@ -240,6 +240,21 @@ func _swim(delta: float, sub: Submarine) -> void:
 		sub.run.research += RESEARCH
 		sub.show_gain(RESEARCH, " research", UiTheme.ACCENT)
 		Events.toast.emit("A sperm whale passes, clicking. Its clicks show the cave on your sonar.", UiTheme.ACCENT)
+
+
+## Where its middle turns back into the blue: far enough in from either end
+## of the open stretch (which itself stops short of the rock) that its head
+## and tail never reach the rock.
+func _start_x() -> float:
+	return from.x + _margin() if heading > 0.0 else to.x - _margin()
+
+
+func _end_x() -> float:
+	return to.x - _margin() if heading > 0.0 else from.x + _margin()
+
+
+static func _margin() -> float:
+	return LENGTH * 0.5 - TIGHT_CLEARANCE + 0.5
 
 
 ## Where it is now, for tests and previews (INF when it is not passing).

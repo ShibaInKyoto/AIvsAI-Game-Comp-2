@@ -20,6 +20,9 @@ var contact_damage := 10.0
 var scannable := true
 ## Creatures lighter than this are dragged in by the harpoon.
 var mass := 1.0
+## How far the body reaches from its middle (a long eel or wide wings), when
+## that is more than [member radius]: it keeps that far from the rock.
+var reach := 0.0
 var glow_color := Color(0.4, 1.0, 0.9)
 ## Multiplier applied to noise radii when listening.
 var hearing := 1.0
@@ -333,13 +336,14 @@ func seek(target: Vector2, speed: float, agility: float, delta: float) -> void:
 func avoid_walls(heading: Vector2) -> Vector2:
 	var field := level.field
 	var push := Vector2.ZERO
+	var body := maxf(radius, reach * 0.8)
 	var d0 := field.sample(pos)
-	if d0 < radius + 2.0:
-		push += field.normal(pos) * (1.0 - (d0 - radius) / 2.0)
+	if d0 < body + 2.0:
+		push += field.normal(pos) * (1.0 - (d0 - body) / 2.0)
 	if heading.length_squared() > 0.01:
-		var ahead := pos + heading.normalized() * (radius + 3.0)
+		var ahead := pos + heading.normalized() * (body + 3.0)
 		var d1 := field.sample(ahead)
-		if d1 < radius + 1.0:
+		if d1 < body + 1.0:
 			push += field.normal(ahead) * 0.8
 	return push
 
@@ -348,7 +352,7 @@ func avoid_walls(heading: Vector2) -> Vector2:
 func wander_point(center: Vector2, spread: float) -> Vector2:
 	for _i in 8:
 		var p := center + Vector2(level.rng.randf_range(-spread, spread), level.rng.randf_range(-spread, spread))
-		if level.field.sample(p) > radius + 1.0 and level.field.line_of_sight(pos, p, radius * 0.5):
+		if level.field.sample(p) > maxf(radius, reach * 0.8) + 1.0 and level.field.line_of_sight(pos, p, radius * 0.5):
 			return p
 	return pos
 
