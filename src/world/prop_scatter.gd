@@ -3,6 +3,8 @@ extends RefCounted
 ## Decorates a zone with instanced props placed on reachable wall anchors.
 ## Each prop type becomes one MultiMeshInstance3D (one draw call).
 
+## Everything grows a little thicker than its definition says.
+const LUSH := 1.35
 const SHADER := preload("res://src/fx/shaders/prop.gdshader")
 const ROCK_SHADER := preload("res://src/fx/shaders/rock_prop.gdshader")
 
@@ -44,7 +46,7 @@ static func scatter(level: Level) -> void:
 		if not DEFS.has(id):
 			continue
 		var def: Dictionary = DEFS[id]
-		var density: float = def.density * biome.props[id] * (Settings.quality + 2) / 4.0
+		var density: float = def.density * biome.props[id] * LUSH * (Settings.quality + 2) / 4.0
 		var xforms: Array[Transform3D] = []
 		var customs: Array[Color] = []
 		for a in layout.anchors:

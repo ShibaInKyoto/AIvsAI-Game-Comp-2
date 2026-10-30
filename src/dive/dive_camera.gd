@@ -3,7 +3,7 @@ extends Camera3D
 ## Side-on follow camera with aim look-ahead, speed zoom, level clamping and
 ## trauma-based screen shake.
 
-const BASE_DISTANCE := 29.0
+const BASE_DISTANCE := 35.0
 
 var target: Submarine
 var level_size := Vector2(100, 200)

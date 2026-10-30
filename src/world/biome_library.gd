@@ -14,6 +14,12 @@ const LAIR_ZONE := 5
 ## ... and the last Abyssal Vents zone in the Ironclad's.
 const FURNACE_ZONE := 7
 
+## How much bigger every zone is than its biome's numbers say: wider and
+## taller zones, roomier tunnels and caverns, and the life to fill them.
+const GROW_SIZE := Vector2(1.3, 1.2)
+const GROW_ROOM := 1.22
+const GROW_LIFE := 1.45
+
 static var _cache: Array[BiomeDef] = []
 
 
@@ -24,7 +30,7 @@ static func is_lair(zone: int) -> bool:
 
 static func get_biome(index: int) -> BiomeDef:
 	if _cache.is_empty():
-		_cache = [_shelf(), _reef(), _midnight(), _vents(), _hadal()]
+		_cache = [_grow(_shelf()), _grow(_reef()), _grow(_midnight()), _grow(_vents()), _grow(_hadal())]
 	return _cache[clampi(index, 0, _cache.size() - 1)]
 
 
@@ -47,6 +53,21 @@ static func zone_depth_range(zone: int) -> Vector2:
 
 static func is_final_zone(zone: int) -> bool:
 	return zone >= BIOME_COUNT * ZONES_PER_BIOME
+
+
+static func _grow(b: BiomeDef) -> BiomeDef:
+	b.zone_width = Vector2i(roundi(b.zone_width.x * GROW_SIZE.x), roundi(b.zone_width.y * GROW_SIZE.x))
+	b.zone_height = roundi(b.zone_height * GROW_SIZE.y)
+	b.tunnel_radius *= GROW_ROOM
+	b.chamber_radius *= GROW_ROOM
+	b.creature_budget = roundi(b.creature_budget * GROW_LIFE)
+	b.bulb_count = roundi(b.bulb_count * GROW_LIFE)
+	b.cache_count = roundi(b.cache_count * 1.3)
+	b.branch_count = Vector2i(b.branch_count.x + 1, b.branch_count.y + 2)
+	b.spire_count = roundi(b.spire_count * 1.3)
+	b.vent_count = roundi(b.vent_count * 1.3)
+	b.stalactite_count = roundi(b.stalactite_count * 1.3)
+	return b
 
 
 static func _shelf() -> BiomeDef:

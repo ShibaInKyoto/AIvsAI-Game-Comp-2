@@ -31,6 +31,8 @@ var total_kills := 0
 var stalkers_killed := 0
 var mothers_killed := 0
 var anglers_killed := 0
+## Meridian survey probes recovered, over every dive.
+var probes_recovered := 0
 var best_pressure_win := -1
 ## Ids of the [Challenges] won.
 var challenges_won: Array[String] = []
@@ -238,6 +240,7 @@ func to_dict() -> Dictionary:
 		"stalkers_killed": stalkers_killed,
 		"mothers_killed": mothers_killed,
 		"anglers_killed": anglers_killed,
+		"probes_recovered": probes_recovered,
 		"best_pressure_win": best_pressure_win,
 		"challenges_won": challenges_won,
 		"tracked": tracked,
@@ -294,6 +297,7 @@ static func from_dict(d: Dictionary) -> MetaState:
 	m.stalkers_killed = int(d.get("stalkers_killed", 0))
 	m.mothers_killed = int(d.get("mothers_killed", 0))
 	m.anglers_killed = int(d.get("anglers_killed", 0))
+	m.probes_recovered = int(d.get("probes_recovered", 0))
 	m.best_pressure_win = int(d.get("best_pressure_win", -1))
 	# Saves from before challenges called them milestones.
 	for id in d.get("challenges_won", d.get("milestones", [])):

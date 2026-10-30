@@ -9,7 +9,7 @@ func _initialize() -> void:
 	var zone_seed := int(args[2]) if args.size() > 2 else 1234
 	var t := Time.get_ticks_msec()
 	var layout := LevelGenerator.new().generate(BiomeLibrary.biome_for_zone(zone), zone_seed, zone)
-	print("generated in %d ms, size %s, anchors %d, chambers %d" % [Time.get_ticks_msec() - t,
+	print("generated in %d ms, style %s, size %s, anchors %d, chambers %d" % [Time.get_ticks_msec() - t, layout.style,
 		layout.size(), layout.anchors.size(), layout.chambers.size()])
 	var f := layout.field
 	var img := Image.create(f.width, f.height, false, Image.FORMAT_RGB8)

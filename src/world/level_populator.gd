@@ -89,6 +89,9 @@ static func populate(level: Level, run: RunState) -> void:
 	if level.zone == SingingGlass.ZONE:
 		SingingGlass.place(level, rng, used)
 	_spawn_lair_bulbs(level, used)
+	# Meridian's lost survey probes, in the side rooms below the first zone.
+	if level.zone > 0 and layout.has_exit:
+		SurveyProbe.scatter(level, rng, used, 1 + int(rng.randf() < 0.5))
 	_settle(level)
 	# Something huge passes through the second Sunlit Shelf zone.
 	if level.zone == PassingWhale.ZONE:
@@ -399,7 +402,8 @@ static func _spawn_bulbs(level: Level, used: PackedVector2Array) -> void:
 	while placed < target and guard < 300 and not layout.anchors.is_empty():
 		guard += 1
 		var a: LevelLayout.Anchor = layout.anchors[rng.randi() % layout.anchors.size()]
-		if not _far_from(a.pos, used, 14.0):
+		# Not in a crevice so tight the bulb would sit in the rock.
+		if not _far_from(a.pos, used, 14.0) or level.field.sample(a.pos + a.normal * 0.5) < 0.3:
 			continue
 		var bulb := GlowBulb.new()
 		bulb.pos = a.pos + a.normal * 0.5

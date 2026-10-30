@@ -50,8 +50,12 @@ Settings).
 
 You descend through **11 zones**: two each in the Sunlit Shelf, Twilight
 Reef, Midnight Caverns, Abyssal Vents and Hadal Trench, then the hadal floor
-itself. Every zone is a procedurally generated cave cross-section. Find the
-**descent** (the glowing fissure at the bottom) to go deeper.
+itself. Every zone is a procedurally generated cave cross-section, laid out
+as a winding descent, a great pillared hall, a braid where the way splits
+round the rock and joins again, or a shaft dropping almost straight down past
+ledges. Find the **descent** (the glowing fissure at the bottom) to go
+deeper. Meridian's lost **survey probes** blink in the side rooms: hook one
+with the harpoon and reel it in for research.
 
 * **Your battery is your life support.** It drains slowly all the time and
   faster as the motors work, the lamp burns and the sonar pings. Glow bulbs
@@ -132,10 +136,12 @@ itself. Every zone is a procedurally generated cave cross-section. Find the
   are shut to light, the Mother's lunges glance off rock, the Ironclad's shell
   is tempered against the heat. Shock pulses and concussive pings only make
   a guardian flinch.
-* In the Hadal Trench **the rock moves**. Twice a zone the Choir sings and the
-  trench rearranges itself around you: the tunnel behind you flows shut, and
-  a new chamber opens ahead where there was solid rock, with something
-  waiting in it. What you leave behind may not be there to go back to. And
+* In the Hadal Trench **the rock moves**. Three times a zone the Choir sings
+  and the trench rearranges itself around you: the tunnel behind you flows
+  shut, a new chamber opens ahead where there was solid rock with something
+  waiting in it, or the way ahead itself moves: a new passage bends open
+  through the rock beside it, and the stretch you were heading for closes.
+  What you leave behind may not be there to go back to. And
   something answers your sonar the way it answered Meridian's: eleven seconds
   after a ping, your ping comes back up from far below, slowed and stretched
   into something like a word.
@@ -239,8 +245,9 @@ settings and key bindings are kept).
   wall-crawling isopods, stinging siphonophore chains, caches that turn out to
   be mimics, shoals, ghostfin packs that hunt the lamp on the hadal floor, and
   the Stalker, which hunts by sound across the whole zone.
-* **29 challenges**, each won once. 17 career goals (silence the Choir, scan
-  every species, kill a Stalker...) each unlock a hull paint for any sub.
+* **30 challenges**, each won once. 18 career goals (silence the Choir, scan
+  every species, kill a Stalker, recover twelve survey probes...) each unlock
+  a hull paint for any sub.
   12 harder ones, three per submarine, must be done in that sub (25 kills in
   one dive in the Mako, three clean zones in a row in the Whisper...). Each of
   those unlocks a skin for that sub that changes more than its color: survey
@@ -314,7 +321,7 @@ Requires Godot 4.5.1 with export templates installed.
 
 ```sh
 godot --headless --import                                       # first-time import
-godot --headless --path . -s res://tests/run_tests.gd           # 163 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
+godot --headless --path . -s res://tests/run_tests.gd           # 167 tests: generation, traversal, events, hazards, bosses, frames, saves, assets
 godot --headless --path . res://tests/flow_test.tscn            # end-to-end menu and dive flow
 godot --headless --export-release "Windows Desktop" build/windows/FATHOM.exe
 python3 tools/audio/generate.py                                 # regenerate all audio (numpy + ffmpeg)

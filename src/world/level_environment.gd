@@ -42,8 +42,9 @@ func setup(biome: BiomeDef, level_size: Vector2) -> void:
 
 	environment.fog_enabled = true
 	environment.fog_mode = Environment.FOG_MODE_DEPTH
-	environment.fog_depth_begin = 24.0 * fog_scale
-	environment.fog_depth_end = 75.0 * fog_scale
+	# The dive camera hangs about 35 m off the play plane.
+	environment.fog_depth_begin = 30.0 * fog_scale
+	environment.fog_depth_end = 82.0 * fog_scale
 	environment.fog_depth_curve = 1.2
 	environment.fog_density = 0.65
 	environment.fog_sky_affect = 0.0

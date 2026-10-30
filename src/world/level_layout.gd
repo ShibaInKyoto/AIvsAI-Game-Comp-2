@@ -35,6 +35,8 @@ var start := Vector2.ZERO
 var exit := Vector2.ZERO
 ## False for the final arena, which ends with the encounter instead of a descent.
 var has_exit := true
+## How the zone is laid out (see [constant LevelGenerator.STYLES]).
+var style: StringName = &"classic"
 var main_path := PackedVector2Array()
 var chambers: Array[Chamber] = []
 var anchors: Array[Anchor] = []

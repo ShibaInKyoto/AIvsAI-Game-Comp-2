@@ -1,8 +1,9 @@
 extends TestCase
 ## Above the hadal floor the trench moves when the Choir sings: a stretch of
-## tunnel behind the sub flows shut and a chamber opens ahead with a cache in
-## it, twice a zone. The rock never closes on the sub, never buries anything
-## and never cuts the sub off from the exit.
+## tunnel behind the sub flows shut, a chamber opens ahead with a cache in it,
+## and the way ahead is rerouted round a stretch that closes, three times a
+## zone. The rock never closes on the sub, never buries anything and never
+## cuts the sub off from the exit.
 
 const DT := 1.0 / 20.0
 const HADAL := BiomeLibrary.ZONES_PER_BIOME * (BiomeLibrary.BIOME_COUNT - 1)
@@ -49,16 +50,13 @@ func _run_out(shift: TrenchShift, max_time := 20.0) -> void:
 
 func _seal(shift: TrenchShift) -> TrenchShift.Morph:
 	for m in shift._morphs:
-		if m.fill:
+		if m.fill and m != shift._closing:
 			return m
 	return null
 
 
 func _pocket(shift: TrenchShift) -> TrenchShift.Morph:
-	for m in shift._morphs:
-		if not m.fill:
-			return m
-	return null
+	return shift._pocket
 
 
 func test_only_above_the_hadal_floor() -> void:
@@ -104,7 +102,8 @@ func test_seals_behind_and_opens_ahead() -> void:
 		check(not level.layout.find_path(sub.pos, level.layout.exit, 1.3).is_empty(),
 			"seed %d: the way on is open" % run_seed)
 		for e in level.entities:
-			if not (e is Creature or e is Pickup or e is TrenchShift or e is ChoirEcho):
+			# (Bulbs the closing rock swallowed are gone.)
+			if e.alive and not (e is Creature or e is Pickup or e is TrenchShift or e is ChoirEcho):
 				var kind: String = e.get_script().get_global_name()
 				check(level.field.sample(e.pos) > 0.0, "seed %d: nothing buried (%s)" % [run_seed, kind])
 		level.free()
@@ -192,3 +191,36 @@ func test_field_cells_round_trip() -> void:
 	check_eq(field.at(4, 8), -1.0, "and written back in place")
 	check_eq(field.at(3, 8), float(8 * 40 + 3), "leaving the rest alone")
 	check(field.cell_pos(4, 8).is_equal_approx(Vector2(2.0, -4.0)), "cell positions are world positions")
+
+
+func test_the_way_ahead_is_rerouted() -> void:
+	var detours := 0
+	for run_seed in [7, 99, 1234, 55555, 31337, 4242]:
+		var parts := _zone_level(HADAL + run_seed % 2, run_seed)
+		var level: Level = parts[0]
+		var shift := _shift(level)
+		# The second song of a zone is the one that moves the way ahead.
+		shift.shifts = 1
+		var sub := _sub_at(level, parts[1], TrenchShift.TRIGGERS[1] + 0.03)
+		shift.tick(DT)
+		var block: Array = shift._detour_block
+		var passage := shift._detour_open
+		var route := shift._detour_route
+		_run_out(shift, 40.0)
+		if not block.is_empty():
+			check(passage.progress >= 1.0, "seed %d: the new passage opens" % run_seed)
+		# The stretch closes only if that leaves the sub a way on.
+		if not block.is_empty() and level.field.sample((block[0] + block[1]) * 0.5) < 0.0:
+			detours += 1
+			var mid := route[route.size() / 2]
+			check(level.field.sample(mid) > TrenchShift.DETOUR_RADIUS - 0.8,
+				"seed %d: and a passage bends open round it" % run_seed)
+			check(passage.progress >= 1.0, "seed %d: fully open" % run_seed)
+			var on_route := false
+			for p in level.layout.main_path:
+				on_route = on_route or p.distance_to(mid) < 1.0
+			check(on_route, "seed %d: the way on runs through it" % run_seed)
+		check(not level.layout.find_path(sub.pos, level.layout.exit, 1.3).is_empty(),
+			"seed %d: the way on is open" % run_seed)
+		level.free()
+	check(detours >= 3, "the way ahead moves most times (%d of 6)" % detours)

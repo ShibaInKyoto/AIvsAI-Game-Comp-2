@@ -20,6 +20,11 @@ const SMOOTH := 2.5
 ## Wall noise can pinch the main tunnel after it is carved; this much
 ## clearance (sub radius 1.15) is restored along the route afterwards.
 const MIN_CORRIDOR := 2.2
+## How a zone may be laid out, beyond the first zone and the guardians'
+## (always classic): the classic zigzag; one great hall in the middle of the
+## way down; a braid, where the way splits round a mass of rock and joins
+## again; a shaft, dropping almost straight down past ledges.
+const STYLES: Array[StringName] = [&"classic", &"classic", &"hall", &"braid", &"shaft"]
 
 var _rng := RandomNumberGenerator.new()
 var _w := 0
@@ -56,7 +61,9 @@ func _try_generate(biome: BiomeDef, zone_seed: int, zone: int) -> LevelLayout:
 	_rock.resize(_w * _h)
 	_rock.fill(ROCK_CAP)
 
-	var waypoints := _plan_main_path(size)
+	if zone > 0 and not BiomeLibrary.is_lair(zone):
+		layout.style = STYLES[_rng.randi() % STYLES.size()]
+	var waypoints := _plan_main_path(size, layout.style)
 	layout.start = waypoints[0]
 	var exit_room := waypoints[waypoints.size() - 1]
 
@@ -77,6 +84,14 @@ func _try_generate(biome: BiomeDef, zone_seed: int, zone: int) -> LevelLayout:
 			layout.chambers.append(LevelLayout.Chamber.new(waypoints[i], r, &"main"))
 			if r.x > 13.0 and _rng.randf() < biome.pillar_chance:
 				_try_add_pillar(layout.main_path, waypoints[i], r)
+
+	match layout.style:
+		&"hall":
+			_carve_hall(layout, waypoints, size, biome)
+		&"braid":
+			_carve_braid(layout, waypoints, size, biome)
+		&"shaft":
+			_carve_ledges(layout, waypoints, size)
 
 	# The exit: a room with a fissure dropping out of the bottom of the zone.
 	var exit_r := Vector2(25.0, 14.0) if BiomeLibrary.is_lair(zone) else Vector2(10.0, 7.0)
@@ -148,7 +163,7 @@ func _keep_route_open(layout: LevelLayout, exit_room: Vector2) -> void:
 	_carve_capsule(exit_room, layout.exit, MIN_CORRIDOR, MIN_CORRIDOR, 1.0)
 
 
-func _plan_main_path(size: Vector2) -> PackedVector2Array:
+func _plan_main_path(size: Vector2, style: StringName) -> PackedVector2Array:
 	var pts := PackedVector2Array()
 	var x := size.x * _rng.randf_range(0.35, 0.65)
 	var y := -10.0
@@ -156,7 +171,10 @@ func _plan_main_path(size: Vector2) -> PackedVector2Array:
 	while y > -(size.y - 40.0):
 		y -= _rng.randf_range(20.0, 32.0)
 		var dx := _rng.randf_range(-36.0, 36.0)
-		if absf(dx) < 10.0:
+		if style == &"shaft":
+			# Straight down, near enough, with a little lean.
+			dx = _rng.randf_range(-9.0, 9.0)
+		elif absf(dx) < 10.0:
 			dx = signf(dx + 0.001) * 10.0
 		x = clampf(x + dx, MARGIN + 4.0, size.x - MARGIN - 4.0)
 		pts.append(Vector2(x, y))
@@ -191,6 +209,63 @@ func _carve_branches(layout: LevelLayout, waypoints: PackedVector2Array, size: V
 			var back := _spline(PackedVector2Array([end, (end + waypoints[i + 1]) * 0.5
 					+ Vector2(0, _rng.randf_range(-6, 6)), waypoints[i + 1]]), 2.5)
 			_carve_path(back, Vector2(3.0, 4.2))
+
+
+## One great cavern on the way down, far bigger than the biome's rooms, with
+## columns standing in it.
+func _carve_hall(layout: LevelLayout, waypoints: PackedVector2Array, size: Vector2, biome: BiomeDef) -> void:
+	var m := waypoints.size() / 2
+	var r := Vector2(biome.chamber_radius.y * 1.55, 0.0)
+	r.x = minf(r.x, size.x * 0.5 - MARGIN - 2.0)
+	r.y = r.x * _rng.randf_range(0.55, 0.68)
+	var center := waypoints[m]
+	center.x = clampf(center.x, MARGIN + r.x + 1.0, size.x - MARGIN - r.x - 1.0)
+	_carve_ellipse(center, r)
+	# The way through still runs through the middle of it.
+	_carve_capsule(waypoints[m], center, biome.tunnel_radius.x, biome.tunnel_radius.x)
+	layout.chambers.append(LevelLayout.Chamber.new(center, r, &"main"))
+	for _i in 3:
+		_try_add_pillar(layout.main_path, center, r)
+
+
+## The way splits round a mass of rock and joins again further down: a second
+## route between two waypoints, swinging wide to one side, with a room on it.
+func _carve_braid(layout: LevelLayout, waypoints: PackedVector2Array, size: Vector2, biome: BiomeDef) -> void:
+	if waypoints.size() < 4:
+		return
+	var i := _rng.randi_range(1, waypoints.size() - 3)
+	var a := waypoints[i]
+	var b := waypoints[i + 2]
+	var mid := waypoints[i + 1]
+	var line_mid := (a + b) * 0.5
+	# Swing away from the side the main route bulges to.
+	var side := -signf(mid.x - line_mid.x + 0.001)
+	var alt := Vector2(line_mid.x + side * _rng.randf_range(22.0, 30.0), line_mid.y + _rng.randf_range(-4.0, 4.0))
+	if alt.x < MARGIN + 8.0 or alt.x > size.x - MARGIN - 8.0:
+		alt.x = line_mid.x - side * _rng.randf_range(22.0, 30.0)
+	alt.x = clampf(alt.x, MARGIN + 8.0, size.x - MARGIN - 8.0)
+	var path := _spline(PackedVector2Array([a, alt, b]), 2.5)
+	_carve_path(path, biome.tunnel_radius * 0.85)
+	var r := Vector2(_rng.randf_range(7.0, 10.0), 0.0)
+	r.y = r.x * 0.7
+	_carve_ellipse(alt, r)
+	layout.chambers.append(LevelLayout.Chamber.new(alt, r, &"loot"))
+
+
+## Ledges off the sides of a shaft, each a little room of its own.
+func _carve_ledges(layout: LevelLayout, waypoints: PackedVector2Array, size: Vector2) -> void:
+	for i in range(1, waypoints.size() - 1):
+		if _rng.randf() > 0.6:
+			continue
+		var side := 1.0 if _rng.randf() < 0.5 else -1.0
+		var at := waypoints[i] + Vector2(side * _rng.randf_range(11.0, 15.0), _rng.randf_range(-3.0, 1.0))
+		if at.x < MARGIN + 6.0 or at.x > size.x - MARGIN - 6.0:
+			# No room that side: the other.
+			at.x = clampf(2.0 * waypoints[i].x - at.x, MARGIN + 6.0, size.x - MARGIN - 6.0)
+		var r := Vector2(_rng.randf_range(5.0, 7.0), _rng.randf_range(3.2, 4.2))
+		_carve_capsule(waypoints[i], at, 2.6, 2.6)
+		_carve_ellipse(at, r)
+		layout.chambers.append(LevelLayout.Chamber.new(at, r, &"loot"))
 
 
 ## Stands a rock column in a wide room, off to one side of the main route so

@@ -1,17 +1,19 @@
 class_name TrenchShift
 extends Entity
-## The Hadal Trench above the hadal floor is still being composed. Twice a
-## zone, as the sub presses on down the main tunnel, the Choir sings and the
-## rock moves: a stretch of tunnel well behind the sub flows shut, and a
-## smooth new chamber opens off the tunnel ahead with a cache waiting in it
-## ("There's a new chamber where solid rock was" - log_04).
+## The Hadal Trench above the hadal floor is still being composed. Three times
+## a zone, as the sub presses on down the main tunnel, the Choir sings and the
+## rock moves: a stretch of tunnel well behind the sub flows shut, a smooth
+## new chamber opens off the tunnel ahead with a cache waiting in it ("There's
+## a new chamber where solid rock was" - log_04), and the way ahead itself is
+## rerouted: a new passage bends open round a stretch of the tunnel in front
+## of the sub, and then that stretch closes.
 ## A seal never closes on the sub and never buries anything placed in the
 ## zone, and the sub always keeps a way to the exit: if it doubles back into
 ## a closing seal the rock waits for it, and if it would end up cut off, the
 ## rock opens again.
 
 ## Progress along the main path (0 = entrance, 1 = exit) at which the Choir sings.
-const TRIGGERS: Array[float] = [0.3, 0.62]
+const TRIGGERS: Array[float] = [0.3, 0.55, 0.78]
 ## The song comes first; the rock starts moving this long after.
 const LEAD_IN := 1.2
 const MORPH_TIME := 6.0
@@ -22,6 +24,12 @@ const SEAL_BEHIND: Array[float] = [18.0, 24.0, 30.0, 38.0, 46.0, 54.0, 62.0]
 const SEAL_LENGTH := 6.0
 ## How far ahead, along the main path, a chamber may open.
 const OPEN_AHEAD: Array[float] = [16.0, 20.0, 24.0, 28.0, 32.0, 36.0, 40.0, 46.0, 52.0, 58.0]
+## The stretch of the way ahead that closes when the trench reroutes, how far
+## ahead it may be, how far round it the new passage bends, and its width.
+const DETOUR_BLOCK := 12.0
+const DETOUR_AHEAD: Array[float] = [34.0, 42.0, 50.0, 60.0, 28.0]
+const DETOUR_SWING: Array[float] = [20.0, 24.0, 17.0]
+const DETOUR_RADIUS := 3.2
 ## Chamber sizes to try, roomiest first, where the rock is thick enough.
 const POCKET_SIZES: Array[float] = [4.5, 3.6]
 const POCKET_RADIUS := 4.5
@@ -76,6 +84,14 @@ var _started := false
 ## The sub came alongside a closing seal: check its way out once it is shut.
 var _sub_was_close := false
 var _pocket: Morph
+## The new passage and the stretch it replaces, with the route it makes.
+var _detour_open: Morph
+## The stretch to close once the passage is open (a, b, radius), or empty.
+var _detour_block: Array = []
+var _detour_route := PackedVector2Array()
+var _detour_span := Vector2i.ZERO
+## The closing stretch, while it moves.
+var _closing: Morph
 ## How strongly the moving rock glows, and where (kept to fade out after).
 var _glow := 0.0
 var _glow_zones: Array[Vector4] = []
@@ -146,12 +162,23 @@ func _begin(sub: Submarine) -> void:
 	var seal := _plan_seal(sub)
 	if seal:
 		_morphs.append(seal)
-	_pocket = _plan_pocket(sub)
-	# Each edit blends from the rock as it was, so the two must not overlap.
-	if _pocket and seal and _pocket.cells.intersects(seal.cells):
-		_pocket = null
-	if _pocket:
-		_morphs.append(_pocket)
+	# Ahead, the songs take turns: a new chamber, then the way itself moving,
+	# then a chamber again; each falls back on the other where it will not
+	# fit (both want the rock ahead, and no two edits may overlap, since
+	# each blends from the rock as it was).
+	var reroute := shifts % 2 == 0
+	for attempt in 2:
+		if reroute and _detour_open == null:
+			_plan_detour(sub)
+			if _detour_open:
+				_morphs.append(_detour_open)
+		elif not reroute and _pocket == null:
+			_pocket = _plan_pocket(sub)
+			if _pocket:
+				_morphs.append(_pocket)
+		if _detour_open or _pocket:
+			break
+		reroute = not reroute
 	if _morphs.is_empty():
 		return
 	_t = 0.0
@@ -173,6 +200,9 @@ func _begin(sub: Submarine) -> void:
 		_explained = true
 		Events.toast.emit("The Choir is singing, and the rock is moving." +
 			(" The tunnel behind you is closing." if seal else ""), UiTheme.WARN)
+	elif _detour_open:
+		Events.toast.emit("The trench is moving. The way ahead is closing - and another opening beside it.",
+			UiTheme.WARN)
 	else:
 		Events.toast.emit("The trench is moving.", UiTheme.WARN)
 
@@ -229,9 +259,41 @@ func _finish() -> void:
 			Fx.silt(level, m.centre(), 4.0, level.biome.sediment_tint)
 	if _pocket and _pocket.progress >= 1.0:
 		_furnish(_pocket)
+	if _closing and _closing.progress >= 1.0:
+		_reroute()
 	_morphs.clear()
 	_pocket = null
+	_closing = null
+	# The new passage is open: now the stretch it replaces closes.
+	if _detour_open and _detour_open.progress >= 1.0 and not _detour_block.is_empty():
+		var shape: Array = _detour_block
+		_detour_open = null
+		_detour_block = []
+		var sub := level.player
+		var closing := _make_morph([shape], true)
+		if _nothing_buried(shape[0], shape[1], shape[2], true) and sub \
+				and _leaves_way_out(closing, sub, _nearest_index(level.layout.main_path, sub.pos)):
+			_closing = closing
+			_morphs.append(_closing)
+			_swallow(shape[0], shape[1], shape[2])
+			var c := _closing.centre()
+			_glow_zones.append(Vector4(c.x, c.y, (shape[0] as Vector2).distance_to(c) + shape[2] + 3.0, 0.0))
+			_since_upload = 0.0
+			Audio.play_at(&"rock_flow", _closing.centre(), 0.0, 0.05)
+			return
+	_detour_open = null
+	_detour_block = []
 	_t = -1.0
+
+
+## The way on now runs through the new passage.
+func _reroute() -> void:
+	var path := level.layout.main_path
+	var out := PackedVector2Array()
+	out.append_array(path.slice(0, _detour_span.x + 1))
+	out.append_array(_detour_route)
+	out.append_array(path.slice(_detour_span.y))
+	level.layout.main_path = out
 
 
 ## The sub squeezed past the seal while it closed: if it is now cut off from
@@ -294,16 +356,29 @@ func _plan_seal(sub: Submarine) -> Morph:
 
 
 ## Nothing placed in the zone (caches, logs, bulbs, the drone...) lies inside
-## a seal from [param a] to [param b] of radius [param r].
-func _nothing_buried(a: Vector2, b: Vector2, r: float) -> bool:
+## a seal from [param a] to [param b] of radius [param r]. With
+## [param swallow], glow bulbs and loose stalactites do not count: the rock
+## takes them as it closes (see [method _swallow]).
+func _nothing_buried(a: Vector2, b: Vector2, r: float, swallow := false) -> bool:
 	for e in level.entities:
 		# Zone-wide controllers (this, the Choir's echo) are not things in the cave.
 		if e == self or e is ChoirEcho or e is Creature or e is Pickup:
+			continue
+		if swallow and (e is GlowBulb or e is Stalactite):
 			continue
 		var margin := 6.0 if e is VasquezDrone else 2.0
 		if segment_distance(e.pos, a, b) < r + e.radius + margin:
 			return false
 	return true
+
+
+## The glow bulbs and loose stalactites in the way of rock closing from
+## [param a] to [param b]: they crumble as it comes.
+func _swallow(a: Vector2, b: Vector2, r: float) -> void:
+	for e in level.entities:
+		if (e is GlowBulb or e is Stalactite) and e.alive and segment_distance(e.pos, a, b) < r + e.radius + 2.0:
+			Fx.silt(level, e.pos, 1.5, level.biome.sediment_tint)
+			e.despawn()
 
 
 ## Whether the sub can still reach the exit with [param m] shut. The usual
@@ -327,6 +402,97 @@ func _leaves_way_out(m: Morph, sub: Submarine, at: int) -> bool:
 	return ok
 
 
+## Plans the rerouting of the way ahead: a passage bending round through the
+## rock beside a stretch of the tunnel, and that stretch closing. Leaves both
+## null if nowhere ahead will take one without burying anything, leaving the
+## zone, or running into the other moving rock.
+func _plan_detour(sub: Submarine) -> void:
+	_detour_open = null
+	_detour_block = []
+	var layout := level.layout
+	var path := layout.main_path
+	var field := level.field
+	var size := layout.size()
+	var at := _nearest_index(path, sub.pos)
+	for ahead in DETOUR_AHEAD:
+		var b0 := _walk(path, at, ahead, 1)
+		var b1 := _walk(path, b0, DETOUR_BLOCK, 1) if b0 >= 0 else -1
+		if b1 < 0:
+			continue
+		var a := path[b0]
+		var b := path[b1]
+		var half := maxf(maxf(field.sample(a), field.sample(b)), field.sample((a + b) * 0.5))
+		if half < 1.0 or not _nothing_buried(a, b, half + 1.5, true):
+			continue
+		# The passage joins the tunnel clear of the rock that will close.
+		var join := half + 1.5 + DETOUR_RADIUS + 3.0
+		var i0 := _walk(path, b0, join, -1)
+		var i1 := _walk(path, b1, join, 1) if i0 >= 0 else -1
+		if i1 < 0 or i0 <= at or path[i1].distance_to(layout.exit) < 18.0:
+			continue
+		var across := (b - a).normalized().orthogonal()
+		for swing in DETOUR_SWING:
+			for side: float in [1.0, -1.0]:
+				var mid := (a + b) * 0.5 + across * side * swing
+				var margin := DETOUR_RADIUS + 6.0
+				if mid.x < margin or mid.x > size.x - margin or mid.y > -margin or mid.y < -(size.y - margin):
+					continue
+				var route := _spline_through(path[i0], mid, path[i1])
+				if not _route_clear(route, a, b, half + 1.5):
+					continue
+				var shapes: Array[Array] = []
+				for k in range(1, route.size()):
+					shapes.append([route[k - 1], route[k], DETOUR_RADIUS])
+				var open := _make_morph(shapes, false)
+				if _overlaps_others(open):
+					continue
+				_detour_open = open
+				_detour_block = [a, b, half + 1.5]
+				_detour_route = route
+				_detour_span = Vector2i(i0, i1)
+				return
+
+
+## Three points smoothed into a passage, a point every couple of metres.
+static func _spline_through(a: Vector2, mid: Vector2, b: Vector2) -> PackedVector2Array:
+	var out := PackedVector2Array()
+	for k in 13:
+		var t := k / 12.0
+		# Quadratic Bezier with the control point pulled out so it passes through mid.
+		var ctrl := mid * 2.0 - (a + b) * 0.5
+		out.append(a.lerp(ctrl, t).lerp(ctrl.lerp(b, t), t))
+	return out
+
+
+## Whether a new passage along [param route] keeps clear of the stretch it
+## replaces and of anything placed in the zone.
+func _route_clear(route: PackedVector2Array, a: Vector2, b: Vector2, block_r: float) -> bool:
+	# Its middle swings clear of the stretch; its ends join the tunnel beyond it.
+	for k in range(4, route.size() - 4):
+		if segment_distance(route[k], a, b) < block_r + DETOUR_RADIUS + 1.0:
+			return false
+	for k in route.size():
+		if level.layout.exit.distance_to(route[k]) < 15.0:
+			return false
+	# Opening rock buries nothing, but it must not leave anything that grows
+	# from the rock (a bulb, a vent, a clam) hanging in open water. Loose
+	# loot just settles.
+	for k in range(1, route.size()):
+		for e in level.entities:
+			if e == self or e is ChoirEcho or e is Creature or e is Pickup or e is SalvageCache or e is LogBeacon:
+				continue
+			if segment_distance(e.pos, route[k - 1], route[k]) < DETOUR_RADIUS + e.radius + 2.0:
+				return false
+	return true
+
+
+func _overlaps_others(m: Morph) -> bool:
+	for other in _morphs:
+		if other.cells.intersects(m.cells):
+			return true
+	return false
+
+
 ## A spot in solid rock beside the main tunnel ahead of the sub where a
 ## chamber can open, with a neck through to the tunnel, or null.
 func _plan_pocket(sub: Submarine) -> Morph:
@@ -334,7 +500,7 @@ func _plan_pocket(sub: Submarine) -> Morph:
 	for size_r in POCKET_SIZES:
 		for ahead in OPEN_AHEAD:
 			var m := _pocket_at(sub, at, ahead, size_r)
-			if m:
+			if m and not _overlaps_others(m):
 				return m
 	return null
 

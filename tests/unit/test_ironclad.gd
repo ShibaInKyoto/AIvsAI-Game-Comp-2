@@ -150,14 +150,15 @@ func test_an_eruption_under_it_cracks_it() -> void:
 
 
 func test_climbs_out_of_the_fissure() -> void:
-	# Seed 77's lair has a bowl deeper at the edge than at the fissure's lip,
-	# so a slam could knock it down into the fissure, walled in either side.
+	# Knocked down into the fissure in the middle of its lair, walled in either
+	# side, it climbs back out to whatever it heard.
 	var run := RunState.new()
 	var level := _lair_level(run, 77)
 	var boss := level.guardian as Ironclad
 	var sub := _with_sub(level, run)
 	boss.take_damage(1.0, boss.pos)
-	boss.pos = Vector2(44.57, -259.29)
+	var start := level.field.resolve_circle(level.layout.exit + Vector2(0.0, 1.0), boss.radius)
+	boss.pos = start
 	boss.state = Ironclad.State.CRAWL
 	var goal := boss.lair_center + Vector2(boss.lair_radius.x * 0.5, 0.0)
 	sub.pos = goal + Vector2(0.0, 6.0)
@@ -165,8 +166,8 @@ func test_climbs_out_of_the_fissure() -> void:
 		if i % 10 == 0:
 			level.emit_noise(goal, 40.0)
 		level.tick(DT)
-	check(boss.pos.y > -257.5, "it climbs out of the fissure (%s)" % boss.pos)
-	check(absf(boss.pos.x - goal.x) < absf(44.57 - goal.x) - 4.0, "and walks on towards the sound")
+	check(boss.pos.y > start.y + 1.5, "it climbs out of the fissure (%s from %s)" % [boss.pos, start])
+	check(absf(boss.pos.x - goal.x) < absf(start.x - goal.x) - 4.0, "and walks on towards the sound")
 	level.free()
 
 

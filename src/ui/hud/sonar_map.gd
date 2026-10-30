@@ -132,7 +132,7 @@ func _on_ping(origin: Vector2, ping_range: float) -> void:
 		# A mimic lying still answers sonar just like the cache it pretends to be.
 		if e is SalvageCache or e is Mimic and (e as Mimic).state == Mimic.State.DORMANT:
 			_marks.append({"pos": e.pos, "color": UiTheme.WARN, "node": e})
-		elif e is LogBeacon:
+		elif e is LogBeacon or e is SurveyProbe:
 			_marks.append({"pos": e.pos, "color": UiTheme.GOOD, "node": e})
 		elif e is MeridianStation or e is WhaleFall or e is VasquezDrone or e is DerelictFrame or e is LostWreck:
 			# Landmarks are drawn as rings.

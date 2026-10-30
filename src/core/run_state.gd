@@ -25,6 +25,8 @@ var scans := 0
 ## Each species scanned on this dive (for [Challenges]).
 var species_scanned: Array[StringName] = []
 var logs := 0
+## Meridian survey probes recovered on this dive (see [SurveyProbe]).
+var probes := 0
 var bulbs := 0
 ## Hull damage taken on this dive, and in the zone in progress.
 var damage_taken := 0.0
@@ -105,7 +107,7 @@ func to_dict() -> Dictionary:
 		"time": time, "pressure": pressure, "daily": daily, "daily_event": daily_event, "contract": contract,
 		"deepest_depth": deepest_depth, "last_hit_by": last_hit_by, "wonders": wonders,
 		"species_scanned": species_scanned, "bulbs": bulbs, "damage_taken": damage_taken,
-		"clean_zones": clean_zones, "challenges_won": challenges_won,
+		"clean_zones": clean_zones, "challenges_won": challenges_won, "probes": probes,
 	}
 
 
@@ -142,6 +144,7 @@ static func from_dict(d: Dictionary, upgrades: Dictionary) -> RunState:
 	r.bulbs = int(d.get("bulbs", 0))
 	r.damage_taken = float(d.get("damage_taken", 0.0))
 	r.clean_zones = int(d.get("clean_zones", 0))
+	r.probes = int(d.get("probes", 0))
 	for id in d.get("challenges_won", []):
 		r.challenges_won.append(String(id))
 	r.time = float(d.get("time", 0.0))

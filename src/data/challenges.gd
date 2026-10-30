@@ -63,6 +63,8 @@ static func all() -> Array[Challenge]:
 				func(m: MetaState, _r: RunState) -> int: return int(m.best_pressure_win >= 3)),
 			_career("veteran", "Veteran", "Complete 15 dives.", 15,
 				func(m: MetaState, _r: RunState) -> int: return m.dives),
+			_career("surveyor", "Surveyor", "Recover 12 of Meridian's lost survey probes.", 12,
+				func(m: MetaState, _r: RunState) -> int: return m.probes_recovered),
 			_dive("ambusher", "Silent Hunter", "Land 8 ambushes in a single dive.", &"", 8,
 				func(_m: MetaState, r: RunState) -> int: return r.ambushes),
 			# The harder ones, each done in one particular submarine.

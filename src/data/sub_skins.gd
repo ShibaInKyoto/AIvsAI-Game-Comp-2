@@ -62,6 +62,7 @@ static func all() -> Array[Livery]:
 			Livery.new("fleet", "Chrome", &"", Color(0.8, 0.82, 0.85)),
 			Livery.new("pressure", "Crimson", &"", Color(0.75, 0.05, 0.12)),
 			Livery.new("veteran", "Navy", &"", Color(0.12, 0.16, 0.35)),
+			Livery.new("surveyor", "Probe Amber", &"", Color(0.95, 0.68, 0.18)),
 			Livery.new("ambusher", "Ink", &"", Color(0.09, 0.1, 0.14)),
 			# Skins, three for each frame.
 			Livery.new("lantern_survey", "Survey Stripes", &"lantern", Color(0.92, 0.92, 0.88),
